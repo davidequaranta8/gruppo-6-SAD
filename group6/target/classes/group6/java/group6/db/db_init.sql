@@ -1,13 +1,13 @@
 /*SQL creation scheme script to run to test the application*/
 
 -- Playlist table
-CREATE TABLE Playlist (
+CREATE TABLE IF NOT EXISTS Playlist (
     title VARCHAR(255) PRIMARY KEY,
     count_played INTEGER DEFAULT 0
 );
 
 -- Track table
-CREATE TABLE Track (
+CREATE TABLE IF NOT EXISTS Track (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     tag VARCHAR(100),
@@ -19,7 +19,7 @@ CREATE TABLE Track (
 );
 
 /*Association table playlist-track since we are dealing with N-N association*/
-CREATE TABLE Playlist_Track (
+CREATE TABLE IF NOT EXISTS Playlist_Track (
     playlist_title VARCHAR(255),
     track_id INTEGER,
     PRIMARY KEY (playlist_title, track_id),

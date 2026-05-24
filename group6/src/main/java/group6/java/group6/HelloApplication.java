@@ -20,7 +20,5 @@ public class HelloApplication extends Application {
         stage.setTitle("Music Playlist Manager");
         stage.setScene(scene);
         stage.show();
-        Connection conn = DatabaseConnection.getInstance().getSqlConnection();
-
     }
 }
