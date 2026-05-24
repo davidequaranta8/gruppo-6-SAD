@@ -137,7 +137,7 @@ public class MainController {
 
     @FXML
     protected void handleRenamePlaylist() {
-        showDialog("PlaylistiDialogView/PlaylistDialog.fxml", "Rinomina Playlist");
+        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Rinomina Playlist");
     }
 
     @FXML

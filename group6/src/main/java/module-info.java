@@ -3,7 +3,8 @@ module group6.java.group6 {
     requires javafx.fxml;
     requires atlantafx.base;
     requires java.sql;
-
+    requires org.kordamp.ikonli.javafx;
+    requires org.kordamp.ikonli.fontawesome5;
 
     opens group6.java.group6 to javafx.fxml;
     exports group6.java.group6;
