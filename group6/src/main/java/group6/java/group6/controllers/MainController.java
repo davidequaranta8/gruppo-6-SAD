@@ -1,5 +1,6 @@
 package group6.java.group6.controllers;
 
+import group6.java.group6.HelloApplication;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
@@ -152,7 +153,8 @@ public class MainController {
 
     private void showDialog(String fxmlFile, String title) {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlFile));
+            var url = HelloApplication.class.getResource(fxmlFile);
+            FXMLLoader fxmlLoader = new FXMLLoader(url);
             DialogPane dialogPane = fxmlLoader.load();
 
             Dialog<ButtonType> dialog = new Dialog<>();
