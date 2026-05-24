@@ -1,5 +1,7 @@
 package group6.java.group6;
 
+import atlantafx.base.theme.CupertinoDark;
+import atlantafx.base.theme.PrimerDark;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -11,6 +13,7 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("MainView.fxml"));
+        Application.setUserAgentStylesheet(new CupertinoDark().getUserAgentStylesheet());
         Scene scene = new Scene(fxmlLoader.load(), 1100, 700);
         stage.setTitle("Music Playlist Manager");
         stage.setScene(scene);

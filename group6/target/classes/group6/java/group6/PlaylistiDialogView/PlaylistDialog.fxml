@@ -12,7 +12,7 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="group6.java.group6.PlaylistDialogController"
             prefWidth="380"
-            stylesheets="@app.css">
+            stylesheets="@../app.css">
 
     <header>
         <Label fx:id="dialogTitle" text="Nuova Playlist" styleClass="dialog-title"/>

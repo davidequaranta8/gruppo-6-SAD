@@ -120,7 +120,7 @@ public class MainController {
 
     @FXML
     protected void handleNewPlaylist() {
-        showDialog("PlaylistDialog.fxml", "Nuova Playlist");
+        showDialog("/group6.java.group6/PlaylistDialogView/PlaylistDialog.fxml", "Nuova Playlist");
     }
 
     @FXML
