@@ -12,15 +12,15 @@ public class DatabaseConnection {
     private Connection sqlConnection; //connection object got from the driver
 
 
-    private final String url = "jdbc:postgresql://localhost:5432/tuo_database";
-    private final String username = "tuo_username";
-    private final String password = "tua_password";
+    private final String url = "jdbc:postgresql://localhost:5432/";
+    private final String user = "user";
+    private final String password = "password";
 
 
     //Private constructor to respect the singleton pattern
     private DatabaseConnection() {
         try {
-            this.sqlConnection = DriverManager.getConnection(url, username, password);
+            this.sqlConnection = DriverManager.getConnection(url, user, password);
             System.out.println("Database connection established");
         } catch (SQLException e) {
             System.err.println("Errore di connessione: " + e.getMessage());
