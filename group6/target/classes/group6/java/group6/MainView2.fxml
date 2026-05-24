@@ -91,29 +91,15 @@
             <VBox styleClass="main-panel" SplitPane.resizableWithParent="true">
 
                 <!-- Intestazione playlist selezionata -->
-                <HBox alignment="CENTER_LEFT" spacing="10" styleClass="playlist-header">
-                    <padding><Insets bottom="12" left="16" right="16" top="12" /></padding>
-                    <Label fx:id="playlistNameLabel" styleClass="playlist-title" text="Nessuna playlist selezionata">
-                  <font>
-                     <Font size="10.0" />
-                  </font></Label>
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Button fx:id="playAllBtn" disable="true" onAction="#handlePlayAll" prefHeight="22.0" prefWidth="102.0" styleClass="btn-play" text="▶ Riproduci Tutto">
-                  <font>
-                     <Font size="10.0" />
-                  </font></Button>
-                    <Button fx:id="shuffleBtn" disable="true" onAction="#handleShuffle" styleClass="btn-secondary" text="🔀 Shuffle">
-                  <font>
-                     <Font size="10.0" />
-                  </font></Button>
-                    <Button fx:id="renamePlaylistBtn" disable="true" onAction="#handleRenamePlaylist" styleClass="btn-secondary" text="✏ Rinomina">
-                  <font>
-                     <Font size="10.0" />
-                  </font></Button>
-                    <Button fx:id="deletePlaylistBtn" disable="true" onAction="#handleDeletePlaylist" styleClass="btn-danger" text="🗑 Elimina">
-                  <font>
-                     <Font size="10.0" />
-                  </font></Button>
+                <HBox spacing="8" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <Button styleClass="btn-play" text="▶ Riproduci"
+                            onAction="#handlePlayAll" maxWidth="Infinity"/>
+                    <Button styleClass="btn-secondary" text="⇄ Shuffle"
+                            onAction="#handleShuffle" maxWidth="Infinity"/>
+                    <Button styleClass="btn-secondary" text="✎ Rinomina"
+                            onAction="#handleRenamePlaylist" maxWidth="Infinity"/>
+                    <Button styleClass="btn-danger" text="✕ Elimina"
+                            onAction="#handleDeletePlaylist" maxWidth="Infinity"/>
                 </HBox>
 
                 <!-- Filtri tracce -->
@@ -168,31 +154,31 @@
                     </HBox>
 
                     <!-- Controlli riproduzione -->
-                    <HBox alignment="CENTER" spacing="12.0">
+                    <HBox alignment="CENTER" spacing="12.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
                         <padding><Insets top="6" /></padding>
 
-                        <!-- Modalità riproduzione -->
-
-                        <ToggleButton fx:id="shuffleToggleBtn" styleClass="mode-btn" text="🔀 Shuffle">
-                     <font>
-                        <Font size="10.0" />
-                     </font></ToggleButton>
-                        <ToggleButton fx:id="loopBtn" styleClass="mode-btn" text="🔁 Loop">
-                     <font>
-                        <Font size="10.0" />
-                     </font></ToggleButton>
+                        <ToggleButton fx:id="shuffleToggleBtn" styleClass="mode-btn"
+                                      text="🔀 Shuffle" minWidth="-1">
+                            <font><Font size="11.0" /></font>
+                        </ToggleButton>
+                        <ToggleButton fx:id="loopBtn" styleClass="mode-btn"
+                                      text="🔁 Loop" minWidth="-1">
+                            <font><Font size="11.0" /></font>
+                        </ToggleButton>
 
                         <Separator orientation="VERTICAL" />
 
-                        <!-- Controlli -->
-                        <Button fx:id="prevBtn" onAction="#handlePrev" styleClass="ctrl-btn" text="⏮" />
-                        <Button fx:id="playPauseBtn" onAction="#handlePlayPause" styleClass="ctrl-btn-main" text="▶" />
-                        <Button fx:id="nextBtn" onAction="#handleNext" styleClass="ctrl-btn" text="⏭" />
+                        <Button fx:id="prevBtn" onAction="#handlePrev"
+                                styleClass="ctrl-btn" text="⏮" minWidth="46" minHeight="46"/>
+                        <Button fx:id="playPauseBtn" onAction="#handlePlayPause"
+                                styleClass="ctrl-btn-main" text="▶" minWidth="56" minHeight="56"/>
+                        <Button fx:id="nextBtn" onAction="#handleNext"
+                                styleClass="ctrl-btn" text="⏭" minWidth="46" minHeight="46"/>
 
                         <Separator orientation="VERTICAL" />
 
                         <!-- Info traccia corrente -->
-                        <VBox alignment="CENTER_LEFT" minWidth="200">
+                        <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS" minWidth="0">
                             <Label fx:id="nowPlayingTitle" styleClass="now-title" text="—" />
                             <Label fx:id="nowPlayingAuthor" styleClass="now-author" text="" />
                         </VBox>
