@@ -1,10 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
 <!--
     MainView.fxml — Finestra principale del Music Playlist Manager
@@ -13,39 +29,25 @@
       CENTER: tracce della playlist selezionata + player bar in basso
       RIGHT : (opzionale) dettaglio traccia selezionata
 -->
-<BorderPane xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="group6.java.group6.controllers.MainController"
-            prefWidth="1100" prefHeight="700"
-            styleClass="root-pane"
-            stylesheets="@app.css">
 
-    <fx:define>
-        <ToggleGroup fx:id="playModeGroup"/>
-    </fx:define>
+<BorderPane prefHeight="700" prefWidth="1100" styleClass="root-pane" stylesheets="@app.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.MainController">
 
     <!-- ═══════════════════════════════════════════════
          TOP — Barra di navigazione / intestazione
     ═══════════════════════════════════════════════ -->
     <top>
-        <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="12">
-            <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="top-bar">
+            <padding><Insets bottom="10" left="16" right="16" top="10" /></padding>
 
-            <Label text="🎵 Music Playlist Manager" styleClass="app-title"/>
+            <Label styleClass="app-title" text="🎵 Music Playlist Manager" />
 
-            <Region HBox.hgrow="ALWAYS"/>
+            <Region HBox.hgrow="ALWAYS" />
 
             <!-- Ricerca globale -->
-            <TextField fx:id="searchField"
-                       promptText="Cerca tracce o playlist…"
-                       prefWidth="240"
-                       styleClass="search-field"/>
+            <TextField fx:id="searchField" prefWidth="240" promptText="Cerca tracce o playlist…" styleClass="search-field" />
 
             <!-- Undo -->
-            <Button fx:id="undoBtn" text="↩ Annulla"
-                    onAction="#handleUndo"
-                    styleClass="btn-secondary"
-                    disable="true"/>
+            <Button fx:id="undoBtn" disable="true" onAction="#handleUndo" styleClass="btn-secondary" text="↩ Annulla" />
         </HBox>
     </top>
 
@@ -58,118 +60,73 @@
             <!-- ────────────────────────────────────────
                  PANNELLO SINISTRO — Playlist
             ──────────────────────────────────────── -->
-            <VBox styleClass="sidebar" minWidth="200" prefWidth="240">
-                <padding><Insets top="12" right="8" bottom="8" left="8"/></padding>
+            <VBox minWidth="200" prefWidth="240" styleClass="sidebar">
+                <padding><Insets bottom="8" left="8" right="8" top="12" /></padding>
 
-                <Label text="LE MIE PLAYLIST" styleClass="section-label"/>
+                <Label styleClass="section-label" text="LE MIE PLAYLIST" />
 
                 <!-- Lista playlist -->
-                <ListView fx:id="playlistListView"
-                          VBox.vgrow="ALWAYS"
-                          styleClass="playlist-list"/>
+                <ListView fx:id="playlistListView" styleClass="playlist-list" VBox.vgrow="ALWAYS" />
 
-                <Separator/>
+                <Separator />
 
                 <!-- Sezione playlist automatiche -->
-                <Label text="PLAYLIST AUTOMATICHE" styleClass="section-label"/>
-                <ListView fx:id="autoPlaylistListView"
-                          prefHeight="120"
-                          styleClass="playlist-list"/>
+                <Label styleClass="section-label" text="PLAYLIST AUTOMATICHE" />
+                <ListView fx:id="autoPlaylistListView" prefHeight="120" styleClass="playlist-list" />
 
-                <Separator/>
+                <Separator />
 
                 <!-- Azioni playlist -->
                 <VBox spacing="6">
-                    <padding><Insets top="8"/></padding>
-                    <Button text="＋ Nuova Playlist"
-                            fx:id="newPlaylistBtn"
-                            maxWidth="Infinity"
-                            onAction="#handleNewPlaylist"
-                            styleClass="btn-primary"/>
-                    <Button text="🔀 Genera da Genere"
-                            maxWidth="Infinity"
-                            onAction="#handleGenerateByGenre"
-                            styleClass="btn-secondary"/>
-                    <Button text="📅 Genera da Anno"
-                            maxWidth="Infinity"
-                            onAction="#handleGenerateByYear"
-                            styleClass="btn-secondary"/>
+                    <padding><Insets top="8" /></padding>
+                    <Button fx:id="newPlaylistBtn" maxWidth="Infinity" onAction="#handleNewPlaylist" styleClass="btn-primary" text="＋ Nuova Playlist" />
+                    <Button maxWidth="Infinity" onAction="#handleGenerateByGenre" styleClass="btn-secondary" text="🔀 Genera da Genere" />
+                    <Button maxWidth="Infinity" onAction="#handleGenerateByYear" styleClass="btn-secondary" text="📅 Genera da Anno" />
                 </VBox>
             </VBox>
 
             <!-- ────────────────────────────────────────
                  PANNELLO CENTRALE — Tracce + Player
             ──────────────────────────────────────── -->
-            <VBox SplitPane.resizableWithParent="true" styleClass="main-panel">
+            <VBox styleClass="main-panel" SplitPane.resizableWithParent="true">
 
                 <!-- Intestazione playlist selezionata -->
-                <HBox styleClass="playlist-header" alignment="CENTER_LEFT" spacing="10">
-                    <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
-                    <Label fx:id="playlistNameLabel"
-                           text="Nessuna playlist selezionata"
-                           styleClass="playlist-title"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Button text="▶ Riproduci Tutto"
-                            fx:id="playAllBtn"
-                            onAction="#handlePlayAll"
-                            styleClass="btn-play"
-                            disable="true"/>
-                    <Button text="🔀 Shuffle"
-                            fx:id="shuffleBtn"
-                            onAction="#handleShuffle"
-                            styleClass="btn-secondary"
-                            disable="true"/>
-                    <Button text="✏️ Rinomina"
-                            fx:id="renamePlaylistBtn"
-                            onAction="#handleRenamePlaylist"
-                            styleClass="btn-secondary"
-                            disable="true"/>
-                    <Button text="🗑 Elimina"
-                            fx:id="deletePlaylistBtn"
-                            onAction="#handleDeletePlaylist"
-                            styleClass="btn-danger"
-                            disable="true"/>
+                <HBox spacing="8" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                    <Button styleClass="btn-play" text="▶ Riproduci"
+                            onAction="#handlePlayAll" maxWidth="Infinity"/>
+                    <Button styleClass="btn-secondary" text="⇄ Shuffle"
+                            onAction="#handleShuffle" maxWidth="Infinity"/>
+                    <Button styleClass="btn-secondary" text="✎ Rinomina"
+                            onAction="#handleRenamePlaylist" maxWidth="Infinity"/>
+                    <Button styleClass="btn-danger" text="✕ Elimina"
+                            onAction="#handleDeletePlaylist" maxWidth="Infinity"/>
                 </HBox>
 
                 <!-- Filtri tracce -->
-                <HBox styleClass="filter-bar" spacing="8" alignment="CENTER_LEFT">
-                    <padding><Insets top="6" right="16" bottom="6" left="16"/></padding>
-                    <Label text="Filtra:" styleClass="filter-label"/>
-                    <ComboBox fx:id="genreFilter"
-                              promptText="Genere"
-                              prefWidth="130"
-                              onAction="#handleFilter"/>
-                    <ComboBox fx:id="yearFilter"
-                              promptText="Anno"
-                              prefWidth="100"
-                              onAction="#handleFilter"/>
-                    <Button text="✕ Reset"
-                            onAction="#handleResetFilter"
-                            styleClass="btn-link"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Button text="＋ Aggiungi Traccia"
-                            fx:id="addTrackBtn"
-                            onAction="#handleAddTrack"
-                            styleClass="btn-primary"
-                            disable="true"/>
+                <HBox alignment="CENTER_LEFT" spacing="8" styleClass="filter-bar">
+                    <padding><Insets bottom="6" left="16" right="16" top="6" /></padding>
+                    <Label styleClass="filter-label" text="Filtra:" />
+                    <ComboBox fx:id="genreFilter" onAction="#handleFilter" prefWidth="130" promptText="Genere" />
+                    <ComboBox fx:id="yearFilter" onAction="#handleFilter" prefWidth="100" promptText="Anno" />
+                    <Button onAction="#handleResetFilter" styleClass="btn-link" text="✕ Reset" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button fx:id="addTrackBtn" disable="true" onAction="#handleAddTrack" styleClass="btn-primary" text="＋ Aggiungi Traccia" />
                 </HBox>
 
                 <!-- Tabella tracce -->
-                <TableView fx:id="tracksTableView"
-                           VBox.vgrow="ALWAYS"
-                           styleClass="tracks-table">
+                <TableView fx:id="tracksTableView" styleClass="tracks-table" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="colNow"     text="#"        prefWidth="36"  sortable="false"/>
-                        <TableColumn fx:id="colTitle"   text="Titolo"   prefWidth="220"/>
-                        <TableColumn fx:id="colAuthor"  text="Autore"   prefWidth="160"/>
-                        <TableColumn fx:id="colGenre"   text="Genere"   prefWidth="110"/>
-                        <TableColumn fx:id="colYear"    text="Anno"     prefWidth="70"/>
-                        <TableColumn fx:id="colLength"  text="Durata"   prefWidth="70"/>
-                        <TableColumn fx:id="colTags"    text="Tag"      prefWidth="100" sortable="false"/>
-                        <TableColumn fx:id="colActions" text=""         prefWidth="110" sortable="false"/>
+                        <TableColumn fx:id="colNow" prefWidth="36" sortable="false" text="#" />
+                        <TableColumn fx:id="colTitle" prefWidth="220" text="Titolo" />
+                        <TableColumn fx:id="colAuthor" prefWidth="160" text="Autore" />
+                        <TableColumn fx:id="colGenre" prefWidth="110" text="Genere" />
+                        <TableColumn fx:id="colYear" prefWidth="70" text="Anno" />
+                        <TableColumn fx:id="colLength" prefWidth="70" text="Durata" />
+                        <TableColumn fx:id="colTags" prefWidth="100" sortable="false" text="Tag" />
+                        <TableColumn fx:id="colActions" prefWidth="110" sortable="false" text="" />
                     </columns>
                     <placeholder>
-                        <Label text="Nessuna traccia. Seleziona una playlist o aggiungine una." styleClass="empty-label"/>
+                        <Label styleClass="empty-label" text="Nessuna traccia. Seleziona una playlist o aggiungine una." />
                     </placeholder>
                 </TableView>
 
@@ -177,47 +134,53 @@
                      HOME — Tracce più riprodotte
                      (visibile solo nella home)
                 ───────────────────────────────── -->
-                <VBox fx:id="homeSectionBox" styleClass="home-section" managed="false" visible="false">
-                    <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
-                    <Label text="🔥 Più Riprodotte" styleClass="section-label"/>
-                    <ListView fx:id="topTracksListView" prefHeight="120" styleClass="top-tracks-list"/>
+                <VBox fx:id="homeSectionBox" managed="false" styleClass="home-section" visible="false">
+                    <padding><Insets bottom="10" left="16" right="16" top="10" /></padding>
+                    <Label styleClass="section-label" text="🔥 Più Riprodotte" />
+                    <ListView fx:id="topTracksListView" prefHeight="120" styleClass="top-tracks-list" />
                 </VBox>
 
                 <!-- ─────────────────────────────────
                      PLAYER BAR in basso
                 ───────────────────────────────── -->
                 <VBox fx:id="playerBar" styleClass="player-bar">
-                    <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+                    <padding><Insets bottom="10" left="20" right="20" top="10" /></padding>
 
                     <!-- Progress bar -->
                     <HBox alignment="CENTER" spacing="10">
-                        <Label fx:id="currentTimeLabel" text="0:00" styleClass="time-label"/>
-                        <Slider fx:id="progressSlider" HBox.hgrow="ALWAYS" styleClass="progress-slider"/>
-                        <Label fx:id="totalTimeLabel"   text="0:00" styleClass="time-label"/>
+                        <Label fx:id="currentTimeLabel" styleClass="time-label" text="0:00" />
+                        <Slider fx:id="progressSlider" styleClass="progress-slider" HBox.hgrow="ALWAYS" />
+                        <Label fx:id="totalTimeLabel" styleClass="time-label" text="0:00" />
                     </HBox>
 
                     <!-- Controlli riproduzione -->
-                    <HBox alignment="CENTER" spacing="16">
-                        <padding><Insets top="6"/></padding>
+                    <HBox alignment="CENTER" spacing="12.0" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                        <padding><Insets top="6" /></padding>
 
-                        <!-- Modalità riproduzione -->
+                        <ToggleButton fx:id="shuffleToggleBtn" styleClass="mode-btn"
+                                      text="🔀 Shuffle" minWidth="-1">
+                            <font><Font size="11.0" /></font>
+                        </ToggleButton>
+                        <ToggleButton fx:id="loopBtn" styleClass="mode-btn"
+                                      text="🔁 Loop" minWidth="-1">
+                            <font><Font size="11.0" /></font>
+                        </ToggleButton>
 
-                        <ToggleButton fx:id="shuffleToggleBtn" text="🔀 Shuffle" toggleGroup="$playModeGroup" styleClass="mode-btn"/>
-                        <ToggleButton fx:id="loopBtn"    text="🔁 Loop"  toggleGroup="$playModeGroup" styleClass="mode-btn"/>
+                        <Separator orientation="VERTICAL" />
 
-                        <Separator orientation="VERTICAL"/>
+                        <Button fx:id="prevBtn" onAction="#handlePrev"
+                                styleClass="ctrl-btn" text="⏮" minWidth="46" minHeight="46"/>
+                        <Button fx:id="playPauseBtn" onAction="#handlePlayPause"
+                                styleClass="ctrl-btn-main" text="▶" minWidth="56" minHeight="56"/>
+                        <Button fx:id="nextBtn" onAction="#handleNext"
+                                styleClass="ctrl-btn" text="⏭" minWidth="46" minHeight="46"/>
 
-                        <!-- Controlli -->
-                        <Button fx:id="prevBtn"   text="⏮" onAction="#handlePrev"   styleClass="ctrl-btn"/>
-                        <Button fx:id="playPauseBtn" text="▶" onAction="#handlePlayPause" styleClass="ctrl-btn-main"/>
-                        <Button fx:id="nextBtn"   text="⏭" onAction="#handleNext"   styleClass="ctrl-btn"/>
-
-                        <Separator orientation="VERTICAL"/>
+                        <Separator orientation="VERTICAL" />
 
                         <!-- Info traccia corrente -->
-                        <VBox alignment="CENTER_LEFT" minWidth="200">
-                            <Label fx:id="nowPlayingTitle"  text="—"    styleClass="now-title"/>
-                            <Label fx:id="nowPlayingAuthor" text=""     styleClass="now-author"/>
+                        <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS" minWidth="0">
+                            <Label fx:id="nowPlayingTitle" styleClass="now-title" text="—" />
+                            <Label fx:id="nowPlayingAuthor" styleClass="now-author" text="" />
                         </VBox>
                     </HBox>
                 </VBox>
@@ -228,63 +191,66 @@
                  (visibile solo quando una traccia
                   è selezionata nella tabella)
             ──────────────────────────────────────── -->
-            <VBox fx:id="detailPanel"
-                  styleClass="detail-panel"
-                  minWidth="200" prefWidth="240">
-                <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+            <VBox fx:id="detailPanel" minWidth="200" prefWidth="240" styleClass="detail-panel">
+                <padding><Insets bottom="16" left="16" right="16" top="16" /></padding>
 
-                <Label text="DETTAGLIO TRACCIA" styleClass="section-label"/>
+                <Label styleClass="section-label" text="DETTAGLIO TRACCIA" />
 
-                <GridPane styleClass="detail-grid" hgap="8" vgap="8">
-                    <padding><Insets top="12"/></padding>
-                    <Label text="Titolo:"   GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="detail-key"/>
-                    <Label fx:id="detailTitle"  GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="detail-value"/>
+                <GridPane hgap="8" styleClass="detail-grid" vgap="8">
+                    <padding><Insets top="12" /></padding>
+                    <Label styleClass="detail-key" text="Titolo:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <Label fx:id="detailTitle" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                    <Label text="Autore:"   GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="detail-key"/>
-                    <Label fx:id="detailAuthor" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="detail-value"/>
+                    <Label styleClass="detail-key" text="Autore:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <Label fx:id="detailAuthor" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                    <Label text="Genere:"   GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="detail-key"/>
-                    <Label fx:id="detailGenre"  GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="detail-value"/>
+                    <Label styleClass="detail-key" text="Genere:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <Label fx:id="detailGenre" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                    <Label text="Anno:"     GridPane.columnIndex="0" GridPane.rowIndex="3" styleClass="detail-key"/>
-                    <Label fx:id="detailYear"   GridPane.columnIndex="1" GridPane.rowIndex="3" styleClass="detail-value"/>
+                    <Label styleClass="detail-key" text="Anno:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                    <Label fx:id="detailYear" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-                    <Label text="Durata:"   GridPane.columnIndex="0" GridPane.rowIndex="4" styleClass="detail-key"/>
-                    <Label fx:id="detailLength" GridPane.columnIndex="1" GridPane.rowIndex="4" styleClass="detail-value"/>
+                    <Label styleClass="detail-key" text="Durata:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                    <Label fx:id="detailLength" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               <columnConstraints>
+                  <ColumnConstraints />
+                  <ColumnConstraints />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+               </rowConstraints>
                 </GridPane>
 
                 <Separator>
-                    <VBox.margin><Insets top="12" bottom="12"/></VBox.margin>
+                    <VBox.margin><Insets bottom="12" top="12" /></VBox.margin>
                 </Separator>
 
-                <Label text="TAG VISIVI" styleClass="section-label"/>
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <padding><Insets top="8"/></padding>
-                    <CheckBox fx:id="tagFavourite" text="⭐ Preferita"  onAction="#handleTagChange"/>
-                    <CheckBox fx:id="tagExplicit"  text="🅴 Esplicita"  onAction="#handleTagChange"/>
-                    <CheckBox fx:id="tagNewRelease" text="🆕 Novità"   onAction="#handleTagChange"/>
+                <Label styleClass="section-label" text="TAG VISIVI" />
+                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                    <padding><Insets top="8" /></padding>
+                    <CheckBox fx:id="tagFavourite" onAction="#handleTagChange" prefHeight="15.0" prefWidth="73.0" text="⭐ Preferita">
+                  <font>
+                     <Font size="10.0" />
+                  </font></CheckBox>
+                    <CheckBox fx:id="tagExplicit" onAction="#handleTagChange" prefHeight="15.0" prefWidth="76.0" text="🅴 Esplicita">
+                  <font>
+                     <Font size="10.0" />
+                  </font></CheckBox>
+                    <CheckBox fx:id="tagNewRelease" onAction="#handleTagChange" text="🆕 Novità" />
                 </HBox>
 
                 <Separator>
-                    <VBox.margin><Insets top="12" bottom="12"/></VBox.margin>
+                    <VBox.margin><Insets bottom="12" top="12" /></VBox.margin>
                 </Separator>
 
                 <VBox spacing="8">
-                    <Button text="✏️ Modifica Traccia"
-                            maxWidth="Infinity"
-                            fx:id="editTrackBtn"
-                            onAction="#handleEditTrack"
-                            styleClass="btn-primary"/>
-                    <Button text="🗑 Rimuovi dalla Playlist"
-                            maxWidth="Infinity"
-                            fx:id="removeFromPlaylistBtn"
-                            onAction="#handleRemoveFromPlaylist"
-                            styleClass="btn-danger"/>
-                    <Button text="🗑 Elimina Traccia"
-                            maxWidth="Infinity"
-                            fx:id="deleteTrackBtn"
-                            onAction="#handleDeleteTrack"
-                            styleClass="btn-danger"/>
+                    <Button fx:id="editTrackBtn" maxWidth="Infinity" onAction="#handleEditTrack" styleClass="btn-primary" text="✏ Modifica Traccia" />
+                    <Button fx:id="removeFromPlaylistBtn" maxWidth="Infinity" onAction="#handleRemoveFromPlaylist" styleClass="btn-danger" text="🗑 Rimuovi dalla Playlist" />
+                    <Button fx:id="deleteTrackBtn" maxWidth="Infinity" onAction="#handleDeleteTrack" styleClass="btn-danger" text="🗑 Elimina Traccia" />
                 </VBox>
             </VBox>
 
