@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+    PlaylistDialog.fxml — Dialogo per creare o rinominare una playlist
+    Usato sia in "Nuova Playlist" sia in "Rinomina Playlist".
+-->
+<DialogPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="group6.java.group6.PlaylistDialogController"
+            prefWidth="380"
+            stylesheets="@app.css">
+
+    <header>
+        <Label fx:id="dialogTitle" text="Nuova Playlist" styleClass="dialog-title"/>
+    </header>
+
+    <content>
+        <VBox spacing="12">
+            <padding><Insets top="8" bottom="8"/></padding>
+
+            <Label text="Nome playlist *" styleClass="form-label"/>
+            <TextField fx:id="nameField"
+                       promptText="Es. Rock Classics"
+                       maxWidth="Infinity"/>
+
+            <Label fx:id="errorLabel"
+                   text=""
+                   styleClass="error-label"
+                   managed="false" visible="false"/>
+        </VBox>
+    </content>
+
+    <buttonTypes>
+        <ButtonType buttonData="OK_DONE"     text="Conferma"/>
+        <ButtonType buttonData="CANCEL_CLOSE" text="Annulla"/>
+    </buttonTypes>
+
+</DialogPane>
