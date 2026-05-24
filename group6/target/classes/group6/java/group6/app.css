@@ -330,11 +330,14 @@
 }
 
 /* ── CheckBox ── */
-.check-box .mark {
-    -fx-background-color: #e94560;
-}
 .check-box {
     -fx-text-fill: #e0e0e0;
+    -fx-min-width: -1;        /* usa larghezza calcolata */
+    -fx-pref-width: -1;
+}
+
+.check-box .mark {
+    -fx-background-color: #e94560;
 }
 
 /* ── Separator ── */
