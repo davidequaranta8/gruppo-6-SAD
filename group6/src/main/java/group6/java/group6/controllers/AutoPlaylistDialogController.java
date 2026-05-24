@@ -1,4 +1,4 @@
-package group6.java.group6;
+package group6.java.group6.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;

@@ -15,7 +15,7 @@
 -->
 <BorderPane xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="group6.java.group6.MainController"
+            fx:controller="group6.java.group6.controllers.MainController"
             prefWidth="1100" prefHeight="700"
             styleClass="root-pane"
             stylesheets="@app.css">

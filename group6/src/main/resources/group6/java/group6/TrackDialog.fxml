@@ -11,7 +11,7 @@
 -->
 <DialogPane xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="group6.java.group6.TrackDialogController"
+            fx:controller="group6.java.group6.controllers.TrackDialogController"
             prefWidth="420"
             styleClass="dialog-pane"
             stylesheets="@app.css">

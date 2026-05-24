@@ -10,7 +10,7 @@
 -->
 <DialogPane xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="group6.java.group6.PlaylistDialogController"
+            fx:controller="group6.java.group6.controllers.PlaylistDialogController"
             prefWidth="380"
             stylesheets="@../app.css">
 
