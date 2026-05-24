@@ -28,16 +28,16 @@ public class DatabaseConnection {
     }
 
     //Static method provided to provide the instance of this class
-    public static synchronized Connection getInstance() {
+    public static synchronized DatabaseConnection getInstance() {
         if (instance == null) {
             instance = new DatabaseConnection();
         }
-        return instance.getSqlConnection();
+        return instance;
     }
 
     //Useful method to obtain the real sql connection provided by the jdbc driver.
     //Example call will be: Connection realConnection = DatabaseConnection.getInstance().getSqlConnection()
-    private Connection getSqlConnection() {
+    public Connection getSqlConnection() {
         return sqlConnection;
     }
 }

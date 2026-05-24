@@ -2,12 +2,14 @@ package group6.java.group6;
 
 import atlantafx.base.theme.CupertinoDark;
 import atlantafx.base.theme.PrimerDark;
+import group6.java.group6.db.DatabaseConnection;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.sql.Connection;
 
 public class HelloApplication extends Application {
     @Override
@@ -18,5 +20,7 @@ public class HelloApplication extends Application {
         stage.setTitle("Music Playlist Manager");
         stage.setScene(scene);
         stage.show();
+        Connection conn = DatabaseConnection.getInstance().getSqlConnection();
+
     }
 }
