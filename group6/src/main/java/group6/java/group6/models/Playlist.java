@@ -1,5 +1,6 @@
 package group6.java.group6.models;
-import java.util.HashMap;
+
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -11,13 +12,12 @@ public class Playlist {
     public Playlist(String title) {
         this.title = title;
         this.countPlayed=0;
-        tracks = new HashMap<Integer, Track>();
+        tracks = new LinkedHashMap<Integer, Track>();
     }
 
     public String getTitle() {
         return title;
     }
-
 
     public int getCountPlayed() {
         return countPlayed;
@@ -26,4 +26,5 @@ public class Playlist {
     public Map<Integer, Track> getTracks() {
         return tracks;
     }
+
 }
