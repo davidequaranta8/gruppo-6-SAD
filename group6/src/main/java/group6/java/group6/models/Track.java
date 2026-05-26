@@ -28,75 +28,38 @@ public class Track {
 
     // Getter e Setter
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id;    }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getTitle() { return title;    }
 
-    public String getAuthor() {
-        return author;
-    }
+    public String getAuthor() { return author;    }
 
-    public double getLength() {
-        return length;
-    }
+    public double getLength() { return length;    }
 
-    public Genre getGenre() {
-        return genre;
-    }
+    public Genre getGenre(){ return genre;    }
 
-    public int getYear() {
-        return year;
-    }
+    public int getYear() { return year;    }
 
-    public boolean isFavourite() {
-        return favourite;
-    }
+    public boolean isFavourite() { return favourite;    }
 
-    public boolean isExplicit() {
-        return explicit;
-    }
+    public boolean isExplicit() { return explicit;    }
 
-    public boolean isNewRelease() {
-        return newRelease;
-    }
+    public boolean isNewRelease() { return newRelease;    }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public void setId(int id) { this.id = id;    }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public void setTitle(String title) { this.title = title;    }
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
+    public void setAuthor(String author) { this.author = author;    }
 
-    public void setLength(double length) {
-        this.length = length;
-    }
+    public void setLength(double length) { this.length = length;    }
 
-    public void setGenre(Genre genre) {
-        this.genre = genre;
-    }
+    public void setGenre(Genre genre) { this.genre = genre;    }
 
-    public void setYear(int year) {
-        this.year = year;
-    }
+    public void setYear(int year) { this.year = year;    }
 
-    public void setFavourite(boolean favourite) {
-        this.favourite = favourite;
-    }
+    public void setFavourite(boolean favourite) { this.favourite = favourite;    }
 
-    public void setExplicit(boolean explicit) {
-        this.explicit = explicit;
-    }
-
-    public void setNewRelease(boolean newRelease) {
-        this.newRelease = newRelease;
-    }
+    public void setExplicit(boolean explicit) { this.explicit = explicit; }
+    public void setNewRelease(boolean newRelease) { this.newRelease = newRelease; }
 }
