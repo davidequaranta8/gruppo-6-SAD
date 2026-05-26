@@ -12,6 +12,7 @@ on:
     branches:
       - main
       - master
+      - def-scene
 
 permissions:
   issues: write
