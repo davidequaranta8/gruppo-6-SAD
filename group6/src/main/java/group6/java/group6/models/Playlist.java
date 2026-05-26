@@ -3,6 +3,7 @@ package group6.java.group6.models;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/* Playlist model */
 
 public class Playlist {
     private String title; //title of playlist
@@ -19,12 +20,23 @@ public class Playlist {
         return title;
     }
 
+    /*Get how many times a playlist was played*/
     public int getCountPlayed() {
         return countPlayed;
     }
 
+
+    /*Get all the tracks of a playlist*/
     public Map<Integer, Track> getTracks() {
         return tracks;
     }
+
+    /*Add a track in the playlist*/
+    public void addTrack(Track track){
+        tracks.put(track.getId(),track);
+    }
+
+
+    //TODO: Implement removeTrack method of class playlist
 
 }
