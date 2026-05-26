@@ -14,7 +14,7 @@ public class Track {
     private boolean newRelease;
 
     // Costruttore
-    public Track(int id, String title, String author, double length, String genre, int year, boolean favourite, boolean explicit, boolean newRelease){
+    public Track(int id, String title, String author, double length, Genre genre, int year, boolean favourite, boolean explicit, boolean newRelease){
         this.id = id;
         this.title = title;
         this.author = author;
@@ -44,7 +44,7 @@ public class Track {
         return length;
     }
 
-    public String getGenre() {
+    public Genre getGenre() {
         return genre;
     }
 
@@ -80,7 +80,7 @@ public class Track {
         this.length = length;
     }
 
-    public void setGenre(String genre) {
+    public void setGenre(Genre genre) {
         this.genre = genre;
     }
 
