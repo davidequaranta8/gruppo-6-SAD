@@ -10,9 +10,9 @@ import java.sql.Statement;
 
 // Singleton pattern applied here
 
-public class DatabaseConnection {
+public class DatabaseResource {
 
-    private static DatabaseConnection instance; //Shared instance
+    private static DatabaseResource instance; //Shared instance
     private Connection sqlConnection; //connection object got from the driver
 
 
@@ -22,7 +22,7 @@ public class DatabaseConnection {
 
 
     //Private constructor to respect the singleton pattern
-    private DatabaseConnection() {
+    private DatabaseResource() {
         try {
             this.sqlConnection = DriverManager.getConnection(url, user, password);
             initSchema(); //initialize the schema if not present
@@ -33,9 +33,9 @@ public class DatabaseConnection {
     }
 
     //Static method provided to provide the instance of this class
-    public static synchronized DatabaseConnection getInstance() {
+    public static synchronized DatabaseResource getInstance() {
         if (instance == null) {
-            instance = new DatabaseConnection();
+            instance = new DatabaseResource();
         }
         return instance;
     }
