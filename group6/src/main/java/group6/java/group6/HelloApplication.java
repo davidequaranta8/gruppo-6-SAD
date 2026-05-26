@@ -1,6 +1,7 @@
 package group6.java.group6;
 
 import atlantafx.base.theme.CupertinoDark;
+import group6.java.group6.db.DatabaseResource;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -17,5 +18,6 @@ public class HelloApplication extends Application {
         stage.setTitle("Music Playlist Manager");
         stage.setScene(scene);
         stage.show();
+        DatabaseResource.getInstance(); // per creare le table del DB
     }
 }
