@@ -13,7 +13,7 @@ public class Track {
     private int countPlayed;
 
     // Costruttore
-    public Track(int id, String title, String author, double length, Genre genre, int year,String tag ){
+    public Track(int id, String title, String author, double length, Genre genre, int year,String tag){
         this.id = id;
         this.title = title;
         this.author = author;
@@ -49,7 +49,7 @@ public class Track {
         this.tag = tag;
     }
 
-    public void setId(int id) { this.id = id;    }
+    private void setId(int id) { this.id = id;    }
 
     public void setTitle(String title) { this.title = title;    }
 
@@ -65,5 +65,24 @@ public class Track {
         countPlayed++;
     }
 
+    public void updateTrack(String title, String author, double length, Genre genre, int year,String tag){
+        setAuthor(author);
+        setGenre(genre);
+        setLength(length);
+        setYear(year);
+        setTitle(title);
+        setTag(tag);
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Track track = (Track) o;
+        return id == track.id;
+    }
 
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(id);
+    }
 }
