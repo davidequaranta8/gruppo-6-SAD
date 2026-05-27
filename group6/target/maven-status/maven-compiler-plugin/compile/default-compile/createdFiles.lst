@@ -1,9 +1,4 @@
-group6\java\group6\controllers\HelloController.class
-group6\java\group6\controllers\MainController.class
-group6\java\group6\controllers\AutoPlaylistDialogController.class
+group6/java/group6/models/Playlist.class
 module-info.class
-group6\java\group6\Launcher.class
-group6\java\group6\controllers\TrackDialogController.class
-group6\java\group6\HelloApplication.class
-group6\java\group6\db\DatabaseConnection.class
-group6\java\group6\controllers\PlaylistDialogController.class
+group6/java/group6/enumerations/PlaybackModeEnum.class
+group6/java/group6/enumerations/Genre.class
