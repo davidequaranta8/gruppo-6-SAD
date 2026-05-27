@@ -36,6 +36,11 @@ public class Playlist {
         tracks.put(track.getId(),track);
     }
 
+
+    /*Increment count played of 1*/
+    public void incrementCountPlayed(){
+        countPlayed++;
+    }
 //TODO: Implement method for removing a track
 
 }

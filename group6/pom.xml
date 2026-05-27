@@ -72,6 +72,14 @@
             <version>12.3.1</version>
         </dependency>
 
+        <!-- JUnit dependency for testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope> <!-- Indicates that this dependency is only required for the test phase -->
+        </dependency>
+
 
 
     </dependencies>

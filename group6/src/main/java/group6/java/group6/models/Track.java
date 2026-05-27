@@ -9,24 +9,25 @@ public class Track {
     private double length;
     private Genre genre;
     private int year;
-    private boolean favourite;
-    private boolean explicit;
-    private boolean newRelease;
+    private String tag;
+    private int countPlayed;
 
     // Costruttore
-    public Track(int id, String title, String author, double length, Genre genre, int year, boolean favourite, boolean explicit, boolean newRelease){
+    public Track(int id, String title, String author, double length, Genre genre, int year,String tag ){
         this.id = id;
         this.title = title;
         this.author = author;
         this.length = length;
         this.genre = genre;
         this.year = year;
-        this.favourite = favourite;
-        this.explicit = explicit;
-        this.newRelease = newRelease;
+        this.tag = tag;
+        countPlayed = 0;
     }
 
-    // Getter e Setter
+
+    public int getCountPlayed() {
+        return countPlayed;
+    }
 
     public int getId() { return id;    }
 
@@ -40,11 +41,13 @@ public class Track {
 
     public int getYear() { return year;    }
 
-    public boolean isFavourite() { return favourite;    }
+    public String getTag() {
+        return tag;
+    }
 
-    public boolean isExplicit() { return explicit;    }
-
-    public boolean isNewRelease() { return newRelease;    }
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
 
     public void setId(int id) { this.id = id;    }
 
@@ -58,8 +61,9 @@ public class Track {
 
     public void setYear(int year) { this.year = year;    }
 
-    public void setFavourite(boolean favourite) { this.favourite = favourite;    }
+    public void incrementCountPlayed(){
+        countPlayed++;
+    }
 
-    public void setExplicit(boolean explicit) { this.explicit = explicit; }
-    public void setNewRelease(boolean newRelease) { this.newRelease = newRelease; }
+
 }
