@@ -8,7 +8,6 @@ public class Library {
 
     public Library(Set<Track> tracks) {
         this.tracks = new HashSet<Track>();
-
     }
 
     public Set<Track> getTracks() {
@@ -21,18 +20,17 @@ public class Library {
 
     public void addTrack(Track t){
         if(!tracks.contains(t))
-            if(tracks.add(t))
-                numTrack++;
+            tracks.add(t);
         }
 
     public void removeTrack(Track t){
         if(tracks.contains(t))
-            tracks.remove(t)
+            tracks.remove(t);
 
     }
 
     public void updateTrack(Track oldT,Track newT){
-        if (tracks.remove(oldT)) {
+        if (tracks.remove(oldT)){
             tracks.add(newT);
         }
 
