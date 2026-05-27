@@ -6,6 +6,7 @@ import java.util.Map;
 /* Playlist model */
 
 public class Playlist {
+    private int id; /*unique identifier of a playlist*/
     private String title; //title of playlist
     private int countPlayed; //to track how many times playlist was played
     private Map<Integer ,Track> tracks; //(int : id_track ; Track: track associated with id_track)
@@ -14,6 +15,22 @@ public class Playlist {
         this.title = title;
         this.countPlayed=0;
         tracks = new LinkedHashMap<Integer, Track>();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setCountPlayed(int countPlayed) {
+        this.countPlayed = countPlayed;
     }
 
     public String getTitle() {
@@ -41,6 +58,8 @@ public class Playlist {
     public void incrementCountPlayed(){
         countPlayed++;
     }
+
+
 //TODO: Implement method for removing a track
 
 }

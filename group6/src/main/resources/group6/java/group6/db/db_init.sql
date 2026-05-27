@@ -2,7 +2,8 @@
 
 -- Playlist table
 CREATE TABLE IF NOT EXISTS Playlist (
-    title VARCHAR(255) PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255),
     count_played INTEGER DEFAULT 0
 );
 
@@ -20,10 +21,10 @@ CREATE TABLE IF NOT EXISTS Track (
 
 /*Association table playlist-track since we are dealing with N-N association*/
 CREATE TABLE IF NOT EXISTS Playlist_Track (
-    playlist_title VARCHAR(255),
+    playlist_id INTEGER,
     track_id INTEGER,
-    PRIMARY KEY (playlist_title, track_id),
-    FOREIGN KEY (playlist_title) REFERENCES Playlist(title) ON DELETE CASCADE,
+    PRIMARY KEY (playlist_id, track_id),
+    FOREIGN KEY (playlist_id) REFERENCES Playlist(id) ON DELETE CASCADE,
     FOREIGN KEY (track_id) REFERENCES Track(id) ON DELETE CASCADE
 );
 
