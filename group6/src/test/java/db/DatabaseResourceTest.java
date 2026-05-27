@@ -19,7 +19,6 @@ public class DatabaseResourceTest {
     {
         Connection sqlConnection = resource.getSqlConnection();
         assertNotNull(sqlConnection);
-
     }
 
 
