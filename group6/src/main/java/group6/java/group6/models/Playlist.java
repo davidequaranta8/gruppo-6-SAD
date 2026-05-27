@@ -60,6 +60,11 @@ public class Playlist {
     }
 
 
-//TODO: Implement method for removing a track
+    /*Remove a track from a playlist*/
+    public void removeTrack(Integer id){
+        if(tracks.containsKey(id)){
+            tracks.remove(id);
+        }
+    }
 
 }
