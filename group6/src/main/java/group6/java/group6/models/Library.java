@@ -1,38 +1,12 @@
 package group6.java.group6.models;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Collections;
+public interface Library { // interfaccia Subject
+    void addObserver(LibraryObserver observer); // metodo attach del pattern Observer
+    void removeObserver(LibraryObserver observer); // metodo detach del pattern Observer
+    void notifyObservers(); // metodo notify del pattern Observer
 
-public class Library {
-    private Set<Track> tracks;
-    private static Library instance; // Shared instance
-
-    private Library() {
-        this.tracks = new HashSet<Track>();
-    }
-
-    public static synchronized Library getInstance() {
-        if (instance == null) {
-            instance = new Library();
-        }
-        return instance;
-    }
-
-    public Set<Track> getTracks() {
-        return Collections.unmodifiableSet(tracks); // restituisce un Set immutabile
-    }
-
-    public void setTracks(Set<Track> tracks) {
-        this.tracks = tracks;
-    }
-
-    public void addTrack(Track t) {
-        tracks.add(t);
-    }
-
-    public void removeTrack(Track t){
-        tracks.remove(t);
-    }
+    // vedere se introdurre anche i metodi interni alla classe concreteLibrary quindi addTrack,removeTrack, ecc..
+    // perchè farlo ci permette di rispettare il principio di Inversione delle Dipendenze perchè lavoriamo con l'interfaccia e non con la classe LibraryConcrete
+    // inoltre vedere se usare le interfacce native Observable o meno (l'usare comporta il non usare nomi di metodi contestualizzati)
 
 }

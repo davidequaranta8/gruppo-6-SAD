@@ -1,14 +1,18 @@
 package group6.java.group6.controllers;
 
 import group6.java.group6.HelloApplication;
+import group6.java.group6.models.Library;
+import group6.java.group6.models.LibraryObserver;
+import group6.java.group6.models.ConcreteLibrary;
+import group6.java.group6.models.Track;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-
 import java.io.IOException;
 
-public class MainController {
+// questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
+public class MainController implements LibraryObserver{
 
     // ── Top bar ──────────────────────────────────────────────────────────────
     @FXML private TextField searchField;
@@ -32,7 +36,7 @@ public class MainController {
     @FXML private Button addTrackBtn;
 
     // ── Tabella tracce ────────────────────────────────────────────────────────
-    @FXML private TableView<String> tracksTableView;
+    @FXML private TableView<Track> tracksTableView;
     @FXML private TableColumn<String, String> colNow;
     @FXML private TableColumn<String, String> colTitle;
     @FXML private TableColumn<String, String> colAuthor;
@@ -81,6 +85,10 @@ public class MainController {
         if (addTrackBtn != null)   addTrackBtn.setDisable(false);
         if (RenamePlaylist != null) RenamePlaylist.setDisable(false);
         if (editTrackBtn != null)  editTrackBtn.setDisable(false);
+
+        Library myLibrary = ConcreteLibrary.getInstance();
+        myLibrary.addObserver(this); // inserisco l'observer nella lista degli osservatori da aggiornare
+        updateTracksTable(); // effettuo uno primo aggiornamento della tabella
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -156,5 +164,14 @@ public class MainController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onLibraryChanged() { // metodo ricavato da LibraryObserver per il pattern Observer
+        updateTracksTable();
+    }
+
+    private void updateTracksTable() {
+        // qui inseriamo la logica per aggiornare la TableView
     }
 }
