@@ -6,9 +6,17 @@ import java.util.Collections;
 
 public class Library {
     private Set<Track> tracks;
+    private static Library instance; // Shared instance
 
-    public Library() {
+    private Library() {
         this.tracks = new HashSet<Track>();
+    }
+
+    public static synchronized Library getInstance() {
+        if (instance == null) {
+            instance = new Library();
+        }
+        return instance;
     }
 
     public Set<Track> getTracks() {
