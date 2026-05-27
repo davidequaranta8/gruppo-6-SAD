@@ -1,14 +1,14 @@
 package group6.java.group6.models;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class Library {
     private Set<Track> tracks;
-    private int numTrack;
 
-    public Library(Set<Track> tracks, int numTrack) {
-        this.tracks = tracks;
-        this.numTrack = numTrack;
+    public Library(Set<Track> tracks) {
+        this.tracks = new HashSet<Track>();
+
     }
 
     public Set<Track> getTracks() {
@@ -19,14 +19,6 @@ public class Library {
         this.tracks = tracks;
     }
 
-    public int getNumTrack() {
-        return numTrack;
-    }
-
-    public void setNumTrack(int numTrack) {
-        this.numTrack = numTrack;
-    }
-
     public void addTrack(Track t){
         if(!tracks.contains(t))
             if(tracks.add(t))
@@ -35,8 +27,8 @@ public class Library {
 
     public void removeTrack(Track t){
         if(tracks.contains(t))
-            if(tracks.remove(t))
-                numTrack--;
+            tracks.remove(t)
+
     }
 
     public void updateTrack(Track oldT,Track newT){
