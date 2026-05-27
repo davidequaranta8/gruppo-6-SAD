@@ -2,6 +2,7 @@ package group6.java.group6.dao;
 
 import group6.java.group6.db.DatabaseResource;
 import group6.java.group6.models.Playlist;
+import group6.java.group6.models.Track;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -140,7 +141,47 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
             //TODO: define a proper exception to handle here
             e.printStackTrace();
         }
+
+
     }
+
+
+    /*Method for adding a track in a playlist*/
+    public void addTrack(Playlist playlist ,  Track track) {
+        String sql = "INSERT INTO playlist_track  VALUES (?, ?)";
+        try (PreparedStatement stmt = sqlConnection.prepareStatement(sql)) {
+            stmt.setInt(1, playlist.getId());
+            stmt.setInt(2, track.getId());
+            stmt.executeUpdate();
+            playlist.addTrack(track); /*add the track also inside the playlist model*/
+        } catch (SQLException e) {
+
+            e.printStackTrace();
+        }
+    }
+
+
+
+    /*Method for removing a track from a playlist*/
+    public void removeTrack(Playlist playlist ,  Track track) {
+        String sql = "DELETE FROM playlist_track WHERE playlist_id = ? AND track_id = ?";
+        try(PreparedStatement stmt = sqlConnection.prepareStatement(sql)){
+            stmt.setInt(1, playlist.getId());
+            stmt.setInt(2, track.getId());
+            stmt.executeUpdate();
+            playlist.removeTrack(track); /*remove the track also from the playlist model*/
+        }catch (SQLException exception){
+            exception.printStackTrace();
+        }
+    }
+
+
+    /*TODO: Implement method to load all tracks of a playlist[playlistDao]*/
+
+
+
+
+
 
 
 

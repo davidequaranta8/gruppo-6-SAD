@@ -61,9 +61,9 @@ public class Playlist {
 
 
     /*Remove a track from a playlist*/
-    public void removeTrack(Integer id){
-        if(tracks.containsKey(id)){
-            tracks.remove(id);
+    public void removeTrack(Track track){
+        if(tracks.containsKey(track.getId())){
+            tracks.remove(track.getId());
         }
     }
 
