@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonType?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
@@ -21,10 +22,13 @@
     Il titolo della finestra viene impostato dal controller.
 -->
 
-<DialogPane fx:id="saveBtn" prefWidth="420" styleClass="dialog-pane" stylesheets="@app.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.TrackDialogController">
+<DialogPane fx:id="" prefWidth="489.0" styleClass="dialog-pane" stylesheets="@app.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.TrackDialogController">
 
     <header>
-        <Label fx:id="dialogTitle" styleClass="dialog-title" text="Nuova Traccia" />
+        <Label fx:id="dialogTitle" styleClass="dialog-title" text="Nuova Traccia">
+         <padding>
+            <Insets left="5.0" />
+         </padding></Label>
     </header>
 
     <content>
@@ -52,6 +56,12 @@
                 <!-- Durata -->
                 <Label styleClass="form-label" text="Durata (mm:ss) *" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                 <TextField fx:id="lengthField" maxWidth="120" promptText="Es. 3:45" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Label styleClass="form-label" text="Inserisci Traccia *" GridPane.rowIndex="5">
+               <GridPane.margin>
+                  <Insets />
+               </GridPane.margin>
+            </Label>
+            <Button mnemonicParsing="false" text="Clicca qui" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
                 <!-- colonne responsive -->
                 <columnConstraints>
@@ -64,15 +74,25 @@
                <RowConstraints />
                <RowConstraints />
                <RowConstraints />
+               <RowConstraints />
             </rowConstraints>
+            <VBox.margin>
+               <Insets left="5.0" />
+            </VBox.margin>
             </GridPane>
 
             <Separator />
 
             <!-- Tag visivi -->
-            <Label styleClass="form-section-label" text="Tag visivi" />
+            <Label styleClass="form-section-label" text="Tag visivi">
+            <VBox.margin>
+               <Insets left="5.0" />
+            </VBox.margin></Label>
             <HBox spacing="20">
-                <CheckBox fx:id="tagFavourite" text="⭐ Preferita" />
+                <CheckBox fx:id="tagFavourite" text="⭐ Preferita">
+               <HBox.margin>
+                  <Insets left="5.0" />
+               </HBox.margin></CheckBox>
                 <CheckBox fx:id="tagExplicit" text="🅴 Esplicita" />
                 <CheckBox fx:id="tagNewRelease" text="🆕 Nuova uscita" />
             </HBox>

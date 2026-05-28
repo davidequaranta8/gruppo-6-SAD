@@ -134,10 +134,40 @@ public class MainController implements LibraryObserver{
 
     @FXML protected void handleDeletePlaylist() {}
 
-    // ── Tracce ────────────────────────────────────────────────────────────────
+    // Tracce
     @FXML
     protected void handleAddTrack() {
-        showDialog("TrackDialog.fxml", "Aggiungi Traccia");
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    HelloApplication.class.getResource("TrackDialog.fxml"));
+            DialogPane dialogPane = loader.load();
+            TrackDialogController ctrl = loader.getController();
+
+            Dialog<Track> dialog = new Dialog<>();
+            dialog.setDialogPane(dialogPane);
+            dialog.setTitle("Aggiungi Traccia");
+
+            dialog.setResultConverter(buttonType -> {
+                if (buttonType != null &&
+                        buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                    return new Track(
+                            ctrl.getTitle(),
+                            ctrl.getAuthor(),
+                            ctrl.getGenre(),
+                            ctrl.getYear(),
+                            ctrl.getLength()
+                    );
+                }
+                return null;
+            });
+
+            dialog.showAndWait().ifPresent(track -> {
+                ConcreteLibrary.getInstance().addTrack(track); // notifica Observer automaticamente
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -148,23 +178,18 @@ public class MainController implements LibraryObserver{
     @FXML protected void handleDeleteTrack() {}
     @FXML protected void handleRemoveFromPlaylist() {}
 
-    // ── Filtri ────────────────────────────────────────────────────────────────
     @FXML protected void handleFilter() {}
     @FXML protected void handleResetFilter() {}
 
-    // ── Player ────────────────────────────────────────────────────────────────
     @FXML protected void handlePlayAll() {}
     @FXML protected void handleShuffle() {}
     @FXML protected void handlePrev() {}
     @FXML protected void handlePlayPause() {}
     @FXML protected void handleNext() {}
 
-    // ── Tag ───────────────────────────────────────────────────────────────────
     @FXML protected void handleTagChange() {}
 
-    // ═════════════════════════════════════════════════════════════════════════
     //  UTILITY
-    // ═════════════════════════════════════════════════════════════════════════
     private void showDialog(String fxmlFile, String title) {
         try {
             var url = HelloApplication.class.getResource(fxmlFile);
