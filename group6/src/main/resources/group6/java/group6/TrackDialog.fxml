@@ -1,106 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.ButtonType?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DialogPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 
 <!--
     TrackDialog.fxml — Dialogo per aggiungere o modificare una traccia
     Usato sia in modalità "Nuova Traccia" sia "Modifica Traccia".
     Il titolo della finestra viene impostato dal controller.
 -->
-<DialogPane xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="group6.java.group6.controllers.TrackDialogController"
-            prefWidth="420"
-            styleClass="dialog-pane"
-            stylesheets="@app.css">
+
+<DialogPane fx:id="saveBtn" prefWidth="420" styleClass="dialog-pane" stylesheets="@app.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.TrackDialogController">
 
     <header>
-        <Label fx:id="dialogTitle" text="Nuova Traccia" styleClass="dialog-title"/>
+        <Label fx:id="dialogTitle" styleClass="dialog-title" text="Nuova Traccia" />
     </header>
 
     <content>
         <VBox spacing="14">
-            <padding><Insets top="8" bottom="8"/></padding>
+            <padding><Insets bottom="8" top="8" /></padding>
 
             <GridPane hgap="12" vgap="12">
 
                 <!-- Titolo -->
-                <Label text="Titolo *"
-                       GridPane.columnIndex="0" GridPane.rowIndex="0"
-                       styleClass="form-label"/>
-                <TextField fx:id="titleField"
-                           promptText="Es. Bohemian Rhapsody"
-                           GridPane.columnIndex="1" GridPane.rowIndex="0"
-                           GridPane.hgrow="ALWAYS"
-                           maxWidth="Infinity"/>
+                <Label styleClass="form-label" text="Titolo *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <TextField fx:id="titleField" maxWidth="Infinity" promptText="Es. Bohemian Rhapsody" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="0" />
 
                 <!-- Autore -->
-                <Label text="Autore *"
-                       GridPane.columnIndex="0" GridPane.rowIndex="1"
-                       styleClass="form-label"/>
-                <TextField fx:id="authorField"
-                           promptText="Es. Queen"
-                           GridPane.columnIndex="1" GridPane.rowIndex="1"
-                           maxWidth="Infinity"/>
+                <Label styleClass="form-label" text="Autore *" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <TextField fx:id="authorField" maxWidth="Infinity" promptText="Es. Queen" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                 <!-- Genere -->
-                <Label text="Genere *"
-                       GridPane.columnIndex="0" GridPane.rowIndex="2"
-                       styleClass="form-label"/>
-                <ComboBox fx:id="genreCombo"
-                          promptText="Seleziona o scrivi…"
-                          editable="true"
-                          GridPane.columnIndex="1" GridPane.rowIndex="2"
-                          maxWidth="Infinity"/>
+                <Label styleClass="form-label" text="Genere *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <ComboBox fx:id="genreCombo" editable="true" maxWidth="Infinity" promptText="Seleziona o scrivi…" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
                 <!-- Anno -->
-                <Label text="Anno *"
-                       GridPane.columnIndex="0" GridPane.rowIndex="3"
-                       styleClass="form-label"/>
-                <Spinner fx:id="yearSpinner"
-                         min="1900" max="2099" initialValue="2024"
-                         editable="true"
-                         GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                <Label styleClass="form-label" text="Anno *" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <Spinner fx:id="yearSpinner" editable="true" initialValue="2024" max="2099" min="1900" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
                 <!-- Durata -->
-                <Label text="Durata (mm:ss) *"
-                       GridPane.columnIndex="0" GridPane.rowIndex="4"
-                       styleClass="form-label"/>
-                <TextField fx:id="lengthField"
-                           promptText="Es. 3:45"
-                           GridPane.columnIndex="1" GridPane.rowIndex="4"
-                           maxWidth="120"/>
+                <Label styleClass="form-label" text="Durata (mm:ss) *" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                <TextField fx:id="lengthField" maxWidth="120" promptText="Es. 3:45" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
                 <!-- colonne responsive -->
                 <columnConstraints>
-                    <ColumnConstraints minWidth="120" prefWidth="120" hgrow="NEVER"/>
-                    <ColumnConstraints hgrow="ALWAYS"/>
+                    <ColumnConstraints hgrow="NEVER" minWidth="120" prefWidth="120" />
+                    <ColumnConstraints hgrow="ALWAYS" />
                 </columnConstraints>
+            <rowConstraints>
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+            </rowConstraints>
             </GridPane>
 
-            <Separator/>
+            <Separator />
 
             <!-- Tag visivi -->
-            <Label text="Tag visivi" styleClass="form-section-label"/>
+            <Label styleClass="form-section-label" text="Tag visivi" />
             <HBox spacing="20">
-                <CheckBox fx:id="tagFavourite"  text="⭐ Preferita"/>
-                <CheckBox fx:id="tagExplicit"   text="🅴 Esplicita"/>
-                <CheckBox fx:id="tagNewRelease" text="🆕 Nuova uscita"/>
+                <CheckBox fx:id="tagFavourite" text="⭐ Preferita" />
+                <CheckBox fx:id="tagExplicit" text="🅴 Esplicita" />
+                <CheckBox fx:id="tagNewRelease" text="🆕 Nuova uscita" />
             </HBox>
 
             <!-- Messaggio di errore (nascosto di default) -->
-            <Label fx:id="errorLabel"
-                   text=""
-                   styleClass="error-label"
-                   managed="false" visible="false"/>
+            <Label fx:id="errorLabel" managed="false" styleClass="error-label" text="" visible="false" />
         </VBox>
     </content>
 
     <buttonTypes>
-        <ButtonType fx:id="saveBtn"   buttonData="OK_DONE"     text="Salva"/>
-        <ButtonType fx:id="cancelBtn" buttonData="CANCEL_CLOSE" text="Annulla"/>
+        <ButtonType fx:id="saveBtn" buttonData="OK_DONE" text="Salva" />
+        <ButtonType fx:id="cancelBtn" buttonData="CANCEL_CLOSE" text="Annulla" />
     </buttonTypes>
 
 </DialogPane>
