@@ -137,7 +137,8 @@ public class MainController implements LibraryObserver{
     // Tracce
     @FXML
     protected void handleAddTrack() {
-        try {
+        showDialog("TrackDialog.fxml", "Modifica Traccia");
+        /*try {
             FXMLLoader loader = new FXMLLoader(
                     HelloApplication.class.getResource("TrackDialog.fxml"));
             DialogPane dialogPane = loader.load();
@@ -151,7 +152,7 @@ public class MainController implements LibraryObserver{
                 if (buttonType != null &&
                         buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
                     return new Track(
-                            ctrl.getTitle(),
+                            ctrl.getClass(),
                             ctrl.getAuthor(),
                             ctrl.getGenre(),
                             ctrl.getYear(),
@@ -167,7 +168,7 @@ public class MainController implements LibraryObserver{
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     @FXML
