@@ -1,6 +1,8 @@
 package group6.java.group6.dao;
 
 import group6.java.group6.db.DatabaseResource;
+import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.Playlist;
 import group6.java.group6.models.Track;
 
@@ -176,7 +178,42 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
     }
 
 
-    /*TODO: Implement method to load all tracks of a playlist[playlistDao]*/
+
+    /*Loads all the tracks of a playlist and updates the playlist model */
+    public void loadAllTracks(Playlist playlist) {
+        String sql = "SELECT t.* FROM playlist_track pt join track t on pt.track_id = t.id WHERE pt.playlist_id = ?";
+
+        try(PreparedStatement stmt = sqlConnection.prepareStatement(sql)){
+            stmt.setInt(1, playlist.getId());
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+              Track track = new Track(
+                      rs.getString("title"),
+                      rs.getString("author"),
+                      rs.getDouble("length"),
+                      //TODO: be sure the elements in db genre are the same as in db column (caps included) otherwise will launch IllegalException: use parseGenre below
+                      Genre.valueOf(rs.getString("genre")),
+                      rs.getInt("year_of_publication"),
+                      TagEnum.valueOf(rs.getString("tag"))
+              );
+              track.setCountPlayed(rs.getInt("count_played"));
+              track.setId(rs.getInt("id"));
+              playlist.addTrack(track);
+            }
+        }catch (SQLException exception){
+            exception.printStackTrace();
+        }
+    }
+/*Utility method to avoid throwing exceptions if exception genre in db is not in genre enum in java */
+    private Genre parseGenre(String value) {
+        try {
+            return Genre.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Genre sconosciuto: " + value);
+            return Genre.OTHER; // fallback sicuro
+        }
+    }
 
 
 
