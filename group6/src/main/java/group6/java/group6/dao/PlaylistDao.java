@@ -30,7 +30,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
     * */
     @Override
     public Optional<Playlist> get(Integer id) {
-        String sql = "SELECT * FROM Playlist WHERE id = ?";
+        String sql = "SELECT * FROM playlist WHERE id = ?";
         try {
             PreparedStatement stmt = sqlConnection.prepareStatement(sql);
             stmt.setInt(1, id);
@@ -57,7 +57,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
     /*Get all the playlists saved*/
     @Override
     public Set<Playlist> getAll() {
-        String sql = "SELECT * FROM Playlist";
+        String sql = "SELECT * FROM playlist";
         Set<Playlist> playlists = new HashSet<>();
         try {
             PreparedStatement stmt = sqlConnection.prepareStatement(sql);
@@ -82,7 +82,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
     /*Not add ID because serial so it increments automatically. After insertion in db insert the id in playlist model*/
     @Override
     public void save(Playlist playlist) {
-        String sql = "INSERT INTO Playlist (title, count_played) VALUES (?, ?)";
+        String sql = "INSERT INTO playlist (title, count_played) VALUES (?, ?)";
         try {
             PreparedStatement stmt = sqlConnection.prepareStatement(sql,
                     PreparedStatement.RETURN_GENERATED_KEYS); /*returns the id*/
@@ -102,7 +102,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
 
     @Override
     public void delete(Playlist playlist) {
-        String sql = "DELETE FROM Playlist WHERE id = ?";
+        String sql = "DELETE FROM playlist WHERE id = ?";
 
         try{
             PreparedStatement stmt = sqlConnection.prepareStatement(sql);
@@ -117,7 +117,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
     /*Playlist passed is already the one updated for this reason we need only to update it in db*/
     @Override
     public void update(Playlist playlist) {
-        String sql = "UPDATE Playlist SET title = ?, count_played = ? WHERE id = ?";
+        String sql = "UPDATE playlist SET title = ?, count_played = ? WHERE id = ?";
         try {
             PreparedStatement stmt = sqlConnection.prepareStatement(sql);
             stmt.setString(1, playlist.getTitle());
@@ -134,7 +134,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
     * in the db record and the model to keep coherent both sides
     * */
     public void incrementCountPlayed(Playlist playlist) {
-        String sql = "UPDATE Playlist SET count_played = count_played + 1 WHERE id = ?";
+        String sql = "UPDATE playlist SET count_played = count_played + 1 WHERE id = ?";
         try (PreparedStatement stmt = sqlConnection.prepareStatement(sql)) {
             stmt.setInt(1, playlist.getId());
             stmt.executeUpdate();
