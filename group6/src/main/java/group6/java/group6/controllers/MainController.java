@@ -8,6 +8,7 @@ import group6.java.group6.models.Track;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import java.io.IOException;
 
@@ -37,14 +38,18 @@ public class MainController implements LibraryObserver{
 
     // ── Tabella tracce ────────────────────────────────────────────────────────
     @FXML private TableView<Track> tracksTableView;
-    @FXML private TableColumn<String, String> colNow;
-    @FXML private TableColumn<String, String> colTitle;
-    @FXML private TableColumn<String, String> colAuthor;
-    @FXML private TableColumn<String, String> colGenre;
-    @FXML private TableColumn<String, String> colYear;
-    @FXML private TableColumn<String, String> colLength;
-    @FXML private TableColumn<String, String> colTags;
-    @FXML private TableColumn<String, String> colActions;
+    @FXML private TableColumn<Track, Integer> colNow;
+    @FXML private TableColumn<Track, String> colTitle;
+    @FXML private TableColumn<Track, String> colAuthor;
+    @FXML private TableColumn<Track, String> colGenre;
+    @FXML private TableColumn<Track, String> colYear;
+    @FXML private TableColumn<Track, String> colLength;
+    @FXML private TableColumn<Track, String> colTags;
+    @FXML private TableColumn<Track, String> colActions;
+    /*
+    * VEDI DI RIMUOVERE QUALCHE COLONNA DELLA TABELLA DELLE TRACCE,
+    * SICCOME NON VENGONO MOSTRATE TUTTE
+     */
 
     // ── Sezione home ──────────────────────────────────────────────────────────
     @FXML private VBox homeSectionBox;
@@ -82,13 +87,22 @@ public class MainController implements LibraryObserver{
     // ═════════════════════════════════════════════════════════════════════════
     @FXML
     public void initialize() {
+
         if (addTrackBtn != null)   addTrackBtn.setDisable(false);
         if (RenamePlaylist != null) RenamePlaylist.setDisable(false);
         if (editTrackBtn != null)  editTrackBtn.setDisable(false);
 
+        // collegamento tra le colonne e gli attributi della classe Track
+        colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
+        colYear.setCellValueFactory(new PropertyValueFactory<>("year"));
+
+        // registrazione l'observer
         Library myLibrary = ConcreteLibrary.getInstance();
         myLibrary.addObserver(this); // inserisco l'observer nella lista degli osservatori da aggiornare
         updateTracksTable(); // effettuo uno primo aggiornamento della tabella
+
+
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -172,6 +186,7 @@ public class MainController implements LibraryObserver{
     }
 
     private void updateTracksTable() {
-        // qui inseriamo la logica per aggiornare la TableView
+        // Recupera le tracce e le inserisce nella tabella
+        tracksTableView.getItems().setAll(ConcreteLibrary.getInstance().getTracks());
     }
 }
