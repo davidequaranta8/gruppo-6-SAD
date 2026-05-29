@@ -142,7 +142,7 @@ public class MainController implements LibraryObserver{
             FXMLLoader loader = new FXMLLoader(
                     HelloApplication.class.getResource("TrackDialog.fxml"));
             DialogPane dialogPane = loader.load();
-            TrackDialogController ctrl = loader.getController();
+            TrackDialogController controllerTrackDialog = loader.getController();
 
             Dialog<Track> dialog = new Dialog<>();
             dialog.setDialogPane(dialogPane);
@@ -152,11 +152,12 @@ public class MainController implements LibraryObserver{
                 if (buttonType != null &&
                         buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
                     return new Track(
-                            ctrl.getClass(),
-                            ctrl.getAuthor(),
-                            ctrl.getGenre(),
-                            ctrl.getYear(),
-                            ctrl.getLength()
+                            controllerTrackDialog.getTitle(),
+                            controllerTrackDialog.getAuthor(),
+                            controllerTrackDialog.getLength(),
+                            controllerTrackDialog.getGenre(),
+                            controllerTrackDialog.getYear(),
+
                     );
                 }
                 return null;

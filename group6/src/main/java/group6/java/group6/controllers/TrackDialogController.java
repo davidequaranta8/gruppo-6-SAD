@@ -1,5 +1,6 @@
 package group6.java.group6.controllers;
 
+import group6.java.group6.enumerations.Genre;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
@@ -15,7 +16,7 @@ public class TrackDialogController {
     private TextField authorField;
 
     @FXML
-    private ComboBox<String> genreCombo;
+    private ComboBox<Genre> genreCombo;
 
     @FXML
     private Spinner<Integer> yearSpinner;
@@ -41,4 +42,21 @@ public class TrackDialogController {
     @FXML
     private ButtonType cancelBtn;
 
+    public String getTitle() {
+        return titleField.getText();
+    }
+    public String getAuthor() {
+        return authorField.getText();
+    }
+    public Genre getGenre() {
+        return genreCombo.getValue();
+    }
+
+    public Integer getYear() {
+
+        return yearSpinner.getValue();
+    }
+    public String getLength() {
+        return lengthField.getText();
+    }
 }
