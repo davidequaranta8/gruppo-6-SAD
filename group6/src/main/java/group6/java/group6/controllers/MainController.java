@@ -1,6 +1,8 @@
 package group6.java.group6.controllers;
 
 import group6.java.group6.HelloApplication;
+import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.Library;
 import group6.java.group6.models.LibraryObserver;
 import group6.java.group6.models.ConcreteLibrary;
@@ -11,6 +13,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
 public class MainController implements LibraryObserver{
@@ -41,9 +44,9 @@ public class MainController implements LibraryObserver{
     @FXML private TableColumn<Track, Integer> colNow;
     @FXML private TableColumn<Track, String> colTitle;
     @FXML private TableColumn<Track, String> colAuthor;
-    @FXML private TableColumn<Track, String> colGenre;
-    @FXML private TableColumn<Track, String> colYear;
-    @FXML private TableColumn<Track, String> colLength;
+    @FXML private TableColumn<Track, Genre> colGenre;
+    @FXML private TableColumn<Track, Integer> colYear;
+    @FXML private TableColumn<Track, Double> colLength;
     @FXML private TableColumn<Track, String> colTags;
     @FXML private TableColumn<Track, String> colActions;
     /*
@@ -96,6 +99,9 @@ public class MainController implements LibraryObserver{
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
         colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
         colYear.setCellValueFactory(new PropertyValueFactory<>("year"));
+        colGenre.setCellValueFactory(new PropertyValueFactory<>("genre"));
+        colLength.setCellValueFactory(new PropertyValueFactory<>("length"));
+        colTags.setCellValueFactory(new PropertyValueFactory<>("tag"));
 
         // registrazione l'observer
         Library myLibrary = ConcreteLibrary.getInstance();
@@ -114,22 +120,22 @@ public class MainController implements LibraryObserver{
     // ── Playlist ──────────────────────────────────────────────────────────────
     @FXML
     protected void handleNewPlaylist() {
-        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Nuova Playlist");
+        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Nuova Playlist",null);
     }
 
     @FXML
     protected void handleGenerateByGenre() {
-        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Genere");
+        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Genere",null);
     }
 
     @FXML
     protected void handleGenerateByYear() {
-        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Anno");
+        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Anno",null);
     }
 
     @FXML
     protected void handleRenamePlaylist() {
-        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Rinomina Playlist");
+        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Rinomina Playlist",null);
     }
 
     @FXML protected void handleDeletePlaylist() {}
@@ -137,44 +143,30 @@ public class MainController implements LibraryObserver{
     // Tracce
     @FXML
     protected void handleAddTrack() {
-        showDialog("TrackDialog.fxml", "Modifica Traccia");
-        /*try {
-            FXMLLoader loader = new FXMLLoader(
-                    HelloApplication.class.getResource("TrackDialog.fxml"));
-            DialogPane dialogPane = loader.load();
-            TrackDialogController controllerTrackDialog = loader.getController();
 
-            Dialog<Track> dialog = new Dialog<>();
-            dialog.setDialogPane(dialogPane);
-            dialog.setTitle("Aggiungi Traccia");
+        // definiamo il metodo accept() del Consumer
+        showDialog("TrackDialog.fxml", "Aggiungi Traccia", (TrackDialogController controller) -> {
 
-            dialog.setResultConverter(buttonType -> {
-                if (buttonType != null &&
-                        buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                    return new Track(
-                            controllerTrackDialog.getTitle(),
-                            controllerTrackDialog.getAuthor(),
-                            controllerTrackDialog.getLength(),
-                            controllerTrackDialog.getGenre(),
-                            controllerTrackDialog.getYear(),
+            // 1. Preleviamo i dati usando i getter del TrackDialogController
+            Track newTrack = new Track(
 
-                    );
-                }
-                return null;
-            });
+                    controller.getTitle(),
+                    controller.getAuthor(),
+                    controller.getLength(),
+                    controller.getGenre(),
+                    controller.getYear(),
+                    TagEnum.REMEMBER_ME
+            );
 
-            dialog.showAndWait().ifPresent(track -> {
-                ConcreteLibrary.getInstance().addTrack(track); // notifica Observer automaticamente
-            });
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+            // 2. Aggiungiamo la traccia al Singleton
+            // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella!
+            ConcreteLibrary.getInstance().addTrack(newTrack);
+        });
     }
 
     @FXML
     protected void handleEditTrack() {
-        showDialog("TrackDialog.fxml", "Modifica Traccia");
+        showDialog("TrackDialog.fxml", "Modifica Traccia",null);
     }
 
     @FXML protected void handleDeleteTrack() {}
@@ -191,17 +183,32 @@ public class MainController implements LibraryObserver{
 
     @FXML protected void handleTagChange() {}
 
-    //  UTILITY
-    private void showDialog(String fxmlFile, String title) {
+    //  metodo per mostrare i DialogPane ed effettuare operazioni nel momento in cui si cliccano i btn associati ad essa
+    private <T> void showDialog(String fxmlFile, String title, Consumer<T> onOkAction) {
         try {
+            // carico la scena del TrackDialog
             var url = HelloApplication.class.getResource(fxmlFile);
             FXMLLoader fxmlLoader = new FXMLLoader(url);
             DialogPane dialogPane = fxmlLoader.load();
 
+            // Recupera il controller TrackDialogController
+            T controller = fxmlLoader.getController();
+
+            // setto la scena del TrackDialog nel PopUp del DialogPane
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setDialogPane(dialogPane);
             dialog.setTitle(title);
-            dialog.showAndWait();
+
+            // Mostriamo il dialog e aspettiamo che venga chiuso in qualche modo
+            dialog.showAndWait().ifPresent(buttonType -> {
+                // se premi il bottone SALVA sul popUp allora esegue accept del consumer
+                if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                    // Eseguiamo la Lambda Expression passandole il controller
+                    if (onOkAction != null) {
+                        onOkAction.accept(controller);
+                    }
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -215,5 +222,6 @@ public class MainController implements LibraryObserver{
     private void updateTracksTable() {
         // Recupera le tracce e le inserisce nella tabella
         tracksTableView.getItems().setAll(ConcreteLibrary.getInstance().getTracks());
+
     }
 }

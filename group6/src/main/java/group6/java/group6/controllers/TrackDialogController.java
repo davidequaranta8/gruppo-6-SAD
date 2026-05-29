@@ -42,6 +42,13 @@ public class TrackDialogController {
     @FXML
     private ButtonType cancelBtn;
 
+    @FXML
+    public void initialize() {
+        // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
+        genreCombo.getItems().setAll(Genre.values());
+
+    }
+
     public String getTitle() {
         return titleField.getText();
     }
@@ -56,7 +63,7 @@ public class TrackDialogController {
 
         return yearSpinner.getValue();
     }
-    public String getLength() {
-        return lengthField.getText();
+    public Double getLength() {
+        return Double.parseDouble(lengthField.getText());
     }
 }

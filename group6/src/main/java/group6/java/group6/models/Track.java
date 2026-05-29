@@ -89,4 +89,17 @@ public class Track {
     public int hashCode() {
         return Integer.hashCode(id);
     }
+
+    @Override
+    public String toString() {
+        return "Track{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", author='" + author + '\'' +
+                ", length=" + length +
+                ", genre=" + genre +
+                ", year=" + year +
+                ", countPlayed=" + countPlayed +
+                '}';
+    }
 }

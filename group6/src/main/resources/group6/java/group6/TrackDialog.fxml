@@ -47,7 +47,7 @@
 
                 <!-- Genere -->
                 <Label styleClass="form-label" text="Genere *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <ComboBox fx:id="genreCombo" editable="true" maxWidth="Infinity" promptText="Seleziona o scrivi…" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <ComboBox fx:id="genreCombo" maxWidth="Infinity" promptText="Seleziona un genere" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
                 <!-- Anno -->
                 <Label styleClass="form-label" text="Anno *" GridPane.columnIndex="0" GridPane.rowIndex="3" />
