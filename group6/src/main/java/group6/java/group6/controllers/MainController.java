@@ -1,6 +1,6 @@
 package group6.java.group6.controllers;
 import group6.java.group6.HelloApplication;
-import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.Library;
 import group6.java.group6.models.LibraryObserver;
@@ -43,7 +43,7 @@ public class MainController implements LibraryObserver{
     @FXML private TableColumn<Track, Integer> colNow;
     @FXML private TableColumn<Track, String> colTitle;
     @FXML private TableColumn<Track, String> colAuthor;
-    @FXML private TableColumn<Track, Genre> colGenre;
+    @FXML private TableColumn<Track, GenreEnum> colGenre;
     @FXML private TableColumn<Track, Integer> colYear;
     @FXML private TableColumn<Track, Double> colLength;
     @FXML private TableColumn<Track, String> colTags;

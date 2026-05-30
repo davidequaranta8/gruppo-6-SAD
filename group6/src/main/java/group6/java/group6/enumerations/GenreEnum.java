@@ -1,6 +1,6 @@
 package group6.java.group6.enumerations;
 
-public enum Genre {
+public enum GenreEnum {
     POP,
     ROCK,
     HIP_HOP,

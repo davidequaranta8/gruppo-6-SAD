@@ -1,6 +1,6 @@
 package models;
 
-import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Track;
@@ -25,12 +25,12 @@ public class LibraryTest {
         library.setTracks(new HashSet<>());
 
         // Inizializziamo la traccia di test
-        t = new Track("titleTest", "authorTest", 3.1, Genre.BLUES, 2000, TagEnum.REMEMBER_ME);
+        t = new Track("titleTest", "authorTest", 3.1, GenreEnum.BLUES, 2000, TagEnum.REMEMBER_ME);
     }
 
     @Test
     public void testAddTrack() {
-        // ACT (Azione)
+        // Metodo da testare
         library.addTrack(t);
 
 
