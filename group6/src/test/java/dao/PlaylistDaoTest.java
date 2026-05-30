@@ -146,7 +146,7 @@ public class PlaylistDaoTest {
         //get all the tracks of the playlist
         playlistDao.loadAllTracks(playlist);
 
-        assertTrue(playlist.getTracks().containsKey(track.getId()));
+        assertTrue(playlist.getTracks().contains(track));
 
         //clean db
         trackDao.deleteAll();

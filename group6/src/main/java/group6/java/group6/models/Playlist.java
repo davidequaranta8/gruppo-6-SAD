@@ -1,7 +1,6 @@
 package group6.java.group6.models;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /* Playlist model */
 
@@ -9,12 +8,12 @@ public class Playlist {
     private int id; /*unique identifier of a playlist*/
     private String title; //title of playlist
     private int countPlayed; //to track how many times playlist was played
-    private Map<Integer ,Track> tracks; //(int : id_track ; Track: track associated with id_track)
+    private Set<Track> tracks; //(int : id_track ; Track: track associated
 
     public Playlist(String title) {
         this.title = title;
         this.countPlayed=0;
-        tracks = new LinkedHashMap<Integer, Track>();
+        tracks = new LinkedHashSet<Track>();
     }
 
     public int getId() {
@@ -44,13 +43,13 @@ public class Playlist {
 
 
     /*Get all the tracks of a playlist*/
-    public Map<Integer, Track> getTracks() {
+    public Set<Track> getTracks() {
         return tracks;
     }
 
     /*Add a track in the playlist*/
     public void addTrack(Track track){
-        tracks.put(track.getId(),track);
+        tracks.add(track);
     }
 
 
@@ -62,8 +61,8 @@ public class Playlist {
 
     /*Remove a track from a playlist*/
     public void removeTrack(Track track){
-        if(tracks.containsKey(track.getId())){
-            tracks.remove(track.getId());
+        if(tracks.contains(track)){
+            tracks.remove(track);
         }
     }
 
