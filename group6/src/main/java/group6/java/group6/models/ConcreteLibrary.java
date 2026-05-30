@@ -15,7 +15,7 @@ public class ConcreteLibrary implements Library{
     private TrackDao trackDao = new TrackDao();
 
     private ConcreteLibrary() {
-        this.tracks = new HashSet<Track>();
+        this.tracks = trackDao.getAll();
         observers  = new ArrayList<>();
     }
 

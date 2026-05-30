@@ -168,7 +168,6 @@ public class MainController implements LibraryObserver{
         showDialog("TrackDialog.fxml", "Modifica Traccia",null);
     }
 
-    @FXML protected void handleDeleteTrack() {}
     @FXML protected void handleRemoveFromPlaylist() {}
 
     @FXML protected void handleFilter() {}
