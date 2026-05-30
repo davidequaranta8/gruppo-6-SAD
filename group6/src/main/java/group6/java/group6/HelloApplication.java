@@ -19,6 +19,5 @@ public class HelloApplication extends Application {
         stage.setScene(scene);
         stage.show();
         DatabaseResource.getInstance(); // per creare le table del DB
-        //Comment
     }
 }

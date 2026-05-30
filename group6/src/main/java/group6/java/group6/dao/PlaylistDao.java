@@ -206,6 +206,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
                       //TODO: be sure the elements in db genre are the same as in db column (caps included) otherwise will launch IllegalException: use parseGenre below
                       GenreEnum.valueOf(rs.getString("genre")),
                       rs.getInt("year_of_publication"),
+                      //TODO: be sure the tags saved is provided by the enum (we will do this through radio buttons for each option of the enum both for genre and tag [db fix!])
                       TagEnum.valueOf(rs.getString("tag"))
               );
               track.setCountPlayed(rs.getInt("count_played"));
