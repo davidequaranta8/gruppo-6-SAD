@@ -10,6 +10,7 @@ public class Playlist {
     private int countPlayed; //to track how many times playlist was played
     private Set<Track> tracks; //(int : id_track ; Track: track associated
 
+
     public Playlist(String title) {
         this.title = title;
         this.countPlayed=0;
