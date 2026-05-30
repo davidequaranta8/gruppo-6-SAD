@@ -67,4 +67,18 @@ public class Playlist {
         }
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Playlist)) return false;
+        Playlist playlist = (Playlist) o;
+        return this.id == playlist.id;
+    }
+
+    @Override
+    public String toString() {
+        return "Playlist with id: "+this.id;
+    }
+
 }

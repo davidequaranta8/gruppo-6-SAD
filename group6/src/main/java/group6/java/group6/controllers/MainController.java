@@ -1,5 +1,4 @@
 package group6.java.group6.controllers;
-
 import group6.java.group6.HelloApplication;
 import group6.java.group6.enumerations.Genre;
 import group6.java.group6.enumerations.TagEnum;

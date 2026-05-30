@@ -26,8 +26,6 @@ public class DatabaseResource {
         try {
             this.sqlConnection = DriverManager.getConnection(url, user, password);
             initSchema(); //initialize the schema if not present
-            //TODO: remove this log when all members are sure it works
-            System.out.println("Database connection established");
         } catch (SQLException e) {
             System.err.println("Errore di connessione: " + e.getMessage());
         }
