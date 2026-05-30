@@ -1,7 +1,7 @@
 package group6.java.group6.dao;
 
 import group6.java.group6.db.DatabaseResource;
-import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.Playlist;
 import group6.java.group6.models.Track;
@@ -204,7 +204,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
                       rs.getString("author"),
                       rs.getDouble("length"),
                       //TODO: be sure the elements in db genre are the same as in db column (caps included) otherwise will launch IllegalException: use parseGenre below
-                      Genre.valueOf(rs.getString("genre")),
+                      GenreEnum.valueOf(rs.getString("genre")),
                       rs.getInt("year_of_publication"),
                       TagEnum.valueOf(rs.getString("tag"))
               );
@@ -217,12 +217,12 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
         }
     }
 /*Utility method to avoid throwing exceptions if exception genre in db is not in genre enum in java */
-    private Genre parseGenre(String value) {
+    private GenreEnum parseGenre(String value) {
         try {
-            return Genre.valueOf(value);
+            return GenreEnum.valueOf(value);
         } catch (IllegalArgumentException e) {
-            System.err.println("Genre sconosciuto: " + value);
-            return Genre.OTHER; // fallback sicuro
+            System.err.println("GenreEnum sconosciuto: " + value);
+            return GenreEnum.OTHER; // fallback sicuro
         }
     }
 

@@ -2,7 +2,7 @@ package dao;
 
 import group6.java.group6.dao.PlaylistDao;
 import group6.java.group6.dao.TrackDao;
-import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.Playlist;
 import group6.java.group6.models.Track;
@@ -107,7 +107,7 @@ public class PlaylistDaoTest {
     @Test
     public void removeTrackTest(){
     Playlist playlist = new Playlist("Sample playlist");
-    Track track = new Track("track 1 " , "mj" , 3.29  , Genre.METAL , 2008 , TagEnum.STARRED);
+    Track track = new Track("track 1 " , "mj" , 3.29  , GenreEnum.METAL , 2008 , TagEnum.STARRED);
     //save the playlist
     playlistDao.save(playlist);
     //save the track
@@ -134,7 +134,7 @@ public class PlaylistDaoTest {
     @Test
     public void loadAllTracksTest(){
         Playlist playlist = new Playlist("Sample playlist 1");
-        Track track = new Track("track 1 " , "mj" , 3.29  , Genre.METAL , 2008 , TagEnum.STARRED);
+        Track track = new Track("track 1 " , "mj" , 3.29  , GenreEnum.METAL , 2008 , TagEnum.STARRED);
 
         //save first the track and the playlist to avoid references error
         trackDao.save(track);

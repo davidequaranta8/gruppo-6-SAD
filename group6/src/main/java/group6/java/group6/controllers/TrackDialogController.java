@@ -1,6 +1,6 @@
 package group6.java.group6.controllers;
 
-import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.GenreEnum;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
@@ -16,7 +16,7 @@ public class TrackDialogController {
     private TextField authorField;
 
     @FXML
-    private ComboBox<Genre> genreCombo;
+    private ComboBox<GenreEnum> genreCombo;
 
     @FXML
     private Spinner<Integer> yearSpinner;
@@ -45,7 +45,7 @@ public class TrackDialogController {
     @FXML
     public void initialize() {
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
-        genreCombo.getItems().setAll(Genre.values());
+        genreCombo.getItems().setAll(GenreEnum.values());
 
     }
 
@@ -55,7 +55,7 @@ public class TrackDialogController {
     public String getAuthor() {
         return authorField.getText();
     }
-    public Genre getGenre() {
+    public GenreEnum getGenre() {
         return genreCombo.getValue();
     }
 
