@@ -1,7 +1,7 @@
 package group6.java.group6.dao;
 
 import group6.java.group6.db.DatabaseResource;
-import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.Track;
 
@@ -25,7 +25,7 @@ public class TrackDao implements Dao<Track , Integer>{
             stmt.setInt(1 , key);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
-                Track track  = new Track(rs.getString("title") , rs.getString("author") , rs.getDouble("length"), Genre.valueOf(rs.getString("genre")) , rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+                Track track  = new Track(rs.getString("title") , rs.getString("author") , rs.getDouble("length"), GenreEnum.valueOf(rs.getString("genre")) , rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
                 track.setCountPlayed(rs.getInt("count_played"));
                 track.setId(rs.getInt("id"));
                 return Optional.of(track);
