@@ -130,7 +130,7 @@
                 </HBox>
 
                 <!-- Filtri tracce -->
-                <HBox alignment="CENTER_LEFT" spacing="8" styleClass="filter-bar">
+                <HBox spacing="8" styleClass="filter-bar">
                     <padding><Insets bottom="6" left="16" right="16" top="6" /></padding>
                     <Label styleClass="filter-label" text="Filtra:" />
                     <ComboBox fx:id="genreFilter" onAction="#handleFilter" prefWidth="130" promptText="Genere" />
@@ -150,13 +150,12 @@
                 <TableView fx:id="tracksTableView" styleClass="tracks-table" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="colNow" prefWidth="36" sortable="false" text="#" />
-                        <TableColumn fx:id="colTitle" prefWidth="220" text="Titolo" />
-                        <TableColumn fx:id="colAuthor" prefWidth="160" text="Autore" />
-                        <TableColumn fx:id="colGenre" prefWidth="110" text="Genere" />
-                        <TableColumn fx:id="colYear" prefWidth="70" text="Anno" />
-                        <TableColumn fx:id="colLength" prefWidth="70" text="Durata" />
-                        <TableColumn fx:id="colTags" prefWidth="100" sortable="false" text="Tag" />
-                        <TableColumn fx:id="colActions" prefWidth="110" sortable="false" text="" />
+                        <TableColumn fx:id="colTitle" prefWidth="137.60004425048828" text="Titolo" />
+                        <TableColumn fx:id="colAuthor" prefWidth="151.99996948242188" text="Autore" />
+                        <TableColumn fx:id="colGenre" prefWidth="121.60003662109375" text="Genere" />
+                        <TableColumn fx:id="colYear" prefWidth="66.39999389648438" text="Anno" />
+                        <TableColumn fx:id="colLength" prefWidth="70.39996337890625" text="Durata" />
+                        <TableColumn fx:id="colTags" prefWidth="106.39996337890625" sortable="false" text="Tag" />
                     </columns>
                     <placeholder>
                         <Label styleClass="empty-label" text="Nessuna traccia. Seleziona una playlist o aggiungine una." />
