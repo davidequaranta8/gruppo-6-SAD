@@ -107,7 +107,7 @@ public class PlaylistDaoTest {
     @Test
     public void removeTrackTest(){
     Playlist playlist = new Playlist("Sample playlist");
-    Track track = new Track("track 1 " , "mj" , 3.29  , GenreEnum.METAL , 2008 , TagEnum.STARRED);
+    Track track = new Track("track 1 " , "mj" , 3.29  , GenreEnum.METAL , 2008 , TagEnum.Preferiti);
     //save the playlist
     playlistDao.save(playlist);
     //save the track
@@ -134,7 +134,7 @@ public class PlaylistDaoTest {
     @Test
     public void loadAllTracksTest(){
         Playlist playlist = new Playlist("Sample playlist 1");
-        Track track = new Track("track 1 " , "mj" , 3.29  , GenreEnum.METAL , 2008 , TagEnum.STARRED);
+        Track track = new Track("track 1 " , "mj" , 3.29  , GenreEnum.METAL , 2008 , TagEnum.Preferiti);
 
         //save first the track and the playlist to avoid references error
         trackDao.save(track);

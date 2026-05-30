@@ -61,7 +61,6 @@ public class ConcreteLibrary implements Library{
     }
     @Override
     public void notifyObservers() { // notifica gli observer che la libreria è stata modificata
-        System.out.println("Observers registrati: " + observers.size()); // ← aggiung
         for (LibraryObserver observer : observers) {
             observer.onLibraryChanged();
         }

@@ -21,7 +21,7 @@ public class PlaylistTest {
         playlist = new Playlist("My Favorite Songs");
 
         // Creiamo due tracce distinte per i test (usando i costruttori che hai già)
-        track1 = new Track("Track 1", "Author A", 3.5, GenreEnum.POP, 2020, TagEnum.REMEMBER_ME);
+        track1 = new Track("Track 1", "Author A", 3.5, GenreEnum.POP, 2020, TagEnum.Preferiti);
     }
 
 
