@@ -6,6 +6,7 @@ import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.Track;
 
 import java.sql.*;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -40,7 +41,23 @@ public class TrackDao implements Dao<Track , Integer>{
 
     @Override
     public Set<Track> getAll() {
-        return Set.of();
+        String sql = "SELECT * FROM track";
+        try{
+            PreparedStatement stmt = sqlConnection.prepareStatement(sql);
+            Set<Track> tracks = new HashSet<>();
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                Track track  = new Track(rs.getString("title"),rs.getString("author"),rs.getDouble("length") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+                track.setCountPlayed(rs.getInt("count_played"));
+                track.setId(rs.getInt("id"));
+                tracks.add(track);
+            }
+            return tracks;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+        //if nothing was found
+        return null;
     }
 
 

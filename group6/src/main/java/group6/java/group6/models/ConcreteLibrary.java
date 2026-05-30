@@ -15,7 +15,7 @@ public class ConcreteLibrary implements Library{
     private TrackDao trackDao = new TrackDao();
 
     private ConcreteLibrary() {
-        this.tracks = new HashSet<Track>();
+        this.tracks = trackDao.getAll();
         observers  = new ArrayList<>();
     }
 
@@ -37,15 +37,15 @@ public class ConcreteLibrary implements Library{
 
     // Metodi per aggiungere e rimuovere tracce
     public void addTrack(Track t) {
+        trackDao.save(t); //salva nel db prima di aggiungere al set dal momento che il db setta l'id
         tracks.add(t);
-        trackDao.save(t); // salvo la traccia nel DB
         notifyObservers(); // quando aggiungo una traccia è necessario notificare il MainController per fargli aggiornare la vista
     }
 
     public void removeTrack(Track t){
         tracks.remove(t);
-        trackDao.delete(t); // elimino la traccia dal DB
-        notifyObservers(); // quando rimuovo una traccia è necessario notificare il MainController per fargli aggiornare la vista
+        trackDao.delete(t);
+        notifyObservers();
     }
 
     // Metodi del pattern Observer
@@ -61,6 +61,7 @@ public class ConcreteLibrary implements Library{
     }
     @Override
     public void notifyObservers() { // notifica gli observer che la libreria è stata modificata
+        System.out.println("Observers registrati: " + observers.size()); // ← aggiung
         for (LibraryObserver observer : observers) {
             observer.onLibraryChanged();
         }

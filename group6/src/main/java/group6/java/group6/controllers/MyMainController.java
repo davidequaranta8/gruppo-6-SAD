@@ -14,6 +14,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.function.Consumer;
 
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
@@ -168,7 +169,11 @@ public class MyMainController implements LibraryObserver{
         showDialog("TrackDialog.fxml", "Modifica Traccia",null);
     }
 
-    @FXML protected void handleDeleteTrack() {}
+    @FXML protected void handleDeleteTrack() {
+        Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
+        ConcreteLibrary.getInstance().removeTrack(selectedTrack);
+
+    }
     @FXML protected void handleRemoveFromPlaylist() {}
 
     @FXML protected void handleFilter() {}
@@ -223,8 +228,6 @@ public class MyMainController implements LibraryObserver{
     }
 
     private void updateTracksTable() {
-        // Recupera le tracce e le inserisce nella tabella
         tracksTableView.getItems().setAll(ConcreteLibrary.getInstance().getTracks());
-
     }
 }
