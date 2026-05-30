@@ -1,6 +1,8 @@
 package group6.java.group6.dao;
 
 import group6.java.group6.db.DatabaseResource;
+import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.Track;
 
 import java.sql.*;
@@ -17,6 +19,22 @@ public class TrackDao implements Dao<Track , Integer>{
 
     @Override
     public Optional<Track> get(Integer key) {
+        String sql = "SELECT * FROM track where id = ?";
+        try{
+            PreparedStatement stmt = sqlConnection.prepareStatement(sql);
+            stmt.setInt(1 , key);
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                Track track  = new Track(rs.getString("title") , rs.getString("author") , rs.getDouble("length"), Genre.valueOf(rs.getString("genre")) , rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+                track.setCountPlayed(rs.getInt("count_played"));
+                track.setId(rs.getInt("id"));
+                return Optional.of(track);
+            }
+
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
         return Optional.empty();
     }
 
@@ -52,13 +70,45 @@ public class TrackDao implements Dao<Track , Integer>{
 
     @Override
     public void delete(Track track) {
-
+        String sql = "DELETE FROM track where id = ?";
+        try{
+            PreparedStatement stmt = sqlConnection.prepareStatement(sql);
+            stmt.setInt(1, track.getId());
+            stmt.executeUpdate();
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
     }
+
 
 
     @Override
     public void update(Track track) {
+        String sql = "UPDATE track  "
+                + "SET title = ?, "
+                + "    tag = ?, "
+                + "    author = ?, "
+                + "    genre = ?, "
+                + "    year_of_publication = ?, "
+                + "    length = ?, "
+                + "    count_played = ? "
+                + "WHERE id = ?";
 
+        try (PreparedStatement ps = sqlConnection.prepareStatement(sql)) {
+            ps.setString(1, track.getTitle());
+            ps.setString(2, track.getTag().name());
+            ps.setString(3, track.getAuthor());
+            ps.setString(4, track.getGenre().name());
+            ps.setInt(5, track.getYear());
+            ps.setDouble(6, track.getLength());
+            ps.setInt(7, track.getCountPlayed());
+            ps.setInt(8, track.getId());
+
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating track with id: " + track.getId(), e);
+        }
     }
 
 
