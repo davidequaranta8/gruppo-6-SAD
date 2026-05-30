@@ -25,8 +25,8 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
     }
 
 
-    /*Get the playlist object with id passed.Here as below , the object return is only the playlist without songs
-    that belong to it since this last thing is made through TrackDao
+    /*Get the playlist object with id passed.Here as below , the object returned is only the playlist without songs
+    that belong to it since this last thing is made through TrackDao otherwise we would couple both DAOs
     * */
     @Override
     public Optional<Playlist> get(Integer id) {
@@ -145,6 +145,17 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
         }
 
 
+    }
+
+
+    public void deleteAll() {
+        String sql = "DELETE FROM playlist";
+        try {
+            PreparedStatement stmt = sqlConnection.prepareStatement(sql);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 

@@ -86,6 +86,20 @@ public class Track {
     }
 
     @Override
+    public String toString() {
+        return "Track{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", author='" + author + '\'' +
+                ", length=" + length +
+                ", genre=" + genre +
+                ", year=" + year +
+                ", tag=" + tag +
+                ", countPlayed=" + countPlayed +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         return Integer.hashCode(id);
     }
