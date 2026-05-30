@@ -155,7 +155,7 @@ public class MyMainController implements LibraryObserver{
                     controller.getLength(),
                     controller.getGenre(),
                     controller.getYear(),
-                    TagEnum.Preferiti
+                    TagEnum.valueOf(controller.getOptionSelected())
             );
 
             // 2. Aggiungiamo la traccia al Singleton

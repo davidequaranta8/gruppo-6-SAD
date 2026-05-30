@@ -17,6 +17,7 @@ public class TrackDialogController {
     @FXML private Label errorLabel;
     @FXML private ButtonType saveBtn;
     @FXML private ButtonType cancelBtn;
+    private ToggleGroup toggleGroup = new ToggleGroup();
 
     @FXML
     public void initialize() {
@@ -24,13 +25,11 @@ public class TrackDialogController {
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
         genreCombo.getItems().setAll(GenreEnum.values());
 
-        // Crei il gruppo
-        ToggleGroup gruppo = new ToggleGroup();
 
         // Assegni i radio button al gruppo
-        starredBtn.setToggleGroup(gruppo);
-        chillBtn.setToggleGroup(gruppo);
-        workoutBtn.setToggleGroup(gruppo);
+        starredBtn.setToggleGroup(toggleGroup);
+        chillBtn.setToggleGroup(toggleGroup);
+        workoutBtn.setToggleGroup(toggleGroup);
     }
 
 
@@ -50,5 +49,23 @@ public class TrackDialogController {
     }
     public Double getLength() {
         return Double.parseDouble(lengthField.getText());
+    }
+
+    public String getOptionSelected() {
+        // 1. Chiediamo al gruppo quale elemento è attualmente selezionato
+        // Restituisce un oggetto generico di tipo "Toggle"
+        Toggle selezionato = toggleGroup.getSelectedToggle();
+
+        // 2. Controllo di sicurezza: l'utente potrebbe non aver cliccato nulla
+        if (selezionato != null) {
+            // 3. Facciamo il "cast" da Toggle a RadioButton per poter leggere il testo
+            RadioButton bottoneCliccato = (RadioButton) selezionato;
+
+            // 4. Restituiamo la stringa (es. "Rock", "Pop", "Preferiti")
+            return bottoneCliccato.getText();
+        }
+
+        // Se nessun bottone è stato selezionato, restituiamo null o una stringa vuota
+        return null;
     }
 }
