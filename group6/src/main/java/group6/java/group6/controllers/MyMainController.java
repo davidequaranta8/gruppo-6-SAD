@@ -36,7 +36,7 @@ public class MyMainController implements LibraryObserver{
     @FXML private Button deletePlaylistBtn;
 
     // ── Filtri ───────────────────────────────────────────────────────────────
-    @FXML private ComboBox<String> genreFilter;
+    @FXML private ComboBox<GenreEnum> genreFilter;
     @FXML private ComboBox<String> yearFilter;
     @FXML private Button addTrackBtn;
 
@@ -88,6 +88,9 @@ public class MyMainController implements LibraryObserver{
     // ═════════════════════════════════════════════════════════════════════════
     @FXML
     public void initialize() {
+
+        // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
+        genreFilter.getItems().setAll(GenreEnum.values());
 
         //if (addTrackBtn != null)   addTrackBtn.setDisable(false);
         if (RenamePlaylist != null) RenamePlaylist.setDisable(false);
@@ -151,7 +154,7 @@ public class MyMainController implements LibraryObserver{
                     controller.getLength(),
                     controller.getGenre(),
                     controller.getYear(),
-                    TagEnum.REMEMBER_ME
+                    TagEnum.Preferiti
             );
 
             // 2. Aggiungiamo la traccia al Singleton
@@ -185,7 +188,7 @@ public class MyMainController implements LibraryObserver{
     }
     //  metodo per mostrare i DialogPane ed effettuare operazioni nel momento in cui si cliccano i btn associati ad essa
     private <T> void showDialog(String fxmlFile, String title, Consumer<T> onOkAction) {
-        try {
+        try{
             // carico la scena del TrackDialog
             var url = HelloApplication.class.getResource(fxmlFile);
             FXMLLoader fxmlLoader = new FXMLLoader(url);
@@ -215,7 +218,7 @@ public class MyMainController implements LibraryObserver{
     }
 
     @Override
-    public void onLibraryChanged() { // metodo ricavato da LibraryObserver per il pattern Observer
+    public void onLibraryChanged(){ // metodo ricavato da LibraryObserver per il pattern Observer
         updateTracksTable();
     }
 

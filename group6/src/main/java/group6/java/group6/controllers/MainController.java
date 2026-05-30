@@ -103,11 +103,12 @@ public class MainController implements LibraryObserver{
         colTags.setCellValueFactory(new PropertyValueFactory<>("tag"));
 
         // registrazione l'observer
-        Library myLibrary = ConcreteLibrary.getInstance();
-        myLibrary.addObserver(this); // inserisco l'observer nella lista degli osservatori da aggiornare
+
+        Library myLibrary = null;
+        /*myLibrary.addObserver(this); // inserisco l'observer nella lista degli osservatori da aggiornare
         updateTracksTable(); // effettuo uno primo aggiornamento della tabella
 
-
+*/
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -154,7 +155,7 @@ public class MainController implements LibraryObserver{
                     controller.getLength(),
                     controller.getGenre(),
                     controller.getYear(),
-                    TagEnum.REMEMBER_ME
+                    TagEnum.Preferiti
             );
 
             // 2. Aggiungiamo la traccia al Singleton
@@ -168,7 +169,10 @@ public class MainController implements LibraryObserver{
         showDialog("TrackDialog.fxml", "Modifica Traccia",null);
     }
 
-    @FXML protected void handleDeleteTrack() {}
+    @FXML protected void handleDeleteTrack() {
+
+
+    }
     @FXML protected void handleRemoveFromPlaylist() {}
 
     @FXML protected void handleFilter() {}
