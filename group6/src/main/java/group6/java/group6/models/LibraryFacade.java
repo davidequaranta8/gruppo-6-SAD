@@ -35,7 +35,7 @@ public class LibraryFacade {
         // 1. Istanzia direttamente il brano usando il costruttore base
         tag = tag != null ? tag : TagEnum.NONE; // Se tag è null, assegna un valore di default (ad esempio NONE)
         Track track = new Track(title, author, length, genre, year, tag);
-        trackDao.save(track);
+        // trackDao.save(track); SECONDO ME ANDREBBE MESSO PERò c'è da TOGLIERLO IN LIBRARY PERCHè ALTRIMENTI LO SALVA DUE VOLTE
         // 2. Lo aggiunge alla libreria
         library.addTrack(track); 
     }
