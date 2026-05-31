@@ -12,6 +12,7 @@ public class Track {
     private int year;
     private TagEnum tag;
     private int countPlayed;
+    private String filePath; //file path of the track on the disk: music/title_track
 
     // Costruttore: id non c'è perchè viene settato quando la track è salvata nel db , altrimenti non sapremmo quale id ha quando la costruiamo
     public Track(String title, String author, double length, GenreEnum genre, int year, TagEnum tag){
@@ -43,6 +44,14 @@ public class Track {
 
     public TagEnum getTag() {
         return tag;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public void setTag(TagEnum tag) {

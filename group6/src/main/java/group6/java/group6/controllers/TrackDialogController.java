@@ -1,8 +1,14 @@
 package group6.java.group6.controllers;
 
 import group6.java.group6.enumerations.GenreEnum;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+import java.io.File;
+
 
 public class TrackDialogController {
     @FXML private Label dialogTitle;
@@ -17,6 +23,9 @@ public class TrackDialogController {
     @FXML private Label errorLabel;
     @FXML private ButtonType saveBtn;
     @FXML private ButtonType cancelBtn;
+    @FXML private Button chooseFileBtn;
+    @FXML private Label fileNameLabel;
+    private File selectedFile;
     private ToggleGroup toggleGroup = new ToggleGroup();
 
     @FXML
@@ -67,5 +76,27 @@ public class TrackDialogController {
 
         // Se nessun bottone è stato selezionato, restituiamo null o una stringa vuota
         return null;
+    }
+
+    @FXML
+    public void handleChooseFile(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleziona file audio");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("File Audio", "*.mp3", "*.wav")
+        );
+        Stage stage = (Stage) chooseFileBtn.getScene().getWindow();
+        selectedFile = fileChooser.showOpenDialog(stage);
+
+        if (selectedFile != null) {
+            fileNameLabel.setText(selectedFile.getName()); // mostra il nome del file scelto
+        }
+    }
+
+
+
+    // getter per il MainController
+    public File getSelectedFile() {
+        return selectedFile;
     }
 }

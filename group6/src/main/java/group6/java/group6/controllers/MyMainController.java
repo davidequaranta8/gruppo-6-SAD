@@ -7,18 +7,28 @@ import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Library;
 import group6.java.group6.models.LibraryObserver;
 import group6.java.group6.models.Track;
+import group6.java.group6.player.AudioPlayer;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.MediaPlayer;
+import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Set;
 import java.util.function.Consumer;
 
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
 public class MyMainController implements LibraryObserver{
+
+    private final AudioPlayer audioPlayer = new AudioPlayer();
 
     // ── Top bar ──────────────────────────────────────────────────────────────
     @FXML private TextField searchField;
@@ -159,8 +169,20 @@ public class MyMainController implements LibraryObserver{
             );
 
             // 2. Aggiungiamo la traccia al Singleton
-            // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella!
-            ConcreteLibrary.getInstance().addTrack(newTrack);
+            // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
+            ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
+
+            //prendiamoci il file selezionato nel dialog e
+            File selectedFile = controller.getSelectedFile();
+            if (selectedFile != null) {
+                try {
+                    Path dest = Paths.get(newTrack.getFilePath()); // es. "music/42.mp3"
+                    Files.createDirectories(dest.getParent());     // crea la cartella "music/" se non esiste
+                    Files.copy(selectedFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         });
     }
 
@@ -182,7 +204,29 @@ public class MyMainController implements LibraryObserver{
     @FXML protected void handlePlayAll() {}
     @FXML protected void handleShuffle() {}
     @FXML protected void handlePrev() {}
-    @FXML protected void handlePlayPause() {}
+
+
+    @FXML
+    protected void handlePlayPause() {
+        FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
+
+        if (audioPlayer.isPlaying()) {
+            // sta suonando → metti in pausa
+            audioPlayer.pause();
+            icon.setIconLiteral("fas-play");
+        } else if (audioPlayer.isPaused()) {
+            // era in pausa → riprendi da dove era
+            audioPlayer.resume();
+            icon.setIconLiteral("fas-pause");
+        } else {
+            // non sta suonando nulla → carica e avvia la traccia selezionata
+            Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
+            if (selectedTrack != null) {
+                audioPlayer.play(selectedTrack);
+                icon.setIconLiteral("fas-pause");
+            }
+        }
+    }
     @FXML protected void handleNext() {}
 
     @FXML protected void handleTagChange() {}

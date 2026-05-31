@@ -211,6 +211,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
               );
               track.setCountPlayed(rs.getInt("count_played"));
               track.setId(rs.getInt("id"));
+              track.setFilePath(rs.getString("file_path"));
               playlist.addTrack(track);
             }
         }catch (SQLException exception){

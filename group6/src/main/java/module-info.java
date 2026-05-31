@@ -7,7 +7,7 @@ module group6.java.group6 {
     requires org.kordamp.ikonli.fontawesome5;
     requires jdk.compiler;
     requires java.desktop;
-
+    requires javafx.media;
     opens group6.java.group6 to javafx.fxml;
     exports group6.java.group6;
     exports group6.java.group6.controllers;
