@@ -93,6 +93,7 @@ public class MyMainController implements LibraryObserver{
     @FXML private Button editTrackBtn;
     @FXML private Button removeFromPlaylistBtn;
     @FXML private Button deleteTrackBtn;
+    private Track currentPlayingTrack = null;
 
     // ═════════════════════════════════════════════════════════════════════════
     //  INITIALIZE
@@ -177,6 +178,7 @@ public class MyMainController implements LibraryObserver{
 
             //prendiamoci il file selezionato nel dialog e
             File selectedFile = controller.getSelectedFile();
+            //TODO: compute the length of the track here and update in db
             if (selectedFile != null) {
                 try {
                     Path dest = Paths.get(newTrack.getFilePath()); // es. "music/42.mp3"
@@ -209,23 +211,35 @@ public class MyMainController implements LibraryObserver{
     @FXML protected void handlePrev() {}
 
 
+
+
     @FXML
     protected void handlePlayPause() {
         FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
+        Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
+        //check to see if the track selected has been changed
+        boolean isNewTrack = selectedTrack != null && !selectedTrack.equals(currentPlayingTrack);
 
         if (audioPlayer.isPlaying()) {
-            // sta suonando → metti in pausa
-            audioPlayer.pause();
-            icon.setIconLiteral("fas-play");
-        } else if (audioPlayer.isPaused()) {
-            // era in pausa → riprendi da dove era
+            //if audio was playing but selectedTrack has been changed play the currenTrack
+            if (isNewTrack) {
+                audioPlayer.play(selectedTrack);
+                currentPlayingTrack = selectedTrack;
+                icon.setIconLiteral("fas-pause");
+            } else {
+                //audio was playing and track was the same , stop it
+                audioPlayer.pause();
+                icon.setIconLiteral("fas-play");
+            }
+        } else if (audioPlayer.isPaused() && !isNewTrack) {
+            //resume only if the selected track was the same
             audioPlayer.resume();
             icon.setIconLiteral("fas-pause");
         } else {
-            // non sta suonando nulla → carica e avvia la traccia selezionata
-            Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
+            //no track playing
             if (selectedTrack != null) {
                 audioPlayer.play(selectedTrack);
+                currentPlayingTrack = selectedTrack;
                 icon.setIconLiteral("fas-pause");
             }
         }
