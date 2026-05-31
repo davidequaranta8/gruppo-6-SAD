@@ -159,7 +159,6 @@ public class MyMainController implements LibraryObserver{
     }
 
     @FXML protected void handleDeletePlaylist() {}
-    
     @FXML protected void handleGeneratePlaylist() {}
     
     // Tracce

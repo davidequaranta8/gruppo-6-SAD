@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS Track (
     year_of_publication INTEGER,
     length DOUBLE PRECISION, -- in seconds
     count_played INTEGER DEFAULT 0,
+    file_path TEXT NOT NULL, -- path of the track file on the disk (relative path under music/)
     --Constraint to avoid having in track table a duplicate record with same title and author , meaning we have the same
     --track added twice
     CONSTRAINT uq_track_title_artist UNIQUE (title, author)

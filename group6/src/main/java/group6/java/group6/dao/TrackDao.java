@@ -5,6 +5,7 @@ import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.Track;
 
+import java.io.File;
 import java.sql.*;
 import java.util.HashSet;
 import java.util.Optional;
@@ -29,6 +30,7 @@ public class TrackDao implements Dao<Track , Integer>{
                 Track track  = new Track(rs.getString("title") , rs.getString("author") , rs.getDouble("length"), GenreEnum.valueOf(rs.getString("genre")) , rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
                 track.setCountPlayed(rs.getInt("count_played"));
                 track.setId(rs.getInt("id"));
+                track.setFilePath(rs.getString("file_path"));
                 return Optional.of(track);
             }
 
@@ -50,6 +52,7 @@ public class TrackDao implements Dao<Track , Integer>{
                 Track track  = new Track(rs.getString("title"),rs.getString("author"),rs.getDouble("length") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
                 track.setCountPlayed(rs.getInt("count_played"));
                 track.setId(rs.getInt("id"));
+                track.setFilePath(rs.getString("file_path"));
                 tracks.add(track);
             }
             return tracks;
@@ -63,7 +66,7 @@ public class TrackDao implements Dao<Track , Integer>{
 
     @Override
     public void save(Track track) {
-        String sql = "INSERT INTO track (title, tag, author, genre, year_of_publication, length, count_played) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO track (title, tag, author, genre, year_of_publication, length, count_played, file_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try {
             PreparedStatement stmt = sqlConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, track.getTitle());
@@ -73,11 +76,26 @@ public class TrackDao implements Dao<Track , Integer>{
             stmt.setInt(5, track.getYear());
             stmt.setDouble(6, track.getLength());
             stmt.setInt(7, track.getCountPlayed());
+            stmt.setString(8, "placeholder"); //insert for the moment a placeholder to avoid not null constraint violation
+            //since file path is always built as music/id_track.mp3
             stmt.executeUpdate();
 
+            //here we get the id and hence after we can set the file path and update it in db
             ResultSet generatedKeys = stmt.getGeneratedKeys();
             if (generatedKeys.next()) {
-                track.setId(generatedKeys.getInt(1));
+                int generatedId = generatedKeys.getInt(1);
+                track.setId(generatedId);
+
+                // build the filepath
+                String filePath = "music/" + generatedId +".mp3";
+                track.setFilePath(filePath);
+
+                //Update file path with the one just built
+                String updateSql = "UPDATE track SET file_path = ? WHERE id = ?";
+                PreparedStatement updateStmt = sqlConnection.prepareStatement(updateSql);
+                updateStmt.setString(1, filePath);
+                updateStmt.setInt(2, generatedId);
+                updateStmt.executeUpdate();
             }
 
         } catch (SQLException e) {
@@ -88,15 +106,21 @@ public class TrackDao implements Dao<Track , Integer>{
     @Override
     public void delete(Track track) {
         String sql = "DELETE FROM track where id = ?";
-        try{
+        try {
             PreparedStatement stmt = sqlConnection.prepareStatement(sql);
             stmt.setInt(1, track.getId());
             stmt.executeUpdate();
-        }catch(SQLException e){
+
+            // delete also the copy of the file from the disk
+            File file = new File(track.getFilePath());
+            if (file.exists()) {
+                file.delete();
+            }
+
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
 
 
     @Override

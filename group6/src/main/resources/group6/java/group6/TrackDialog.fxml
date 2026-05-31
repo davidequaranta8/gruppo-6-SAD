@@ -61,8 +61,8 @@
                   <Insets />
                </GridPane.margin>
             </Label>
-            <Button mnemonicParsing="false" text="Clicca qui" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-
+            <Button mnemonicParsing="false" fx:id="chooseFileBtn" text="Clicca qui" onAction="#handleChooseFile" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <Label fx:id="fileNameLabel" text="Nessun file selezionato" GridPane.columnIndex="2" GridPane.rowIndex="5"/>
                 <!-- colonne responsive -->
                 <columnConstraints>
                     <ColumnConstraints hgrow="NEVER" minWidth="120" prefWidth="120" />
