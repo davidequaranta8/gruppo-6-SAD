@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
+
+import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.TagEnum;
+
 import java.util.Collections;
 
 public class ConcreteLibrary implements Library{
@@ -41,6 +45,11 @@ public class ConcreteLibrary implements Library{
     public void removeTrack(Track t){
         tracks.remove(t);
         notifyObservers(); // quando rimuovo una traccia è necessario notificare il MainController per fargli aggiornare la vista
+    }
+
+    public void updateTrack(Track track, String newTitle, String newAuthor, double length, Genre genre, int year, TagEnum tag) {
+        track.updateTrack(newTitle, newAuthor, length, genre, year, tag);
+        notifyObservers(); // quando modifico una traccia è necessario notificare il MainController per fargli aggiornare la vista
     }
 
     // Metodi del pattern Observer

@@ -1,16 +1,35 @@
 package group6.java.group6.controllers;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import group6.java.group6.HelloApplication;
-import group6.java.group6.models.Library;
-import group6.java.group6.models.LibraryObserver;
 import group6.java.group6.models.ConcreteLibrary;
+import group6.java.group6.models.Library;
+import group6.java.group6.models.LibraryFacade;
+import group6.java.group6.models.LibraryObserver;
 import group6.java.group6.models.Track;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
-import java.io.IOException;
 
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
 public class MainController implements LibraryObserver{
@@ -82,36 +101,43 @@ public class MainController implements LibraryObserver{
     @FXML private Button removeFromPlaylistBtn;
     @FXML private Button deleteTrackBtn;
 
-    // ═════════════════════════════════════════════════════════════════════════
-    //  INITIALIZE
-    // ═════════════════════════════════════════════════════════════════════════
+    private Track selectedTrack;
+    
+    private final LibraryFacade facade = LibraryFacade.getInstance();
+    
+    
+    
+    
     @FXML
     public void initialize() {
+        
+        if (addTrackBtn != null) 
+            addTrackBtn.setDisable(false);
+        if (RenamePlaylist != null)
+             RenamePlaylist.setDisable(false);
+        
+        if (editTrackBtn != null)
+            editTrackBtn.setDisable(true); 
+        if (deleteTrackBtn != null)
+             deleteTrackBtn.setDisable(true); 
 
-        if (addTrackBtn != null)   addTrackBtn.setDisable(false);
-        if (RenamePlaylist != null) RenamePlaylist.setDisable(false);
-        if (editTrackBtn != null)  editTrackBtn.setDisable(false);
+        configureTableColumns();
 
-        // collegamento tra le colonne e gli attributi della classe Track
-        colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
-        colYear.setCellValueFactory(new PropertyValueFactory<>("year"));
+        configureTableSelection();
 
         // registrazione l'observer
         Library myLibrary = ConcreteLibrary.getInstance();
         myLibrary.addObserver(this); // inserisco l'observer nella lista degli osservatori da aggiornare
         updateTracksTable(); // effettuo uno primo aggiornamento della tabella
 
-
     }
-
-    // ═════════════════════════════════════════════════════════════════════════
+        
     //  HANDLERS
-    // ═════════════════════════════════════════════════════════════════════════
-
+    
     @FXML protected void handleUndo() {}
 
-    // ── Playlist ──────────────────────────────────────────────────────────────
+    // Playlist
+    
     @FXML
     protected void handleNewPlaylist() {
         showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Nuova Playlist");
@@ -132,12 +158,13 @@ public class MainController implements LibraryObserver{
         showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Rinomina Playlist");
     }
 
-    @FXML protected void handleDeletePlaylist() {}
+    @FXML protected void handleDeletePlaylist() {
+}
 
     // Tracce
     @FXML
     protected void handleAddTrack() {
-        showDialog("TrackDialog.fxml", "Modifica Traccia");
+        showConfiguredDialog("TrackDialog.fxml", "Aggiungi Traccia", null);
         /*try {
             FXMLLoader loader = new FXMLLoader(
                     HelloApplication.class.getResource("TrackDialog.fxml"));
@@ -174,10 +201,38 @@ public class MainController implements LibraryObserver{
 
     @FXML
     protected void handleEditTrack() {
-        showDialog("TrackDialog.fxml", "Modifica Traccia");
+        if (selectedTrack == null) {
+            showWarning("Nessuna traccia selezionata",
+                        "Seleziona una traccia dalla tabella prima di modificarla.");
+            return;
+        }
+        showConfiguredDialog("TrackDialog.fxml", "Modifica Traccia", selectedTrack);
+        updateDetailPanel(selectedTrack);
     }
 
-    @FXML protected void handleDeleteTrack() {}
+    @FXML protected void handleDeleteTrack() {
+
+        if (selectedTrack == null) {
+            showWarning("Nessuna traccia selezionata",
+                    "Seleziona una traccia dalla tabella prima di eliminarla.");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Elimina traccia");
+        confirm.setHeaderText("Eliminare \"" + selectedTrack.getTitle() + "\"?");
+        confirm.setContentText("L'operazione non può essere annullata.");
+    
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            facade.removeTrack(selectedTrack);
+            selectedTrack = null;
+            updateDetailPanel(null);
+        }
+
+    }
+    
+    
     @FXML protected void handleRemoveFromPlaylist() {}
 
     @FXML protected void handleFilter() {}
@@ -191,7 +246,95 @@ public class MainController implements LibraryObserver{
 
     @FXML protected void handleTagChange() {}
 
-    //  UTILITY
+
+
+
+    private void configureTableColumns() {
+        if (tracksTableView == null) return;
+
+
+        // collegamento tra le colonne e gli attributi della classe Track
+        if (colTitle != null) colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        if (colAuthor != null) colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
+        if (colYear != null) colYear.setCellValueFactory(new PropertyValueFactory<>("year"));
+
+        // Colonne che richiedono una trasformazione del valore
+        if (colGenre != null) {
+            colGenre.setCellValueFactory(cell -> {
+                Track track = cell.getValue();
+                return new SimpleStringProperty(track != null && track.getGenre() != null 
+                        ? track.getGenre().name() : "");
+            });
+        }
+
+        if (colLength != null) {
+            colLength.setCellValueFactory(cell -> {
+                Track track = cell.getValue();
+                return new SimpleStringProperty(track != null ? formatLength(track.getLength()) : "");
+            });
+        }
+
+        if (colTags != null) {
+            colTags.setCellValueFactory(cell -> {
+                Track track = cell.getValue();
+                return new SimpleStringProperty(track != null && track.getTag() != null 
+                        ? track.getTag().name() : "");
+            });
+        }
+    }
+
+    private void configureTableSelection() {
+        if (tracksTableView == null) return;
+
+        tracksTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+        selectedTrack = newVal;
+        
+        // Aggiorna il pannello laterale dei dettagli
+        updateDetailPanel(newVal);
+        
+        boolean trackIsSelected = (newVal != null);
+        if (editTrackBtn != null) editTrackBtn.setDisable(!trackIsSelected);
+        if (deleteTrackBtn != null) deleteTrackBtn.setDisable(!trackIsSelected);
+        });
+    }
+
+    private void showConfiguredDialog(String fxmlFile, String title, Track track) {
+        try {
+            FXMLLoader loader = buildLoader(fxmlFile);
+            DialogPane pane   = loader.load();
+
+            TrackDialogController ctrl = loader.getController();
+            ctrl.setFacade(facade);
+            ctrl.setTrackToEdit(track);
+
+            Button okButton = (Button) pane.getButtonTypes().stream()
+                .filter(bt -> bt.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+                .findFirst()
+                .map(pane::lookupButton)
+                .orElse(null);
+
+            if (okButton != null) {
+                okButton.addEventFilter(ActionEvent.ACTION, event -> {
+                    if (!ctrl.handleSave()) {
+                        event.consume();
+                    }
+                });
+            }
+
+            showDialog(pane, title);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+  private void showDialog(DialogPane pane, String title) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setDialogPane(pane);
+        dialog.setTitle(title);
+        dialog.showAndWait();
+    }
+
     private void showDialog(String fxmlFile, String title) {
         try {
             var url = HelloApplication.class.getResource(fxmlFile);
@@ -207,6 +350,29 @@ public class MainController implements LibraryObserver{
         }
     }
 
+     private void showWarning(String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+    
+    private FXMLLoader buildLoader(String fxmlFile) {
+        return new FXMLLoader(HelloApplication.class.getResource(fxmlFile));
+    }
+
+    //Aggiorno pannello affianco
+    private void updateDetailPanel(Track track) {
+        if (detailPanel != null) detailPanel.setVisible(track != null);
+        if (track == null) return;
+        if (detailTitle  != null) detailTitle.setText(track.getTitle());
+        if (detailAuthor != null) detailAuthor.setText(track.getAuthor());
+        if (detailGenre  != null) detailGenre.setText(
+            track.getGenre() != null ? track.getGenre().name() : "");
+        if (detailYear   != null) detailYear.setText(String.valueOf(track.getYear()));
+        if (detailLength != null) detailLength.setText(formatLength(track.getLength()));
+    }
+
     @Override
     public void onLibraryChanged() { // metodo ricavato da LibraryObserver per il pattern Observer
         updateTracksTable();
@@ -215,5 +381,10 @@ public class MainController implements LibraryObserver{
     private void updateTracksTable() {
         // Recupera le tracce e le inserisce nella tabella
         tracksTableView.getItems().setAll(ConcreteLibrary.getInstance().getTracks());
+    }
+
+    private String formatLength(double seconds) {
+        int total = (int) seconds;
+        return String.format("%d:%02d", total / 60, total % 60);
     }
 }

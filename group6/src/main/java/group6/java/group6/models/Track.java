@@ -14,13 +14,13 @@ public class Track {
     private int countPlayed;
 
     // Costruttore: id non c'è perchè viene settato quando la track è salvata nel db , altrimenti non sapremmo quale id ha quando la costruiamo
-    public Track(String title, String author, double length, Genre genre, int year, TagEnum tag){
+    public Track(String title, String author, double length, Genre genre, int year, TagEnum tag2){
         this.title = title;
         this.author = author;
         this.length = length;
         this.genre = genre;
         this.year = year;
-        this.tag = tag;
+        this.tag = tag2;
         countPlayed = 0;
     }
 
