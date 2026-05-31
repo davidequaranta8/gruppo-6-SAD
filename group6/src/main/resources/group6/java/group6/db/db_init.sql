@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS Track (
     author VARCHAR(255),
     genre VARCHAR(100),
     year_of_publication INTEGER,
-    length INTEGER, -- in seconds
+    length DOUBLE PRECISION, -- in seconds
     count_played INTEGER DEFAULT 0,
     --Constraint to avoid having in track table a duplicate record with same title and author , meaning we have the same
     --track added twice

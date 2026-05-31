@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1100.0" styleClass="root-pane" stylesheets="@app.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.MyMainController">
+   <top>
+      <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="top-bar" BorderPane.alignment="CENTER">
+         <children>
+            <FontIcon iconLiteral="fas-music" iconSize="20" />
+            <Label prefHeight="23.0" prefWidth="209.0" styleClass="app-title" text="Music Playlist Manager" />
+            <Region prefHeight="45.0" prefWidth="520.0" HBox.hgrow="ALWAYS" />
+            <TextField fx:id="searchField" prefHeight="26.0" prefWidth="162.0" promptText="Cerca tracce o playlist…" />
+            <Button fx:id="undoBtn" mnemonicParsing="false" onAction="#handleUndo" styleClass="btn-secondary" text="Annulla">
+               <graphic>
+                  <FontIcon iconLiteral="fas-undo" iconSize="14" />
+               </graphic>
+            </Button>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="16.0" right="16.0" top="10.0" />
+         </padding>
+      </HBox>
+   </top>
+   <left>
+      <VBox minWidth="200.0" prefHeight="432.0" prefWidth="137.0" styleClass="sidebar" BorderPane.alignment="CENTER">
+         <children>
+            <Label styleClass="section-label" text="LE MIE PLAYLIST" />
+            <ListView styleClass="playlist-list" VBox.vgrow="ALWAYS" />
+            <Separator prefWidth="200.0" />
+            <VBox alignment="CENTER" prefHeight="90.0" prefWidth="137.0" spacing="10.0">
+               <children>
+                  <Button fx:id="newPlaylistBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleNewPlaylist" prefHeight="30.0" prefWidth="123.0" styleClass="btn-primary" text="Nuova playlist">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-plus" iconSize="13" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="generatePlaylistBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleGeneratePlaylist" prefHeight="32.0" prefWidth="124.0" styleClass="btn-secondary" text="Genera Playlist">
+                     <graphic>
+                        <FontIcon />
+                     </graphic>
+                  </Button>
+               </children>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+            </VBox>
+         </children>
+         <padding>
+            <Insets bottom="8.0" left="8.0" right="8.0" top="12.0" />
+         </padding>
+      </VBox>
+   </left>
+   <center>
+      <VBox prefHeight="200.0" prefWidth="100.0" styleClass="main-panel" BorderPane.alignment="CENTER">
+         <children>
+            <HBox prefHeight="46.0" prefWidth="550.0" spacing="8.0">
+               <children>
+                  <Button fx:id="playAll" mnemonicParsing="false" onAction="#handlePlayAll" styleClass="btn-play" text="Riproduci">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-play" iconSize="13" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="shuffleBtn" mnemonicParsing="false" onAction="#handleShuffle" styleClass="btn-secondary" text="Shuffle">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-random" iconSize="13" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="RenamePlaylist" mnemonicParsing="false" onAction="#handleRenamePlaylist" styleClass="btn-secondary" text="Rinomina">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-pencil-alt" iconSize="13" />
+                     </graphic>
+                  </Button>
+                  <Button mnemonicParsing="false" styleClass="btn-secondary" text="Brani piu ascoltati" />
+                  <Button fx:id="deleteTrackBtn" mnemonicParsing="false" onAction="#handleDeleteTrack" styleClass="btn-danger" text="Elimina">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-times" iconSize="13" />
+                     </graphic>
+                  </Button>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" spacing="8.0" styleClass="filter-bar">
+               <children>
+                  <Label styleClass="filter-label" text="Filtra:" />
+                  <ComboBox fx:id="genreFilter" onAction="#handleFilter" prefWidth="150.0" promptText="Genere" />
+                  <ComboBox fx:id="yearFilter" onAction="#handleFilter" prefWidth="150.0" promptText="Anno" />
+                  <Button mnemonicParsing="false" styleClass="btn-link" text="Reset">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-times-circle" iconSize="13" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="addTrackBtn" mnemonicParsing="false" onAction="#handleAddTrack" styleClass="btn-primary" text="Aggiungi Traccia">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-plus" iconSize="13" />
+                     </graphic>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets bottom="6.0" left="16.0" right="16.0" top="6.0" />
+               </padding>
+            </HBox>
+            <TableView fx:id="tracksTableView" prefHeight="462.0" prefWidth="782.0" styleClass="tracks-table" VBox.vgrow="ALWAYS">
+              <columns>
+                <TableColumn fx:id="colNow" prefWidth="75.0" text="#" />
+                <TableColumn fx:id="colTitle" prefWidth="176.0" text="Titolo" />
+                  <TableColumn fx:id="colAuthor" prefWidth="123.99996948242188" text="Autore" />
+                  <TableColumn fx:id="colGenre" prefWidth="119.20001220703125" text="Genere" />
+                  <TableColumn fx:id="colLength" prefWidth="162.4000244140625" text="Durata" />
+              </columns>
+            </TableView>
+            <VBox prefHeight="73.0" prefWidth="782.0" styleClass="player-bar">
+               <children>
+                  <HBox alignment="CENTER" spacing="10.0">
+                     <children>
+                        <Label styleClass="time-label" text="0:00" />
+                        <Slider fx:id="progressSlider" styleClass="progress-slider" HBox.hgrow="ALWAYS" />
+                        <Label styleClass="time-label" text="0:00" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="12.0">
+                     <children>
+                        <ToggleButton fx:id="shuffleToggleBtn" mnemonicParsing="false" styleClass="mode-btn" text="Shuffle">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-random" iconSize="13" />
+                           </graphic>
+                        </ToggleButton>
+                        <ToggleButton fx:id="loopBtn" mnemonicParsing="false" styleClass="mode-btn" text="Loop">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-redo" iconSize="13" />
+                           </graphic>
+                        </ToggleButton>
+                        <Separator orientation="VERTICAL" prefHeight="200.0" />
+                        <Button fx:id="prevBtn" mnemonicParsing="false" onAction="#handlePrev" styleClass="ctrl-btn">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-step-backward" iconSize="18" />
+                           </graphic>
+                        </Button>
+                        <Button fx:id="playPauseBtn" mnemonicParsing="false" onAction="#handlePlayPause" styleClass="ctrl-btn-main">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-play" iconSize="22" />
+                           </graphic>
+                        </Button>
+                        <Button fx:id="nextBtn" mnemonicParsing="false" onAction="#handleNext" styleClass="ctrl-btn">
+                           <graphic>
+                              <FontIcon iconLiteral="fas-step-forward" iconSize="18" />
+                           </graphic>
+                        </Button>
+                        <Separator orientation="VERTICAL" prefHeight="200.0" />
+                        <VBox alignment="CENTER_LEFT" prefHeight="200.0" prefWidth="100.0">
+                           <children>
+                              <Label styleClass="now-title" text="Title: " />
+                              <Label styleClass="now-author" text="Author: " />
+                           </children>
+                        </VBox>
+                     </children>
+                     <padding>
+                        <Insets top="6.0" />
+                     </padding>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+   <right>
+      <VBox minWidth="200.0" prefWidth="240.0" styleClass="detail-panel" BorderPane.alignment="CENTER">
+         <children>
+            <Label styleClass="section-label" text="Dettaglio Traccia:" />
+            <GridPane hgap="8.0" styleClass="detail-grid" vgap="8.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Label styleClass="detail-key" text="Titolo:" />
+                  <Label fx:id="detailTitle" styleClass="detail-value" GridPane.columnIndex="1" />
+                  <Label styleClass="detail-key" text="Autore:" GridPane.rowIndex="1" />
+                  <Label fx:id="detailAuthor" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Label styleClass="detail-key" text="Genere:" GridPane.rowIndex="2" />
+                  <Label fx:id="detailGenre" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <Label styleClass="detail-key" text="Anno:" GridPane.rowIndex="3" />
+                  <Label styleClass="detail-key" text="Durata:" GridPane.rowIndex="4" />
+                  <Label fx:id="detailYear" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <Label fx:id="detailLength" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <Label styleClass="detail-key" text="Tag:" GridPane.rowIndex="5" />
+                  <Label fx:id="detailTag" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+               </children>
+               <padding>
+                  <Insets top="12.0" />
+               </padding>
+            </GridPane>
+            <Separator>
+               <VBox.margin>
+                  <Insets bottom="12.0" top="12.0" />
+               </VBox.margin>
+            </Separator>
+            <VBox prefHeight="123.0" prefWidth="158.0" spacing="8.0">
+               <children>
+                  <Button fx:id="editTrackBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleEditTrack" styleClass="btn-primary" text="Modifica Traccia">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-edit" iconSize="13" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="removeFromPlaylistBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleRemoveFromPlaylist" styleClass="btn-danger" text="Rimuovi dalla Playlist">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-minus-circle" iconSize="13" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="deletePlaylistBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleDeletePlaylist" styleClass="btn-danger" text="Elimina Playlist">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-trash-alt" iconSize="13" />
+                     </graphic>
+                  </Button>
+               </children>
+            </VBox>
+         </children>
+         <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+         </padding>
+      </VBox>
+   </right>
+</BorderPane>

@@ -1,5 +1,7 @@
 package group6.java.group6.models;
 
+import group6.java.group6.dao.TrackDao;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
@@ -14,9 +16,10 @@ public class ConcreteLibrary implements Library{
     private Set<Track> tracks;
     private static ConcreteLibrary instance; // istanza condivisa
     private List<LibraryObserver> observers; // Lista degli osservatori registrati
+    private TrackDao trackDao = new TrackDao();
 
     private ConcreteLibrary() {
-        this.tracks = new HashSet<Track>();
+        this.tracks = trackDao.getAll();
         observers  = new ArrayList<>();
     }
 
@@ -38,13 +41,15 @@ public class ConcreteLibrary implements Library{
 
     // Metodi per aggiungere e rimuovere tracce
     public void addTrack(Track t) {
+        trackDao.save(t); //salva nel db prima di aggiungere al set dal momento che il db setta l'id
         tracks.add(t);
         notifyObservers(); // quando aggiungo una traccia è necessario notificare il MainController per fargli aggiornare la vista
     }
 
     public void removeTrack(Track t){
         tracks.remove(t);
-        notifyObservers(); // quando rimuovo una traccia è necessario notificare il MainController per fargli aggiornare la vista
+        trackDao.delete(t);
+        notifyObservers();
     }
 
     public void updateTrack(Track track, String newTitle, String newAuthor, double length, Genre genre, int year, TagEnum tag) {
