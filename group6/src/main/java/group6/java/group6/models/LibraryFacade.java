@@ -3,7 +3,7 @@ package group6.java.group6.models;
 import java.util.Set;
 
 import group6.java.group6.dao.TrackDao;
-import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 ;
 
@@ -31,7 +31,7 @@ public class LibraryFacade {
     }
     //  US-01 — Aggiungere una traccia
     
-    public void addTrack(String title, String author, double length, Genre genre, int year, TagEnum tag) {
+    public void addTrack(String title, String author, double length, GenreEnum genre, int year, TagEnum tag) {
         // 1. Istanzia direttamente il brano usando il costruttore base
         tag = tag != null ? tag : TagEnum.NONE; // Se tag è null, assegna un valore di default (ad esempio NONE)
         Track track = new Track(title, author, length, genre, year, tag);
@@ -42,12 +42,13 @@ public class LibraryFacade {
 
     //  US-02 — Modificare una traccia
     
-    public void updateTrack(Track track, String newTitle, String newAuthor, double length, Genre genre, int year, TagEnum tag) {
-        tag = tag != null ? tag : TagEnum.NONE; 
-        track.updateTrack(newTitle, newAuthor, length, genre, year, tag);
-        trackDao.update(track);     // persiste le modifiche sul DB
-        library.updateTrack(track, newTitle, newAuthor, length, genre, year, tag); // aggiorna la traccia 
-    }
+   public void updateTrack(Track track, String newTitle, String newAuthor,
+                        double length, GenreEnum genre, int year, TagEnum tag) {
+    tag = tag != null ? tag : TagEnum.NONE;
+    track.updateTrack(newTitle, newAuthor, length, genre, year, tag);
+    trackDao.update(track);
+    library.notifyObservers(); // ← sostituisce library.updateTrack(...)
+}
 
     //  US-03 — Eliminare una traccia
     

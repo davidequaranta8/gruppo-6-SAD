@@ -1,6 +1,6 @@
 package group6.java.group6.models;
 
-import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 
 public class Track {
@@ -8,13 +8,13 @@ public class Track {
     private String title;
     private String author;
     private double length;
-    private Genre genre;
+    private GenreEnum genre;
     private int year;
     private TagEnum tag;
     private int countPlayed;
 
     // Costruttore: id non c'è perchè viene settato quando la track è salvata nel db , altrimenti non sapremmo quale id ha quando la costruiamo
-    public Track(String title, String author, double length, Genre genre, int year, TagEnum tag2){
+    public Track(String title, String author, double length, GenreEnum genre, int year, TagEnum tag2){
         this.title = title;
         this.author = author;
         this.length = length;
@@ -37,7 +37,7 @@ public class Track {
 
     public double getLength() { return length;    }
 
-    public Genre getGenre(){ return genre;    }
+    public GenreEnum getGenre(){ return genre;    }
 
     public int getYear() { return year;    }
 
@@ -57,7 +57,7 @@ public class Track {
 
     public void setLength(double length) { this.length = length;    }
 
-    public void setGenre(Genre genre) { this.genre = genre;    }
+    public void setGenre(GenreEnum genre) { this.genre = genre;    }
 
     public void setYear(int year) { this.year = year;    }
 
@@ -69,7 +69,7 @@ public class Track {
         countPlayed++;
     }
 
-    public void updateTrack(String title, String author, double length, Genre genre, int year,TagEnum tag){
+    public void updateTrack(String title, String author, double length, GenreEnum genre, int year,TagEnum tag){
         setAuthor(author);
         setGenre(genre);
         setLength(length);

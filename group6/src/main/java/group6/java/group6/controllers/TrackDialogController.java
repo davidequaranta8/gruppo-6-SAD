@@ -1,6 +1,6 @@
 package group6.java.group6.controllers;
 
-import group6.java.group6.enumerations.Genre;
+import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.LibraryFacade;
 import group6.java.group6.models.Track;
@@ -25,7 +25,7 @@ public class TrackDialogController {
     private TextField authorField;
 
     @FXML
-    private ComboBox<Genre> genreCombo;
+    private ComboBox<GenreEnum> genreCombo;
 
     @FXML
     private Spinner<Integer> yearSpinner;
@@ -33,14 +33,14 @@ public class TrackDialogController {
     @FXML
     private TextField lengthField;
 
+    @FXML 
+    private CheckBox tagPreferiti;
+    
     @FXML
-    private CheckBox tagFavourite;
-
+    private CheckBox tagChill;      
+    
     @FXML
-    private CheckBox tagExplicit;
-
-    @FXML
-    private CheckBox tagNewRelease;
+    private CheckBox tagAllenamento;
 
     @FXML
     private Label errorLabel;
@@ -58,7 +58,7 @@ public class TrackDialogController {
      @FXML
     public void initialize() {
         if (genreCombo != null) {
-            genreCombo.getItems().addAll(Genre.values()); 
+            genreCombo.getItems().addAll(GenreEnum.values()); 
         }
         int currentYear = java.time.Year.now().getValue();
         if (yearSpinner != null) {
@@ -91,7 +91,7 @@ public class TrackDialogController {
         String title = titleField.getText().trim();
         String author = authorField.getText().trim();
         String lengthStr = lengthField.getText().trim();
-        Genre genre = genreCombo.getValue();
+        GenreEnum genre = genreCombo.getValue();
         int year = yearSpinner.getValue() != null ? yearSpinner.getValue() : 0;
         TagEnum selectedTag = getSelectedTagEnum();
  
@@ -112,7 +112,7 @@ public class TrackDialogController {
     }
  
     private String validate(String title, String author,
-                            String length, Genre genre, int year) {
+                            String length, GenreEnum genre, int year) {
         if (title.isBlank())
             return "Il titolo non può essere vuoto.";
         if (author.isBlank())
@@ -150,19 +150,17 @@ public class TrackDialogController {
             lengthField.setText(String.format("%d:%02d", total / 60, total % 60));
         }
         
-        TagEnum currentTag = track.getTag();
-        if (tagFavourite != null) tagFavourite.setSelected(currentTag == TagEnum.STARRED);
-        if (tagNewRelease != null) tagNewRelease.setSelected(currentTag == TagEnum.REMEMBER_ME);
-        if (tagExplicit != null) tagExplicit.setSelected(false);  
-       }
+         TagEnum currentTag = track.getTag();
+        if (tagPreferiti   != null) tagPreferiti.setSelected(currentTag == TagEnum.Preferiti);
+        if (tagChill       != null) tagChill.setSelected(currentTag == TagEnum.Chill);
+        if (tagAllenamento != null) tagAllenamento.setSelected(currentTag == TagEnum.Allenamento);
+    }
  
     private TagEnum getSelectedTagEnum() {
-        if (tagFavourite != null && tagFavourite.isSelected()) {
-            return TagEnum.STARRED;
-        } else if (tagNewRelease != null && tagNewRelease.isSelected()) {
-            return TagEnum.REMEMBER_ME;
-        }
-        return null; 
+        if (tagPreferiti   != null && tagPreferiti.isSelected())   return TagEnum.Preferiti;
+        if (tagChill       != null && tagChill.isSelected())       return TagEnum.Chill;
+        if (tagAllenamento != null && tagAllenamento.isSelected()) return TagEnum.Allenamento;
+        return null;
     }
  
     private double toSeconds(String input) {

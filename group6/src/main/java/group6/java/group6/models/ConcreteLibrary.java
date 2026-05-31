@@ -1,16 +1,13 @@
 package group6.java.group6.models;
 
-import group6.java.group6.dao.TrackDao;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.HashSet;
 import java.util.Set;
 
-import group6.java.group6.enumerations.Genre;
+import group6.java.group6.dao.TrackDao;
+import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
-
-import java.util.Collections;
 
 public class ConcreteLibrary implements Library{
     private Set<Track> tracks;
@@ -52,7 +49,7 @@ public class ConcreteLibrary implements Library{
         notifyObservers();
     }
 
-    public void updateTrack(Track track, String newTitle, String newAuthor, double length, Genre genre, int year, TagEnum tag) {
+    public void updateTrack(Track track, String newTitle, String newAuthor, double length, GenreEnum genre, int year, TagEnum tag) {
         track.updateTrack(newTitle, newAuthor, length, genre, year, tag);
         notifyObservers(); // quando modifico una traccia è necessario notificare il MainController per fargli aggiornare la vista
     }

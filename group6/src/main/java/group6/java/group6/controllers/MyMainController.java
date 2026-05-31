@@ -32,7 +32,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
-public class MainController implements LibraryObserver{
+public class MyMainController implements LibraryObserver{
 
     // ── Top bar ──────────────────────────────────────────────────────────────
     @FXML private TextField searchField;
@@ -142,7 +142,7 @@ public class MainController implements LibraryObserver{
     protected void handleNewPlaylist() {
         showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Nuova Playlist");
     }
-
+    
     @FXML
     protected void handleGenerateByGenre() {
         showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Genere");
@@ -158,9 +158,10 @@ public class MainController implements LibraryObserver{
         showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Rinomina Playlist");
     }
 
-    @FXML protected void handleDeletePlaylist() {
-}
-
+    @FXML protected void handleDeletePlaylist() {}
+    
+    @FXML protected void handleGeneratePlaylist() {}
+    
     // Tracce
     @FXML
     protected void handleAddTrack() {
