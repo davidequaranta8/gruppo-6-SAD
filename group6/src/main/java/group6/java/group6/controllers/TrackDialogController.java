@@ -1,10 +1,14 @@
 package group6.java.group6.controllers;
 
+import java.io.File;
+
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.LibraryFacade;
 import group6.java.group6.models.Track;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -12,13 +16,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
-import java.io.File;
 
 
 public class TrackDialogController {
@@ -207,6 +207,7 @@ public class TrackDialogController {
             errorLabel.setVisible(false);
             errorLabel.setManaged(false);
         }
+    }
 
     @FXML
     public void handleChooseFile(ActionEvent event) {
