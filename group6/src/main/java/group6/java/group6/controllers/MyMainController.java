@@ -102,7 +102,10 @@ public class MyMainController implements LibraryObserver{
 
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
         genreFilter.getItems().setAll(GenreEnum.values());
-
+        audioPlayer.setOnEndOfMedia(() -> {
+            FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
+            icon.setIconLiteral("fas-play"); // rimette l'icona play quando la canzone finisce
+        });
         //if (addTrackBtn != null)   addTrackBtn.setDisable(false);
         if (RenamePlaylist != null) RenamePlaylist.setDisable(false);
         if (editTrackBtn != null)  editTrackBtn.setDisable(false);

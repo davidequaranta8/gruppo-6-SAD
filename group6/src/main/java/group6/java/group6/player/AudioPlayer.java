@@ -1,6 +1,7 @@
 package group6.java.group6.player;
 
 import group6.java.group6.models.Track;
+import javafx.application.Platform;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
@@ -9,6 +10,13 @@ import java.io.File;
 public class AudioPlayer {
 
     private MediaPlayer mediaPlayer;
+    private Runnable onEndCallback;
+
+
+    public void setOnEndOfMedia(Runnable callback) {
+        this.onEndCallback = callback;
+    }
+
 
     // Carica e mette in play una traccia
     public void play(Track track) {
@@ -24,6 +32,14 @@ public class AudioPlayer {
         }
         Media media = new Media(file.toURI().toString());
         mediaPlayer = new MediaPlayer(media);
+
+        mediaPlayer.setOnEndOfMedia(() -> {
+            mediaPlayer.dispose();
+            mediaPlayer = null;
+            if (onEndCallback != null) {
+                Platform.runLater(onEndCallback); // aggiorna la UI sul thread JavaFX
+            }
+        });
         mediaPlayer.play();
     }
 
