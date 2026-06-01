@@ -74,7 +74,7 @@ public class TrackDialogController {
         if (tagSelected == null) {
             return null;
         }
-        return TagEnum.valueOf(tagSelected.toUpperCase()); // Assicurati che i nomi dei tag siano in maiuscolo
+        return TagEnum.valueOf(tagSelected); // Assicurati che i nomi dei tag siano in maiuscolo
     }
 
     public String getOptionSelected() {
