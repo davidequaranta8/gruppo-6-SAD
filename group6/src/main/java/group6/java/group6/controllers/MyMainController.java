@@ -20,7 +20,6 @@ import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -162,56 +161,37 @@ public class MyMainController implements LibraryObserver{
 
     @FXML protected void handleDeletePlaylist() {}
 
-    // Tracce
+
+
     @FXML
     protected void handleAddTrack() {
-
         // definiamo il metodo accept() del Consumer
         showDialog("TrackDialog.fxml", "Aggiungi Traccia", (TrackDialogController controller) -> {
-                
-            if (!validateTrack(controller)) {
-                return; // Interrompe l'esecuzione se i dati non sono validi o mancano
+            if (!controller.validate()) {
+                controller.showValidationError();
+                return;
             }
-
-
-
-            // 1. Preleviamo i dati usando i getter del TrackDialogController
-            Track newTrack = new Track(
-
-                    controller.getTitle(),
-                    controller.getAuthor(),
-                    controller.getGenre(),
-                    controller.getYear(),
-                    TagEnum.valueOf(controller.getOptionSelected())
-            );
-
-            // 2. Aggiungiamo la traccia al Singleton
-            // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
-            //ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
-            //prendiamoci il file selezionato nel dialog e
-
-            File selectedFile = controller.getSelectedFile();
-            //TODO: compute the length of the track here and update in db
-
-            setDuration(selectedFile,newTrack);
-
-            if (selectedFile != null) {
-                try {
-                    Path dest = Paths.get(newTrack.getFilePath()); // es. "music/42.mp3"
-                    Files.createDirectories(dest.getParent());     // crea la cartella "music/" se non esiste
-                    Files.copy(selectedFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
+            saveTrackFromDialog(controller, null);
         });
     }
 
     @FXML
     protected void handleEditTrack() {
-        showDialog("TrackDialog.fxml", "Modifica Traccia",null);
+        Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
+        if (selectedTrack == null) return;
+
+        
+        showDialog("TrackDialog.fxml", "Modifica Traccia", (TrackDialogController controller) -> {
+            
+            if (!controller.validate()) {
+                controller.showValidationError();
+                return;
+            }
+            ConcreteLibrary.getInstance().removeTrack(selectedTrack);
+            saveTrackFromDialog(controller, selectedTrack);
+        });
     }
+
 
     @FXML protected void handleDeleteTrack() {
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
@@ -339,26 +319,36 @@ public class MyMainController implements LibraryObserver{
         });
     }
 
-    private boolean validateTrack(TrackDialogController controller){
-        String title   = controller.getTitle();
-                String author  = controller.getAuthor();
-                GenreEnum genre = controller.getGenre();
-                TagEnum tag     = controller.getTag();          
-                File selectedFile = controller.getSelectedFile();
+    // metodo privato comune 
+    private void saveTrackFromDialog(TrackDialogController controller, Track oldTrack) {
+        // 1. Preleviamo i dati usando i getter del TrackDialogController
+        Track track = new Track(
+                controller.getTitle(),
+                controller.getAuthor(),
+                controller.getGenre(),
+                controller.getYear(),
+                TagEnum.valueOf(controller.getOptionSelected())
+        );
 
-                //validazione campi obbligatori
-                if (title == null || title.isBlank()
-                        || author == null || author.isBlank()
-                        || genre == null
-                        || selectedFile == null) {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setHeaderText("Dati mancanti");
-                    alert.setContentText("Compila titolo, autore, genere e scegli un file audio.");
-                    alert.showAndWait();
-                    return false;
-                
+        // 2. Aggiungiamo la traccia al Singleton
+        // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
+        //ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
+        //prendiamoci il file selezionato nel dialog e
+
+        File selectedFile = controller.getSelectedFile();
+        setDuration(selectedFile, track);
+        //TODO: compute the length of the track here and update in db
+
+        if (selectedFile != null) {
+            try {
+                Path dest = Paths.get(track.getFilePath()); // es. "music/42.mp3"
+                Files.createDirectories(dest.getParent());     // crea la cartella "music/" se non esiste
+                Files.copy(selectedFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
-    return true;
-    }
+
 
 }

@@ -6,6 +6,7 @@ import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
@@ -116,4 +117,19 @@ public class TrackDialogController {
     public File getSelectedFile() {
         return selectedFile;
     }
+
+    public boolean validate() {
+    return getTitle() != null && !getTitle().isBlank()
+            && getAuthor() != null && !getAuthor().isBlank()
+            && getGenre() != null
+            && getSelectedFile() != null;
+}
+
+public void showValidationError() {
+    Alert alert = new Alert(Alert.AlertType.WARNING);
+    alert.setHeaderText("Dati mancanti");
+    alert.setContentText("Compila titolo, autore, genere e scegli un file audio.");
+    alert.showAndWait();
+}
+ 
 }
