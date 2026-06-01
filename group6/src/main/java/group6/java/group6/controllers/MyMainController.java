@@ -1,7 +1,16 @@
 package group6.java.group6.controllers;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.function.Consumer;
+
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import group6.java.group6.HelloApplication;
-import group6.java.group6.dao.TrackDao;
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.ConcreteLibrary;
@@ -11,20 +20,25 @@ import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
-import javafx.scene.media.MediaPlayer;
-import org.kordamp.ikonli.javafx.FontIcon;
-
-import java.io.File;
 import javafx.scene.media.Media;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.function.Consumer;
+import javafx.scene.media.MediaPlayer;
 
 
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
@@ -154,6 +168,12 @@ public class MyMainController implements LibraryObserver{
 
         // definiamo il metodo accept() del Consumer
         showDialog("TrackDialog.fxml", "Aggiungi Traccia", (TrackDialogController controller) -> {
+                
+            if (!validateTrack(controller)) {
+                return; // Interrompe l'esecuzione se i dati non sono validi o mancano
+            }
+
+
 
             // 1. Preleviamo i dati usando i getter del TrackDialogController
             Track newTrack = new Track(
@@ -318,4 +338,27 @@ public class MyMainController implements LibraryObserver{
             ConcreteLibrary.getInstance().addTrack(track);
         });
     }
+
+    private boolean validateTrack(TrackDialogController controller){
+        String title   = controller.getTitle();
+                String author  = controller.getAuthor();
+                GenreEnum genre = controller.getGenre();
+                TagEnum tag     = controller.getTag();          
+                File selectedFile = controller.getSelectedFile();
+
+                //validazione campi obbligatori
+                if (title == null || title.isBlank()
+                        || author == null || author.isBlank()
+                        || genre == null
+                        || selectedFile == null) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setHeaderText("Dati mancanti");
+                    alert.setContentText("Compila titolo, autore, genere e scegli un file audio.");
+                    alert.showAndWait();
+                    return false;
+                
+    }
+    return true;
+    }
+
 }
