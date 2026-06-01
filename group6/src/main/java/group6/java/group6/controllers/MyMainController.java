@@ -1,6 +1,7 @@
 package group6.java.group6.controllers;
 
 import group6.java.group6.HelloApplication;
+import group6.java.group6.dao.TrackDao;
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.ConcreteLibrary;
@@ -17,13 +18,14 @@ import javafx.scene.media.MediaPlayer;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
+import javafx.scene.media.Media;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Set;
 import java.util.function.Consumer;
+
 
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
 public class MyMainController implements LibraryObserver{
@@ -58,10 +60,6 @@ public class MyMainController implements LibraryObserver{
     @FXML private TableColumn<Track, String> colAuthor;
     @FXML private TableColumn<Track, GenreEnum> colGenre;
     @FXML private TableColumn<Track, Double> colLength;
-    /*
-    * VEDI DI RIMUOVERE QUALCHE COLONNA DELLA TABELLA DELLE TRACCE,
-    * SICCOME NON VENGONO MOSTRATE TUTTE
-     */
 
     // ── Sezione home ──────────────────────────────────────────────────────────
     @FXML private VBox homeSectionBox;
@@ -100,16 +98,12 @@ public class MyMainController implements LibraryObserver{
     // ═════════════════════════════════════════════════════════════════════════
     @FXML
     public void initialize() {
-
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
         genreFilter.getItems().setAll(GenreEnum.values());
         audioPlayer.setOnEndOfMedia(() -> {
             FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
             icon.setIconLiteral("fas-play"); // rimette l'icona play quando la canzone finisce
         });
-        //if (addTrackBtn != null)   addTrackBtn.setDisable(false);
-        if (RenamePlaylist != null) RenamePlaylist.setDisable(false);
-        if (editTrackBtn != null)  editTrackBtn.setDisable(false);
 
         // collegamento tra le colonne e gli attributi della classe Track
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
@@ -117,7 +111,7 @@ public class MyMainController implements LibraryObserver{
         colGenre.setCellValueFactory(new PropertyValueFactory<>("genre"));
         colLength.setCellValueFactory(new PropertyValueFactory<>("length"));
 
-        // registrazione l'observer
+        // registrazione dell'observer
         Library myLibrary = ConcreteLibrary.getInstance();
         myLibrary.addObserver(this); // inserisco l'observer nella lista degli osservatori da aggiornare
         updateTracksTable(); // effettuo uno primo aggiornamento della tabella
@@ -166,7 +160,6 @@ public class MyMainController implements LibraryObserver{
 
                     controller.getTitle(),
                     controller.getAuthor(),
-                    controller.getLength(),
                     controller.getGenre(),
                     controller.getYear(),
                     TagEnum.valueOf(controller.getOptionSelected())
@@ -174,11 +167,14 @@ public class MyMainController implements LibraryObserver{
 
             // 2. Aggiungiamo la traccia al Singleton
             // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
-            ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
-
+            //ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
             //prendiamoci il file selezionato nel dialog e
+
             File selectedFile = controller.getSelectedFile();
             //TODO: compute the length of the track here and update in db
+
+            setDuration(selectedFile,newTrack);
+
             if (selectedFile != null) {
                 try {
                     Path dest = Paths.get(newTrack.getFilePath()); // es. "music/42.mp3"
@@ -188,6 +184,7 @@ public class MyMainController implements LibraryObserver{
                     e.printStackTrace();
                 }
             }
+
         });
     }
 
@@ -290,5 +287,35 @@ public class MyMainController implements LibraryObserver{
 
     private void updateTracksTable() {
         tracksTableView.getItems().setAll(ConcreteLibrary.getInstance().getTracks());
+    }
+
+    // Metodo per prelevare la durata delle Track dal file
+    public void setDuration(File audioFile,Track track) {
+        // correggere la vista e il salvataggio su DB perchè non viene aggiornato con la setLength
+        String uriString = audioFile.toURI().toString(); // permette di trasformare il path relativo in URI
+
+        // 1. Creiamo l'oggetto Media
+        Media media = new Media(uriString);
+
+        // 2. Lo "avvolgiamo" nel MediaPlayer per utilizzare setOnReady
+        MediaPlayer mediaPlayer = new MediaPlayer(media);
+
+        // Utilizziamo il listener SetOnReady, siccome la lettura dei metadati del file è asincrona
+        mediaPlayer.setOnReady(() -> {
+
+            double totalSeconds = media.getDuration().toSeconds();
+
+            // 2. Calcoliamo i minuti interi dividendo per 60
+            int minutes = (int) (totalSeconds / 60);
+
+            // 3. Calcoliamo i secondi rimanenti usando l'operatore modulo (%)
+            int seconds = (int) (totalSeconds % 60);
+
+            // 4. Creiamo il valore decimale (es. 3 + (10 / 100) = 3.1)
+            double formattedDuration = minutes + (seconds / 100.0);
+
+            track.setLength(formattedDuration);
+            ConcreteLibrary.getInstance().addTrack(track);
+        });
     }
 }
