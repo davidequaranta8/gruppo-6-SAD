@@ -314,7 +314,7 @@ public class MyMainController implements LibraryObserver{
             double formattedDuration = minutes + (seconds / 100.0); // in questo modo rappresentiamo x minuti : y secondi
 
             track.setLength(formattedDuration);
-            ConcreteLibrary.getInstance().addTrack(track);
+            ConcreteLibrary.getInstance().updateTrack(track);
         });
     }
 }
