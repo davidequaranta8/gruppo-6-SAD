@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.function.Consumer;
 
+import group6.java.group6.utils.TimeUtils;
+import javafx.scene.input.MouseEvent;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import group6.java.group6.HelloApplication;
@@ -38,6 +40,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+
+import static group6.java.group6.utils.TimeUtils.formatTime;
 
 
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
@@ -98,6 +102,7 @@ public class MyMainController implements LibraryObserver{
     @FXML private Label detailGenre;
     @FXML private Label detailYear;
     @FXML private Label detailLength;
+    @FXML private Label curretTimeLabel;
     @FXML private Label detailTag;
     @FXML private CheckBox tagFavourite;
     @FXML private CheckBox tagExplicit;
@@ -114,9 +119,23 @@ public class MyMainController implements LibraryObserver{
     public void initialize() {
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
         genreFilter.getItems().setAll(GenreEnum.values());
+        //tell to the player what Runnable has to execute when the media ends playing
         audioPlayer.setOnEndOfMedia(() -> {
             FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
             icon.setIconLiteral("fas-play"); // rimette l'icona play quando la canzone finisce
+            currentTimeLabel.setText("0:00");
+            totalTimeLabel.setText("0:00");
+            progressSlider.setValue(0);
+        });
+        //Pass the callback to the audioPlayer that will be executed everytime the audio goes on
+        audioPlayer.setOnTimeChanged((current, total) -> {
+            if (total > 0) {
+                // aggiorna lo slider (0–100)
+                progressSlider.setValue((current / total) * 100);
+            }
+            // formatta mm:ss per le label
+            currentTimeLabel.setText(formatTime(current));
+            totalTimeLabel.setText(formatTime(total));
         });
 
         // collegamento tra le colonne e gli attributi della classe Track
@@ -286,24 +305,10 @@ public class MyMainController implements LibraryObserver{
         }
     }
 
-    // Riempie il pannello di dettaglio con i dati della traccia selezionata
-private void showTrackDetails(Track track) {
-    if (track == null) {            // nessuna traccia selezionata: svuota tutto
-        detailTitle.setText("");
-        detailAuthor.setText("");
-        detailGenre.setText("");
-        detailYear.setText("");
-        detailTag.setText("");
-        return;
-    }
+@FXML public void handleSeekTrack(MouseEvent mouseEvent) {
+    double seekSeconds = (progressSlider.getValue() / 100) * audioPlayer.getTotalDuration();
+    audioPlayer.seekTo(seekSeconds);
 
-    detailTitle.setText(track.getTitle());
-    detailAuthor.setText(track.getAuthor());
-    detailGenre.setText(track.getGenre() != null ? track.getGenre().toString() : "");
-    detailYear.setText(String.valueOf(track.getYear()));
-    detailLength.setText(String.format("%.2f", track.getLength()));
-    detailTag.setText(track.getTag() != null ? track.getTag().toString() : "");
-    
 }
 
     @Override
@@ -311,9 +316,6 @@ private void showTrackDetails(Track track) {
         updateTracksTable();
     }
 
-    private void updateTracksTable() {
-        tracksTableView.getItems().setAll(ConcreteLibrary.getInstance().getTracks());
-    }
 
     // Metodo per prelevare la durata delle Track dal file
     public void setDuration(File audioFile,Track track) {
@@ -382,5 +384,32 @@ private void showTrackDetails(Track track) {
 
     }
 
+
+    private void updateTracksTable() {
+        tracksTableView.getItems().setAll(ConcreteLibrary.getInstance().getTracks());
+    }
+
+
+    // Riempie il pannello di dettaglio con i dati della traccia selezionata
+    private void showTrackDetails(Track track) {
+        if (track == null) {            // nessuna traccia selezionata: svuota tutto
+            detailTitle.setText("");
+            detailAuthor.setText("");
+            detailGenre.setText("");
+            detailYear.setText("");
+            detailTag.setText("");
+            return;
+        }
+
+        detailTitle.setText(track.getTitle());
+        detailAuthor.setText(track.getAuthor());
+        detailGenre.setText(track.getGenre() != null ? track.getGenre().toString() : "");
+        detailYear.setText(String.valueOf(track.getYear()));
+        detailLength.setText(formatTime(TimeUtils.parseFormattedDuration(track.getLength())));
+        detailTag.setText(track.getTag() != null ? track.getTag().toString() : "");
+        totalTimeLabel.setText(formatTime(TimeUtils.parseFormattedDuration(track.getLength())));
+
+
+    }
 
 }

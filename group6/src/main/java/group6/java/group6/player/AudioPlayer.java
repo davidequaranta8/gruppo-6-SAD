@@ -4,17 +4,26 @@ import group6.java.group6.models.Track;
 import javafx.application.Platform;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.util.Duration;
 
 import java.io.File;
+import java.util.function.BiConsumer;
 
 public class AudioPlayer {
 
     private MediaPlayer mediaPlayer;
+    //Callback to be called on end of a track
     private Runnable onEndCallback;
-
+    //Callback to be called on progressing of a track
+    //BiConsumer is same as Runnable , the only difference is in the fact that the former accepts data
+    private BiConsumer<Double, Double> onTimeChanged;
 
     public void setOnEndOfMedia(Runnable callback) {
         this.onEndCallback = callback;
+    }
+
+    public void setOnTimeChanged(BiConsumer<Double, Double> callback) {
+        this.onTimeChanged = callback;
     }
 
 
@@ -33,11 +42,22 @@ public class AudioPlayer {
         Media media = new Media(file.toURI().toString());
         mediaPlayer = new MediaPlayer(media);
 
+        //set callback to run at the end of the media
         mediaPlayer.setOnEndOfMedia(() -> {
             mediaPlayer.dispose();
             mediaPlayer = null;
             if (onEndCallback != null) {
                 Platform.runLater(onEndCallback); // aggiorna la UI sul thread JavaFX
+            }
+        });
+        //set the callback to run at each change
+        mediaPlayer.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
+            if (onTimeChanged != null && newTime != null) {
+                double current = newTime.toSeconds();
+                double total   = mediaPlayer.getTotalDuration() != null
+                        ? mediaPlayer.getTotalDuration().toSeconds()
+                        : 0;
+                Platform.runLater(() -> onTimeChanged.accept(current, total));
             }
         });
         mediaPlayer.play();
@@ -69,5 +89,17 @@ public class AudioPlayer {
     public boolean isPaused() {
         return mediaPlayer != null &&
                 mediaPlayer.getStatus() == MediaPlayer.Status.PAUSED;
+    }
+    //useful to move along the track
+    public void seekTo(double seconds) {
+        if (mediaPlayer != null) {
+            mediaPlayer.seek(Duration.seconds(seconds));
+        }
+    }
+
+    public double getTotalDuration() {
+        if (mediaPlayer != null && mediaPlayer.getTotalDuration() != null)
+            return mediaPlayer.getTotalDuration().toSeconds();
+        return 0;
     }
 }
