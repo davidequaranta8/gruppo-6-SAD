@@ -42,6 +42,12 @@ public class ConcreteLibrary implements Library{
         notifyObservers(); // quando aggiungo una traccia è necessario notificare il MainController per fargli aggiornare la vista
     }
 
+
+    public void updateTrack(Track t) {
+        trackDao.update(t);
+        notifyObservers();
+    }
+
     public void removeTrack(Track t){
         tracks.remove(t);
         trackDao.delete(t);
