@@ -15,10 +15,10 @@ public class Track {
     private String filePath; //file path of the track on the disk: music/title_track
 
     // Costruttore: id non c'è perchè viene settato quando la track è salvata nel db , altrimenti non sapremmo quale id ha quando la costruiamo
-    public Track(String title, String author, GenreEnum genre, int year, TagEnum tag){
+    public Track(String title, String author,double length, GenreEnum genre, int year, TagEnum tag){
         this.title = title;
         this.author = author;
-        this.length = 0.0; // lo inizializziamo a 0.0 anche se il valore viene inizializzato con la set siccome lo preleviamo dal file
+        this.length = length; // lo inizializziamo anche se il valore viene modificato con la set siccome lo preleviamo dal file
         this.genre = genre;
         this.year = year;
         this.tag = tag;

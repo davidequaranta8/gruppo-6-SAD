@@ -9,6 +9,7 @@ import group6.java.group6.models.Library;
 import group6.java.group6.models.LibraryObserver;
 import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
@@ -157,9 +158,9 @@ public class MyMainController implements LibraryObserver{
 
             // 1. Preleviamo i dati usando i getter del TrackDialogController
             Track newTrack = new Track(
-
                     controller.getTitle(),
                     controller.getAuthor(),
+                    0.0,
                     controller.getGenre(),
                     controller.getYear(),
                     TagEnum.valueOf(controller.getOptionSelected())
@@ -167,7 +168,7 @@ public class MyMainController implements LibraryObserver{
 
             // 2. Aggiungiamo la traccia al Singleton
             // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
-            //ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
+            ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
             //prendiamoci il file selezionato nel dialog e
 
             File selectedFile = controller.getSelectedFile();
@@ -190,7 +191,6 @@ public class MyMainController implements LibraryObserver{
 
     @FXML
     protected void handleEditTrack() {
-        showDialog("TrackDialog.fxml", "Modifica Traccia",null);
     }
 
     @FXML protected void handleDeleteTrack() {
@@ -312,7 +312,7 @@ public class MyMainController implements LibraryObserver{
             int seconds = (int) (totalSeconds % 60);
 
             // 4. Creiamo il valore decimale (es. 3 + (10 / 100) = 3.1)
-            double formattedDuration = minutes + (seconds / 100.0);
+            double formattedDuration = minutes + (seconds / 100.0); // in questo modo rappresentiamo x minuti : y secondi
 
             track.setLength(formattedDuration);
             ConcreteLibrary.getInstance().addTrack(track);
