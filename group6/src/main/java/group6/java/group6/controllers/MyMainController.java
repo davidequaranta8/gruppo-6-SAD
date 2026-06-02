@@ -160,7 +160,6 @@ public class MyMainController implements LibraryObserver{
             Track newTrack = new Track(
                     controller.getTitle(),
                     controller.getAuthor(),
-                    0.0,
                     controller.getGenre(),
                     controller.getYear(),
                     TagEnum.valueOf(controller.getOptionSelected())
@@ -168,7 +167,7 @@ public class MyMainController implements LibraryObserver{
 
             // 2. Aggiungiamo la traccia al Singleton
             // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
-            ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
+            //ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
             //prendiamoci il file selezionato nel dialog e
 
             File selectedFile = controller.getSelectedFile();
