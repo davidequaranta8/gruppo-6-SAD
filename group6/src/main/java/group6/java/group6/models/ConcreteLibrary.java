@@ -1,6 +1,7 @@
 package group6.java.group6.models;
 
 import group6.java.group6.dao.TrackDao;
+import group6.java.group6.exceptions.DuplicateTitleTrackException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ public class ConcreteLibrary implements Library{
     }
 
     // Metodi per aggiungere e rimuovere tracce
-    public void addTrack(Track t) {
+    public void addTrack(Track t) throws DuplicateTitleTrackException {
         trackDao.save(t); //salva nel db prima di aggiungere al set dal momento che il db setta l'id
         tracks.add(t);
         notifyObservers(); // quando aggiungo una traccia è necessario notificare il MainController per fargli aggiornare la vista

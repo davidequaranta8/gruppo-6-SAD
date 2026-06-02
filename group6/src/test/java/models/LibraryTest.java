@@ -2,6 +2,7 @@ package models;
 
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
+import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Track;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,11 @@ public class LibraryTest {
     @Test
     public void testAddTrack() {
         // Metodo da testare
-        library.addTrack(t);
+        try {
+            library.addTrack(t);
+        } catch (DuplicateTitleTrackException e) {
+            throw new RuntimeException(e);
+        }
 
 
         // Verifichiamo che ci sia la traccia inserita
@@ -44,7 +49,11 @@ public class LibraryTest {
     @Test
     public void testRemoveTrack() {
         // inserisco una traccia per testare la rimozione
-        library.addTrack(t);
+        try {
+            library.addTrack(t);
+        } catch (DuplicateTitleTrackException e) {
+            throw new RuntimeException(e);
+        }
         assertEquals(1, library.getTracks().size()); // Assicuriamoci che l'inserimento sia andato a buon fine
 
         // Metodo da testare

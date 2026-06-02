@@ -3,6 +3,7 @@ package group6.java.group6.dao;
 import group6.java.group6.db.DatabaseResource;
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
+import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.Track;
 
 import java.io.File;
@@ -67,9 +68,18 @@ public class TrackDao implements Dao<Track , Integer>{
 
 
     @Override
-    public void save(Track track) {
-        String sql = "INSERT INTO track (title, tag, author, genre, year_of_publication, length, count_played, file_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public void save(Track track) throws DuplicateTitleTrackException {
+        // controlla se esiste già una track con lo stesso titolo
+        String checkSql = "SELECT COUNT(*) FROM track WHERE title = ?";
         try {
+            PreparedStatement checkStmt = sqlConnection.prepareStatement(checkSql);
+            checkStmt.setString(1, track.getTitle());
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                throw new DuplicateTitleTrackException(track.getTitle());
+            }
+
+            String sql = "INSERT INTO track (title, tag, author, genre, year_of_publication, length, count_played, file_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = sqlConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, track.getTitle());
             stmt.setString(2, track.getTag().name());
@@ -78,27 +88,21 @@ public class TrackDao implements Dao<Track , Integer>{
             stmt.setInt(5, track.getYear());
             stmt.setDouble(6, track.getLength());
             stmt.setInt(7, track.getCountPlayed());
-            stmt.setString(8, "placeholder"); //insert for the moment a placeholder to avoid not null constraint violation
-            //since file path is always built as music/id_track.mp3
+            stmt.setString(8, "placeholder");
             stmt.executeUpdate();
 
-            //here we get the id and hence after we can set the file path and update it in db
             ResultSet generatedKeys = stmt.getGeneratedKeys();
             if (generatedKeys.next()) {
                 int generatedId = generatedKeys.getInt(1);
                 track.setId(generatedId);
 
-                // build the filepath
-                String filePath = "music/" + generatedId +".mp3";
+                String filePath = "music/" + generatedId + ".mp3";
                 track.setFilePath(filePath);
 
-                //Update file path with the one just built
                 String updateSql = "UPDATE track SET file_path = ? WHERE id = ?";
                 PreparedStatement updateStmt = sqlConnection.prepareStatement(updateSql);
                 updateStmt.setString(1, filePath);
                 updateStmt.setInt(2, generatedId);
-
-
                 updateStmt.executeUpdate();
             }
 
@@ -106,7 +110,6 @@ public class TrackDao implements Dao<Track , Integer>{
             e.printStackTrace();
         }
     }
-
     @Override
     public void delete(Track track) {
         String sql = "DELETE FROM track where id = ?";

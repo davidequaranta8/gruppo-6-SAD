@@ -8,7 +8,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.function.Consumer;
 
+import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.utils.TimeUtils;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -22,20 +24,6 @@ import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -366,7 +354,15 @@ public class MyMainController implements LibraryObserver{
         //ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
         //prendiamoci il file selezionato nel dialog e
 
-        ConcreteLibrary.getInstance().addTrack(track);
+        try {
+            ConcreteLibrary.getInstance().addTrack(track);
+        } catch (DuplicateTitleTrackException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Errore");
+            alert.setHeaderText("Traccia duplicata");
+            alert.setContentText("Hai giá una traccia con titolo: " + e.getMessage());
+            alert.showAndWait();
+        }
 
         File selectedFile = controller.getSelectedFile();
         //TODO: compute the length of the track here and update in db

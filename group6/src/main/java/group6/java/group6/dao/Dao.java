@@ -14,7 +14,7 @@ public interface Dao <T,K> {
     Set<T> getAll();
 
     /*Save an entity in db*/
-    void save(T t);
+    void save(T t) throws Exception;
 
     /*Delete an entity in db*/
     void delete(T t);

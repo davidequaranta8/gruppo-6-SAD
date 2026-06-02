@@ -4,6 +4,7 @@ import group6.java.group6.dao.PlaylistDao;
 import group6.java.group6.dao.TrackDao;
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
+import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.Playlist;
 import group6.java.group6.models.Track;
 import org.junit.jupiter.api.Test;
@@ -112,7 +113,13 @@ public class PlaylistDaoTest {
     //save the playlist
     playlistDao.save(playlist);
     //save the track
+        try
+        {
     trackDao.save(track);
+        } catch (DuplicateTitleTrackException e) {
+            throw new RuntimeException(e);
+        }
+
     //add track to playlist
     playlistDao.addTrack(playlist, track);
 
@@ -139,7 +146,11 @@ public class PlaylistDaoTest {
         track.setLength(3.29);
 
         //save first the track and the playlist to avoid references error
-        trackDao.save(track);
+        try {
+            trackDao.save(track);
+        } catch (DuplicateTitleTrackException e) {
+            throw new RuntimeException(e);
+        }
         playlistDao.save(playlist);
 
         //save track in playlist
