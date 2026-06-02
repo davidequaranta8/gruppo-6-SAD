@@ -116,7 +116,7 @@
                   <Insets bottom="6.0" left="16.0" right="16.0" top="6.0" />
                </padding>
             </HBox>
-            <TableView fx:id="tracksTableView" prefHeight="462.0" prefWidth="782.0" styleClass="tracks-table" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tracksTableView" onMouseClicked="#handleTrackSelected" prefHeight="462.0" prefWidth="782.0" styleClass="tracks-table" VBox.vgrow="ALWAYS">
               <columns>
                 <TableColumn fx:id="colNow" prefWidth="75.0" text="#" />
                 <TableColumn fx:id="colTitle" prefWidth="176.0" text="Titolo" />

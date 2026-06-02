@@ -26,7 +26,6 @@ public class TrackDialogController {
     @FXML private TextField authorField;
     @FXML private ComboBox<GenreEnum> genreCombo;
     @FXML private Spinner<Integer> yearSpinner;
-    @FXML private TextField lengthField;
     @FXML private RadioButton starredBtn;
     @FXML private RadioButton chillBtn;
     @FXML private RadioButton workoutBtn;
@@ -66,9 +65,7 @@ public class TrackDialogController {
 
         return yearSpinner.getValue();
     }
-    public Double getLength() {
-        return Double.parseDouble(lengthField.getText());
-    }
+
 
     public TagEnum getTag() {
         String tagSelected = getOptionSelected();

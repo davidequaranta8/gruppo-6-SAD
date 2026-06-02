@@ -55,22 +55,20 @@
                 <Spinner fx:id="yearSpinner" editable="true" initialValue="2024" max="2099" min="1900" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
                 <!-- Durata -->
-                <Label styleClass="form-label" text="Durata (mm:ss) *" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                <TextField fx:id="lengthField" maxWidth="120" promptText="Es. 3:45" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <Label styleClass="form-label" text="Inserisci Traccia *" GridPane.rowIndex="5">
+   
+            <Label styleClass="form-label" text="Inserisci Traccia *" GridPane.rowIndex="4">
                <GridPane.margin>
                   <Insets />
                </GridPane.margin>
             </Label>
-            <Button mnemonicParsing="false" fx:id="chooseFileBtn" text="Clicca qui" onAction="#handleChooseFile" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                <Label fx:id="fileNameLabel" text="Nessun file selezionato" GridPane.columnIndex="2" GridPane.rowIndex="5"/>
+            <Button mnemonicParsing="false" fx:id="chooseFileBtn" text="Clicca qui" onAction="#handleChooseFile" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <Label fx:id="fileNameLabel" text="Nessun file selezionato" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
                 <!-- colonne responsive -->
                 <columnConstraints>
                     <ColumnConstraints hgrow="NEVER" minWidth="120" prefWidth="120" />
                     <ColumnConstraints hgrow="ALWAYS" />
                 </columnConstraints>
             <rowConstraints>
-               <RowConstraints />
                <RowConstraints />
                <RowConstraints />
                <RowConstraints />

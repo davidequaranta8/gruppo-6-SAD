@@ -18,7 +18,6 @@ import group6.java.group6.models.Library;
 import group6.java.group6.models.LibraryObserver;
 import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -99,6 +98,7 @@ public class MyMainController implements LibraryObserver{
     @FXML private Label detailGenre;
     @FXML private Label detailYear;
     @FXML private Label detailLength;
+    @FXML private Label detailTag;
     @FXML private CheckBox tagFavourite;
     @FXML private CheckBox tagExplicit;
     @FXML private CheckBox tagNewRelease;
@@ -168,41 +168,11 @@ public class MyMainController implements LibraryObserver{
     protected void handleAddTrack() {
         // definiamo il metodo accept() del Consumer
         showDialog("TrackDialog.fxml", "Aggiungi Traccia", (TrackDialogController controller) -> {
-//
             if (!controller.validate()) {
                 controller.showValidationError();
                 return;
-//
-
-            // 1. Preleviamo i dati usando i getter del TrackDialogController
-            Track newTrack = new Track(
-                    controller.getTitle(),
-                    controller.getAuthor(),
-                    controller.getGenre(),
-                    controller.getYear(),
-                    TagEnum.valueOf(controller.getOptionSelected())
-            );
-
-            // 2. Aggiungiamo la traccia al Singleton
-            // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
-            ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
-            //prendiamoci il file selezionato nel dialog e
-
-            File selectedFile = controller.getSelectedFile();
-            //TODO: compute the length of the track here and update in db
-
-            setDuration(selectedFile,newTrack);
-
-            if (selectedFile != null) {
-                try {
-                    Path dest = Paths.get(newTrack.getFilePath()); // es. "music/42.mp3"
-                    Files.createDirectories(dest.getParent());     // crea la cartella "music/" se non esiste
-                    Files.copy(selectedFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
             }
+
             saveTrackFromDialog(controller, null);
         });
     }
@@ -240,6 +210,10 @@ public class MyMainController implements LibraryObserver{
     @FXML protected void handlePrev() {}
 
 
+    @FXML
+    protected void handleTrackSelected() {
+        showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
+    }
 
 
     @FXML
@@ -312,6 +286,26 @@ public class MyMainController implements LibraryObserver{
         }
     }
 
+    // Riempie il pannello di dettaglio con i dati della traccia selezionata
+private void showTrackDetails(Track track) {
+    if (track == null) {            // nessuna traccia selezionata: svuota tutto
+        detailTitle.setText("");
+        detailAuthor.setText("");
+        detailGenre.setText("");
+        detailYear.setText("");
+        detailTag.setText("");
+        return;
+    }
+
+    detailTitle.setText(track.getTitle());
+    detailAuthor.setText(track.getAuthor());
+    detailGenre.setText(track.getGenre() != null ? track.getGenre().toString() : "");
+    detailYear.setText(String.valueOf(track.getYear()));
+    detailLength.setText(String.format("%.2f", track.getLength()));
+    detailTag.setText(track.getTag() != null ? track.getTag().toString() : "");
+    
+}
+
     @Override
     public void onLibraryChanged(){ // metodo ricavato da LibraryObserver per il pattern Observer
         updateTracksTable();
@@ -332,22 +326,25 @@ public class MyMainController implements LibraryObserver{
         // 2. Lo "avvolgiamo" nel MediaPlayer per utilizzare setOnReady
         MediaPlayer mediaPlayer = new MediaPlayer(media);
 
-        // Utilizziamo il listener SetOnReady, siccome la lettura dei metadati del file è asincrona
-        mediaPlayer.setOnReady(() -> {
+        // Utilizziamo il listener SetOnReady, siccome la lettura dei metadati del file è asincronala, leggiamo quando il valore diventa valido, non al primo onReady (che a volte arriva troppo presto).
+        media.durationProperty().addListener((obs, oldDur, newDur) -> {
+            if (newDur != null && !newDur.isUnknown() && newDur.toSeconds() > 0) {
 
-            double totalSeconds = media.getDuration().toSeconds();
+                double totalSeconds = media.getDuration().toSeconds();
 
-            // 2. Calcoliamo i minuti interi dividendo per 60
-            int minutes = (int) (totalSeconds / 60);
+                // 2. Calcoliamo i minuti interi dividendo per 60
+                int minutes = (int) (totalSeconds / 60);
 
-            // 3. Calcoliamo i secondi rimanenti usando l'operatore modulo (%)
-            int seconds = (int) (totalSeconds % 60);
+                // 3. Calcoliamo i secondi rimanenti usando l'operatore modulo (%)
+                int seconds = (int) (totalSeconds % 60);
 
-            // 4. Creiamo il valore decimale (es. 3 + (10 / 100) = 3.1)
-            double formattedDuration = minutes + (seconds / 100.0); // in questo modo rappresentiamo x minuti : y secondi
+                // 4. Creiamo il valore decimale (es. 3 + (10 / 100) = 3.1)
+                double formattedDuration = minutes + (seconds / 100.0); // in questo modo rappresentiamo x minuti : y secondi
 
-            track.setLength(formattedDuration);
-            ConcreteLibrary.getInstance().updateTrack(track);
+                track.setLength(formattedDuration);
+                ConcreteLibrary.getInstance().updateTrack(track);
+                mediaPlayer.dispose();
+            }
         });
     }
 
@@ -367,8 +364,9 @@ public class MyMainController implements LibraryObserver{
         //ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
         //prendiamoci il file selezionato nel dialog e
 
+        ConcreteLibrary.getInstance().addTrack(track);
+
         File selectedFile = controller.getSelectedFile();
-        setDuration(selectedFile, track);
         //TODO: compute the length of the track here and update in db
 
         if (selectedFile != null) {
@@ -380,6 +378,8 @@ public class MyMainController implements LibraryObserver{
                 e.printStackTrace();
             }
         }
+        setDuration(selectedFile, track);
+
     }
 
 
