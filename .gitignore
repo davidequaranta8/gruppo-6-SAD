@@ -1,6 +1,7 @@
 .DS_STORE
 .idea
 .vscode
-.idea/
+group6/.idea/
+group6/target/
 target/
 music/
