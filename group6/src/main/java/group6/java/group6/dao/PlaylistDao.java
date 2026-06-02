@@ -202,7 +202,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
               Track track = new Track(
                       rs.getString("title"),
                       rs.getString("author"),
-                      rs.getDouble("length"),
+
                       //TODO: be sure the elements in db genre are the same as in db column (caps included) otherwise will launch IllegalException: use parseGenre below
                       GenreEnum.valueOf(rs.getString("genre")),
                       rs.getInt("year_of_publication"),
@@ -211,6 +211,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
               );
               track.setCountPlayed(rs.getInt("count_played"));
               track.setId(rs.getInt("id"));
+              track.setLength(rs.getDouble("length"));
               track.setFilePath(rs.getString("file_path"));
               playlist.addTrack(track);
             }

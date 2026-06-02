@@ -27,9 +27,10 @@ public class TrackDao implements Dao<Track , Integer>{
             stmt.setInt(1 , key);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
-                Track track  = new Track(rs.getString("title") , rs.getString("author"), rs.getDouble("length"), GenreEnum.valueOf(rs.getString("genre")) , rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+                Track track  = new Track(rs.getString("title") , rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")) , rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
                 track.setCountPlayed(rs.getInt("count_played"));
                 track.setId(rs.getInt("id"));
+                track.setLength(rs.getInt("length"));
                 track.setFilePath(rs.getString("file_path"));
                 return Optional.of(track);
             }
@@ -49,10 +50,11 @@ public class TrackDao implements Dao<Track , Integer>{
             Set<Track> tracks = new HashSet<>();
             ResultSet rs = stmt.executeQuery();
             while(rs.next()){
-                Track track  = new Track(rs.getString("title"),rs.getString("author"),rs.getDouble("length") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+                Track track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
                 track.setCountPlayed(rs.getInt("count_played"));
                 track.setId(rs.getInt("id"));
                 track.setFilePath(rs.getString("file_path"));
+                track.setLength(rs.getDouble("length"));
                 tracks.add(track);
             }
             return tracks;
@@ -95,6 +97,8 @@ public class TrackDao implements Dao<Track , Integer>{
                 PreparedStatement updateStmt = sqlConnection.prepareStatement(updateSql);
                 updateStmt.setString(1, filePath);
                 updateStmt.setInt(2, generatedId);
+
+
                 updateStmt.executeUpdate();
             }
 

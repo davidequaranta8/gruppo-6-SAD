@@ -25,7 +25,8 @@ public class LibraryTest {
         library.setTracks(new HashSet<>());
 
         // Inizializziamo la traccia di test
-        t = new Track("titleTest", "authorTest", 3.1, GenreEnum.BLUES, 2000, TagEnum.Preferiti);
+        t = new Track("titleTest", "authorTest", GenreEnum.BLUES, 2000, TagEnum.Preferiti);
+        t.setLength(3.29);
     }
 
     @Test
