@@ -15,7 +15,8 @@ public class TrackDaoTest {
 
     @Test
     public void saveTrackTest(){
-        Track track = new Track("track 1 " , "mj" , 3.29  , GenreEnum.METAL , 2008 , TagEnum.Preferiti);
+        Track track = new Track("track 1 " , "mj"  , GenreEnum.METAL , 2008 , TagEnum.Preferiti);
+        track.setLength(3.29);
         trackDao.save(track);
         Optional<Track> trackRead = trackDao.get(track.getId());
         assertTrue(trackRead.isPresent());
@@ -26,7 +27,8 @@ public class TrackDaoTest {
 
     @Test
     public void deleteTrackTest(){
-        Track track = new Track("track 1 " , "mj" , 3.29  , GenreEnum.METAL , 2008 , TagEnum.Preferiti);
+        Track track = new Track("track 1 " , "mj"   , GenreEnum.METAL , 2008 , TagEnum.Preferiti);
+        track.setLength(3.29);
         trackDao.save(track);
         trackDao.delete(track);
         //try to read the deleted track so we expect an empy optional
@@ -38,7 +40,8 @@ public class TrackDaoTest {
 
     @Test
     public void updateTrackTest(){
-        Track track = new Track("track 1 " , "mj" , 3.29  , GenreEnum.METAL , 2008 , TagEnum.Preferiti);
+        Track track = new Track("track 1 " , "mj"   , GenreEnum.METAL , 2008 , TagEnum.Preferiti);
+        track.setLength(3.29);
         trackDao.save(track);
         track.setAuthor("author 1"); //update track
         trackDao.update(track);

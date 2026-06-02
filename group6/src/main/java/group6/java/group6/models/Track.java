@@ -18,7 +18,7 @@ public class Track {
     public Track(String title, String author, GenreEnum genre, int year, TagEnum tag){
         this.title = title;
         this.author = author;
-        this.length = 0.0; // lo inizializziamo a 0.0 anche se il valore viene inizializzato con la set siccome lo preleviamo dal file
+        this.length = 0.0;
         this.genre = genre;
         this.year = year;
         this.tag = tag;

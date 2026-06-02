@@ -18,6 +18,7 @@ import group6.java.group6.models.Library;
 import group6.java.group6.models.LibraryObserver;
 import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -167,9 +168,40 @@ public class MyMainController implements LibraryObserver{
     protected void handleAddTrack() {
         // definiamo il metodo accept() del Consumer
         showDialog("TrackDialog.fxml", "Aggiungi Traccia", (TrackDialogController controller) -> {
+//
             if (!controller.validate()) {
                 controller.showValidationError();
                 return;
+//
+
+            // 1. Preleviamo i dati usando i getter del TrackDialogController
+            Track newTrack = new Track(
+                    controller.getTitle(),
+                    controller.getAuthor(),
+                    controller.getGenre(),
+                    controller.getYear(),
+                    TagEnum.valueOf(controller.getOptionSelected())
+            );
+
+            // 2. Aggiungiamo la traccia al Singleton
+            // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
+            ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
+            //prendiamoci il file selezionato nel dialog e
+
+            File selectedFile = controller.getSelectedFile();
+            //TODO: compute the length of the track here and update in db
+
+            setDuration(selectedFile,newTrack);
+
+            if (selectedFile != null) {
+                try {
+                    Path dest = Paths.get(newTrack.getFilePath()); // es. "music/42.mp3"
+                    Files.createDirectories(dest.getParent());     // crea la cartella "music/" se non esiste
+                    Files.copy(selectedFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             }
             saveTrackFromDialog(controller, null);
         });
@@ -312,10 +344,10 @@ public class MyMainController implements LibraryObserver{
             int seconds = (int) (totalSeconds % 60);
 
             // 4. Creiamo il valore decimale (es. 3 + (10 / 100) = 3.1)
-            double formattedDuration = minutes + (seconds / 100.0);
+            double formattedDuration = minutes + (seconds / 100.0); // in questo modo rappresentiamo x minuti : y secondi
 
             track.setLength(formattedDuration);
-            ConcreteLibrary.getInstance().addTrack(track);
+            ConcreteLibrary.getInstance().updateTrack(track);
         });
     }
 
