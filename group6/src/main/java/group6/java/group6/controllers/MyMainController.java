@@ -9,28 +9,41 @@ import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import group6.java.group6.exceptions.DuplicateTitleTrackException;
-import group6.java.group6.utils.TimeUtils;
-import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import group6.java.group6.HelloApplication;
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
+import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Library;
 import group6.java.group6.models.LibraryObserver;
 import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
+import group6.java.group6.utils.TimeUtils;
+import static group6.java.group6.utils.TimeUtils.formatTime;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-
-import static group6.java.group6.utils.TimeUtils.formatTime;
 
 
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
@@ -414,6 +427,7 @@ public class MyMainController implements LibraryObserver{
             detailTitle.setText("");
             detailAuthor.setText("");
             detailGenre.setText("");
+            detailLength.setText("");
             detailYear.setText("");
             detailTag.setText("");
             return;
