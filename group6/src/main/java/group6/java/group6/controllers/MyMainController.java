@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import group6.java.group6.exceptions.DuplicateTitleTrackException;
@@ -201,12 +202,33 @@ public class MyMainController implements LibraryObserver{
         });
     }
 
-
+/*
     @FXML protected void handleDeleteTrack() {
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
         ConcreteLibrary.getInstance().removeTrack(selectedTrack);
 
+    }*/
+
+    @FXML
+    protected void handleDeleteTrack() {
+        Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
+
+        // alert per la richiesta di conferma dell'eliminazione della traccia
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Conferma eliminazione");
+        confirmation.setHeaderText("Eliminazione traccia");
+        confirmation.setContentText(
+                "Sei sicuro di voler eliminare la traccia \"" +
+                        selectedTrack.getTitle() + "\"?"
+        );
+
+        Optional<ButtonType> result = confirmation.showAndWait();
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            ConcreteLibrary.getInstance().removeTrack(selectedTrack);
+        }
     }
+
     @FXML protected void handleRemoveFromPlaylist() {}
 
     @FXML protected void handleFilter() {}
@@ -259,9 +281,9 @@ public class MyMainController implements LibraryObserver{
     @FXML protected void handleTagChange() {}
 
     @FXML
-    protected void handleGeneratePlaylist(){
+    protected void handleGeneratePlaylist(){ }
 
-    }
+
     //  metodo per mostrare i DialogPane ed effettuare operazioni nel momento in cui si cliccano i btn associati ad essa
     private <T> void showDialog(String fxmlFile, String title, Consumer<T> onOkAction) {
         try{
@@ -339,7 +361,7 @@ public class MyMainController implements LibraryObserver{
     }
 
     // metodo privato comune 
-    private void saveTrackFromDialog(TrackDialogController controller, Track oldTrack) {
+    private void saveTrackFromDialog(TrackDialogController controller, Track oldTrack){
         // 1. Preleviamo i dati usando i getter del TrackDialogController
         Track track = new Track(
                 controller.getTitle(),
