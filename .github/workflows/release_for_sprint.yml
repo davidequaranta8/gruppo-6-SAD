@@ -1,3 +1,4 @@
+name: Release for Sprint
 
 on:
   push:
