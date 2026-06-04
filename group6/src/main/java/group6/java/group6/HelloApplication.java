@@ -12,7 +12,7 @@ import java.io.IOException;
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("myMainView.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("MainView.fxml"));
         Application.setUserAgentStylesheet(new CupertinoDark().getUserAgentStylesheet());
         Scene scene = new Scene(fxmlLoader.load(), 1300, 800);
         stage.setTitle("Music Playlist Manager");

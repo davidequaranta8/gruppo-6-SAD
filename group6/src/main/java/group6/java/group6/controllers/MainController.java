@@ -47,7 +47,7 @@ import javafx.scene.media.MediaPlayer;
 
 
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
-public class MyMainController implements LibraryObserver{
+public class MainController implements LibraryObserver{
 
     private final AudioPlayer audioPlayer = new AudioPlayer();
 
