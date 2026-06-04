@@ -240,6 +240,9 @@ public class MainController implements LibraryObserver{
         Optional<ButtonType> result = confirmation.showAndWait();
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
+            audioPlayer.stop(); //stop track cause otherwise it continues to play even if we deleted the track
+            progressSlider.setValue(0);
+            currentTimeLabel.setText("0:00");
             ConcreteLibrary.getInstance().removeTrack(selectedTrack);
         }
     }
