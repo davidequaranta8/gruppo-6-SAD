@@ -25,6 +25,13 @@ public class Track {
         countPlayed = 0;
     }
 
+    public Track(String title, String author, GenreEnum genre, int year) {
+        this.title = title;
+        this.author = author;
+        this.length = 0;
+        this.genre = genre;
+        this.year = year;
+    }
 
     public int getCountPlayed() {
         return countPlayed;

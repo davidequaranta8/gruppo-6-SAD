@@ -20,7 +20,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1100.0" styleClass="root-pane" stylesheets="@app.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.MainController">
+<BorderPane  maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1100.0" styleClass="root-pane" stylesheets="@app.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.MainController">
    <top>
       <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="top-bar" BorderPane.alignment="CENTER">
          <children>
@@ -210,7 +210,7 @@
                   <Label styleClass="detail-key" text="Durata:" GridPane.rowIndex="4" />
                   <Label fx:id="detailYear" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                   <Label fx:id="detailLength" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                  <Label styleClass="detail-key" text="Tag:" GridPane.rowIndex="5" />
+                  <Label fx:id="tagLabel" styleClass="detail-key"  text="Tag:" GridPane.rowIndex="5" />
                   <Label fx:id="detailTag" styleClass="detail-value" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                </children>
                <padding>

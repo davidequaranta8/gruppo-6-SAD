@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -106,6 +107,7 @@ public class MainController implements LibraryObserver{
     @FXML private Label detailLength;
     @FXML private Label curretTimeLabel;
     @FXML private Label detailTag;
+    @FXML private Label tagLabel;
     @FXML private CheckBox tagFavourite;
     @FXML private CheckBox tagExplicit;
     @FXML private CheckBox tagNewRelease;
@@ -375,14 +377,26 @@ public class MainController implements LibraryObserver{
 
     // metodo privato comune 
     private void saveTrackFromDialog(TrackDialogController controller, Track oldTrack){
+      Track track ;
         // 1. Preleviamo i dati usando i getter del TrackDialogController
-        Track track = new Track(
-                controller.getTitle(),
-                controller.getAuthor(),
-                controller.getGenre(),
-                controller.getYear(),
-                TagEnum.valueOf(controller.getOptionSelected())
-        );
+        if (controller.getOptionSelected() != null){
+            track = new Track(
+                    controller.getTitle(),
+                    controller.getAuthor(),
+                    controller.getGenre(),
+                    controller.getYear(),
+                    TagEnum.valueOf(controller.getOptionSelected())
+            );
+        }
+        else{
+             track = new Track(
+                    controller.getTitle(),
+                    controller.getAuthor(),
+                    controller.getGenre(),
+                    controller.getYear()
+            );
+        }
+
 
         // 2. Aggiungiamo la traccia al Singleton
         // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
@@ -439,6 +453,8 @@ public class MainController implements LibraryObserver{
         detailYear.setText(String.valueOf(track.getYear()));
         detailLength.setText(formatTime(TimeUtils.parseFormattedDuration(track.getLength())));
         detailTag.setText(track.getTag() != null ? track.getTag().toString() : "");
+        tagLabel.setText(track.getTag() != null ? "Tag" : "");
+
         totalTimeLabel.setText(formatTime(TimeUtils.parseFormattedDuration(track.getLength())));
 
 

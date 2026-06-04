@@ -28,7 +28,16 @@ public class TrackDao implements Dao<Track , Integer>{
             stmt.setInt(1 , key);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
-                Track track  = new Track(rs.getString("title") , rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")) , rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+                Track track;
+                //it there is the tag then use constructor with the tag
+                if (!rs.getString("tag").isEmpty()) {
+                    track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+
+                }
+                //there is no tag for that track hence use the other constructor, the one without the tag
+                else {
+                    track = new Track(rs.getString("title"), rs.getString("author"), GenreEnum.valueOf(rs.getString("genre")), rs.getInt("year_of_publication"));
+                }
                 track.setCountPlayed(rs.getInt("count_played"));
                 track.setId(rs.getInt("id"));
                 track.setLength(rs.getInt("length"));
@@ -51,7 +60,16 @@ public class TrackDao implements Dao<Track , Integer>{
             Set<Track> tracks = new HashSet<>();
             ResultSet rs = stmt.executeQuery();
             while(rs.next()){
-                Track track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+                Track track;
+                //it there is the tag then use constructor with the tag
+                if (!rs.getString("tag").isEmpty()) {
+                    track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+
+                }
+                //there is no tag for that track hence use the other constructor, the one without the tag
+                else {
+                     track = new Track(rs.getString("title"), rs.getString("author"), GenreEnum.valueOf(rs.getString("genre")), rs.getInt("year_of_publication"));
+                }
                 track.setCountPlayed(rs.getInt("count_played"));
                 track.setId(rs.getInt("id"));
                 track.setFilePath(rs.getString("file_path"));
@@ -82,7 +100,12 @@ public class TrackDao implements Dao<Track , Integer>{
             String sql = "INSERT INTO track (title, tag, author, genre, year_of_publication, length, count_played, file_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = sqlConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, track.getTitle());
-            stmt.setString(2, track.getTag().name());
+            if(track.getTag() !=  null) {
+                stmt.setString(2, track.getTag().name());
+            }
+            else {
+                stmt.setString(2, "");
+            }
             stmt.setString(3, track.getAuthor());
             stmt.setString(4, track.getGenre().name());
             stmt.setInt(5, track.getYear());
@@ -144,7 +167,12 @@ public class TrackDao implements Dao<Track , Integer>{
 
         try (PreparedStatement ps = sqlConnection.prepareStatement(sql)) {
             ps.setString(1, track.getTitle());
-            ps.setString(2, track.getTag().name());
+            if(track.getTag() !=  null) {
+                ps.setString(2, track.getTag().name());
+            }
+            else {
+                ps.setString(2, "");
+            }
             ps.setString(3, track.getAuthor());
             ps.setString(4, track.getGenre().name());
             ps.setInt(5, track.getYear());
