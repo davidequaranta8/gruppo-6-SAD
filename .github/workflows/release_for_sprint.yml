@@ -5,7 +5,7 @@ on:
       - 'sprint-*'
 
 jobs:
-  release:
+  release_for_sprint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
