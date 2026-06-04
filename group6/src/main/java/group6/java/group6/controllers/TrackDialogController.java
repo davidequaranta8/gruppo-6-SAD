@@ -128,5 +128,41 @@ public void showValidationError() {
     alert.setContentText("Compila titolo, autore, genere e scegli un file audio.");
     alert.showAndWait();
 }
- 
+
+
+
+    public void setTitleField(String title) {
+        titleField.setText(title);
+    }
+
+    public void setAuthorField(String author) {
+        authorField.setText(author);
+    }
+
+    public void setGenreCombo(GenreEnum genre) {
+        genreCombo.setValue(genre);
+    }
+
+    public void setYearSpinner(Integer year) {
+        yearSpinner.getValueFactory().setValue(year);
+    }
+
+    public void setFileNameLabel(String fileName) {
+        fileNameLabel.setText(fileName);
+    }
+
+    public void setToggleGroup(TagEnum tag) {
+        // mostra come selezionato il toggle salvato
+        for (Toggle toggle : toggleGroup.getToggles()) {
+
+            // Controlli se l'Enum nascosto (UserData) corrisponde a quello cercato
+            if (toggle.getUserData() == tag) {
+
+                // Trovato! Lo selezioni e interrompi il ciclo
+                toggle.setSelected(true);
+                break;
+
+            }
+        }
+    }
 }

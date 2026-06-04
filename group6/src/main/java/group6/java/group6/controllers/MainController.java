@@ -215,11 +215,19 @@ public class MainController implements LibraryObserver{
         });
     }
 
-/*
-    @FXML protected void handleDeleteTrack() {
+    /*@FXML
+    protected void handleEditTrack() { // correggere il fatto che i set stanno nel consumer che viene eseguito dopo
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
-        ConcreteLibrary.getInstance().removeTrack(selectedTrack);
+        if (selectedTrack == null) return;
 
+        showDialog("TrackDialog.fxml", "Modifica Traccia", (TrackDialogController controller) -> {
+            controller.setAuthorField(selectedTrack.getAuthor());
+            controller.setGenreCombo(selectedTrack.getGenre());
+            controller.setTitleField(selectedTrack.getTitle());
+            controller.setYearSpinner(selectedTrack.getYear());
+            controller.setToggleGroup(selectedTrack.getTag());
+            controller.setFileNameLabel(selectedTrack.getFilePath());
+        });
     }*/
 
     @FXML
