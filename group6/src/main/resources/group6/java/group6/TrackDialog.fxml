@@ -52,7 +52,7 @@
 
                 <!-- Anno -->
                 <Label styleClass="form-label" text="Anno *" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                <Spinner fx:id="yearSpinner" editable="true" initialValue="2024" max="2099" min="1900" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <Spinner fx:id="yearSpinner" initialValue="2024" max="2099" min="1900" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
                 <!-- Durata -->
    
@@ -61,12 +61,13 @@
                   <Insets />
                </GridPane.margin>
             </Label>
-            <Button mnemonicParsing="false" fx:id="chooseFileBtn" text="Clicca qui" onAction="#handleChooseFile" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                <Label fx:id="fileNameLabel" text="Nessun file selezionato" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+            <Button fx:id="chooseFileBtn" mnemonicParsing="false" onAction="#handleChooseFile" text="Clicca qui" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <Label fx:id="fileNameLabel" text="Nessun file selezionato" GridPane.columnIndex="2" GridPane.rowIndex="4" />
                 <!-- colonne responsive -->
                 <columnConstraints>
-                    <ColumnConstraints hgrow="NEVER" minWidth="120" prefWidth="120" />
+                    <ColumnConstraints hgrow="NEVER" minWidth="120.0" prefWidth="120.0" />
                     <ColumnConstraints hgrow="ALWAYS" />
+               <ColumnConstraints />
                 </columnConstraints>
             <rowConstraints>
                <RowConstraints />
