@@ -85,7 +85,7 @@ public class Track {
         countPlayed++;
     }
 
-    public void updateTrack(String title, String author, double length, GenreEnum genre, int year, TagEnum tag){
+    public void updateTrack(String title, String author, GenreEnum genre, int year, TagEnum tag){
         setAuthor(author);
         setGenre(genre);
         setLength(length);
