@@ -194,7 +194,7 @@ public class MainController implements LibraryObserver{
                 return;
             }
 
-            saveTrackFromDialog(controller, null);
+            saveTrackFromDialog(controller);
         });
     }
 
@@ -204,31 +204,36 @@ public class MainController implements LibraryObserver{
         if (selectedTrack == null) return;
 
         
-        showDialog("TrackDialog.fxml", "Modifica Traccia", (TrackDialogController controller) -> {
+        showEditTrackDialog("TrackDialog.fxml", "Modifica Traccia",selectedTrack ,(controller) -> {
             
-            if (!controller.validate()) {
+            /*if (!controller.validate()) {
                 controller.showValidationError();
                 return;
+            }*/
+            selectedTrack.updateTrack(controller.getTitle(),controller.getAuthor(),controller.getGenre(),controller.getYear(),controller.getTag());
+
+            ConcreteLibrary.getInstance().updateTrack(selectedTrack);
+
+
+            File selectedFile = controller.getSelectedFile();
+            //TODO: compute the length of the track here and update in db
+
+            if (selectedFile != null) {
+
+                try {
+                    Path dest = Paths.get(selectedTrack.getFilePath()); // es. "music/42.mp3"
+                    Files.createDirectories(dest.getParent());     // crea la cartella "music/" se non esiste
+                    Files.copy(selectedFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                setDuration(selectedFile, selectedTrack);
             }
-            ConcreteLibrary.getInstance().removeTrack(selectedTrack);
-            saveTrackFromDialog(controller, selectedTrack);
+
         });
     }
 
-    /*@FXML
-    protected void handleEditTrack() { // correggere il fatto che i set stanno nel consumer che viene eseguito dopo
-        Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
-        if (selectedTrack == null) return;
 
-        showDialog("TrackDialog.fxml", "Modifica Traccia", (TrackDialogController controller) -> {
-            controller.setAuthorField(selectedTrack.getAuthor());
-            controller.setGenreCombo(selectedTrack.getGenre());
-            controller.setTitleField(selectedTrack.getTitle());
-            controller.setYearSpinner(selectedTrack.getYear());
-            controller.setToggleGroup(selectedTrack.getTag());
-            controller.setFileNameLabel(selectedTrack.getFilePath());
-        });
-    }*/
 
     @FXML
     protected void handleDeleteTrack() {
@@ -336,6 +341,44 @@ public class MainController implements LibraryObserver{
         }
     }
 
+    private void showEditTrackDialog(String fxmlFile, String title,Track track, Consumer<TrackDialogController> onOkAction) {
+        try{
+            // carico la scena del TrackDialog
+            var url = HelloApplication.class.getResource(fxmlFile);
+            FXMLLoader fxmlLoader = new FXMLLoader(url);
+            DialogPane dialogPane = fxmlLoader.load();
+
+            // Recupera il controller TrackDialogController
+            TrackDialogController controller = fxmlLoader.getController();
+
+            // setto la scena del TrackDialog nel PopUp del DialogPane
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setDialogPane(dialogPane);
+            dialog.setTitle(title);
+
+            controller.setAuthorField(track.getAuthor());
+            controller.setGenreCombo(track.getGenre());
+            controller.setTitleField(track.getTitle());
+            controller.setFileNameLabel(track.getFilePath());
+            controller.setToggleGroup(track.getTag());
+            controller.setYearSpinner(track.getYear());
+
+            // Mostriamo il dialog e aspettiamo che venga chiuso in qualche modo
+            dialog.showAndWait().ifPresent(buttonType -> {
+
+                // se premi il bottone SALVA sul popUp allora esegue accept del consumer
+                if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                    // Eseguiamo la Lambda Expression passandole il controller
+                    if (onOkAction != null) {
+                        onOkAction.accept(controller);
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 @FXML public void handleSeekTrack(MouseEvent mouseEvent) {
     double seekSeconds = (progressSlider.getValue() / 100) * audioPlayer.getTotalDuration();
     audioPlayer.seekTo(seekSeconds);
@@ -382,7 +425,7 @@ public class MainController implements LibraryObserver{
     }
 
     // metodo privato comune 
-    private void saveTrackFromDialog(TrackDialogController controller, Track oldTrack){
+    private void saveTrackFromDialog(TrackDialogController controller){
         // 1. Preleviamo i dati usando i getter del TrackDialogController
         Track track = new Track(
                 controller.getTitle(),
