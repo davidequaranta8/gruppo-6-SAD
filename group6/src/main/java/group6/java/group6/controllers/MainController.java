@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -36,6 +38,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
@@ -273,18 +276,63 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     @FXML
     protected void handleEditTrack() {
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
-        if (selectedTrack == null) return;
+        if (selectedTrack == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Modifica Traccia");
+            alert.setHeaderText("Nessuna traccia selezionata");
+            alert.setContentText("Seleziona una traccia dalla tabella.");
+            alert.showAndWait();
+            return;
+        }
 
-        
+        final String oldFilePath = selectedTrack.getFilePath();
+
         showDialog("TrackDialog.fxml", "Modifica Traccia", (TrackDialogController controller) -> {
-            
+            controller.setTitleField(selectedTrack.getTitle());
+            controller.setAuthorField(selectedTrack.getAuthor());
+            controller.setGenreCombo(selectedTrack.getGenre());
+            controller.setYearSpinner(selectedTrack.getYear());
+            controller.setToggleGroup(selectedTrack.getTag());
+
+            if (oldFilePath != null) {
+                File existingFile = new File(oldFilePath);
+                if (existingFile.exists()) {
+                    controller.setFileNameLabel(oldFilePath);
+                    controller.setSelectedFile(existingFile);
+                }
+            }
+
             if (!controller.validate()) {
                 controller.showValidationError();
                 return;
             }
-            ConcreteLibrary.getInstance().removeTrack(selectedTrack);
-            saveTrackFromDialog(controller, selectedTrack);
-            showTrackDetails(selectedTrack); // aggiorna il pannello di dettaglio con i nuovi dati
+
+            selectedTrack.setTitle(controller.getTitle());
+            selectedTrack.setAuthor(controller.getAuthor());
+            selectedTrack.setGenre(controller.getGenre());
+            selectedTrack.setYear(controller.getYear());
+            selectedTrack.setTag(controller.getTag());
+
+            File newFile = controller.getSelectedFile();
+            boolean isNewFile = oldFilePath == null || !newFile.getPath().equals(oldFilePath);
+
+            if (isNewFile) {
+                try {
+                    Path dest = Paths.get(selectedTrack.getFilePath());
+                    if (dest == null) {
+                        dest = Paths.get("music", selectedTrack.getId() + ".mp3");
+                        selectedTrack.setFilePath(dest.toString());
+                    }
+                    Files.createDirectories(dest.getParent());
+                    Files.copy(newFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                setDuration(newFile, selectedTrack);
+            }
+
+            ConcreteLibrary.getInstance().updateTrack(selectedTrack);
+            showTrackDetails(selectedTrack);
         });
     }
 
@@ -324,8 +372,75 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         showTrackDetails(null); // svuota il pannello di dettaglio dopo l'eliminazione
     }
 
-    @FXML protected void handleAddToPlaylist() {}
-    @FXML protected void handleRemoveFromPlaylist() {}
+    @FXML protected void handleAddToPlaylist() {
+        Playlist playlist = PlaylistManager.getInstance().getSelectedPlaylist();
+        if (playlist == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Aggiungi a Playlist");
+            alert.setHeaderText("Nessuna playlist selezionata");
+            alert.setContentText("Seleziona una playlist dalla barra laterale.");
+            alert.showAndWait();
+            return;
+        }
+
+        List<Track> availableTracks = ConcreteLibrary.getInstance().getTracks().stream()
+                .filter(t -> !playlist.getTracks().contains(t))
+                .collect(Collectors.toList());
+
+        if (availableTracks.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Aggiungi a Playlist");
+            alert.setHeaderText("Nessuna traccia disponibile");
+            alert.setContentText("Tutte le tracce sono già nella playlist \"" + playlist.getTitle() + "\".");
+            alert.showAndWait();
+            return;
+        }
+
+        Map<String, Track> trackMap = new LinkedHashMap<>();
+        for (Track t : availableTracks) {
+            trackMap.put(t.getTitle() + " - " + t.getAuthor(), t);
+        }
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(trackMap.keySet().iterator().next(), trackMap.keySet());
+        dialog.setTitle("Aggiungi a Playlist");
+        dialog.setHeaderText("Aggiungi traccia a \"" + playlist.getTitle() + "\"");
+        dialog.setContentText("Traccia:");
+
+        dialog.showAndWait().ifPresent(key -> {
+            PlaylistManager.getInstance().addTrackToPlaylist(playlist, trackMap.get(key));
+        });
+    }
+
+    @FXML protected void handleRemoveFromPlaylist() {
+        Playlist playlist = PlaylistManager.getInstance().getSelectedPlaylist();
+        Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
+        if (playlist == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Rimuovi dalla Playlist");
+            alert.setHeaderText("Nessuna playlist selezionata");
+            alert.showAndWait();
+            return;
+        }
+        if (selectedTrack == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Rimuovi dalla Playlist");
+            alert.setHeaderText("Nessuna traccia selezionata");
+            alert.setContentText("Seleziona una traccia dalla tabella.");
+            alert.showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Rimuovi dalla Playlist");
+        confirm.setHeaderText("Rimuovere \"" + selectedTrack.getTitle() + "\" dalla playlist?");
+        confirm.setContentText("La traccia rimarrà nella libreria.");
+
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.OK) {
+                PlaylistManager.getInstance().removeTrackFromPlaylist(playlist, selectedTrack);
+            }
+        });
+    }
 
     @FXML protected void handleFilter() {}
     @FXML protected void handleResetFilter() {}
@@ -586,6 +701,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
     
    private void showPlaylistContent(Playlist playlist) {
+        tracksTableView.getSelectionModel().clearSelection();
+        showTrackDetails(null);
         PlaylistManager.getInstance().loadTracksForPlaylist(playlist);
         tracksTableView.getItems().setAll(playlist.getTracks());
         playlistTitleLabel.setText(playlist.getTitle());

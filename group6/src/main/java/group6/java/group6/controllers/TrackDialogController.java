@@ -115,6 +115,10 @@ public class TrackDialogController {
         return selectedFile;
     }
 
+    public void setSelectedFile(File file) {
+        this.selectedFile = file;
+    }
+
     public boolean validate() {
     return getTitle() != null && !getTitle().isBlank()
             && getAuthor() != null && !getAuthor().isBlank()
