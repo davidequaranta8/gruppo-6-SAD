@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
+import group6.java.group6.dao.TrackDao;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import group6.java.group6.HelloApplication;
@@ -51,6 +52,7 @@ import javafx.scene.media.MediaPlayer;
 public class MainController implements LibraryObserver{
 
     private final AudioPlayer audioPlayer = new AudioPlayer();
+    private final TrackDao trackDao = new TrackDao();
 
     // ── Top bar ──────────────────────────────────────────────────────────────
     @FXML private TextField searchField;
@@ -205,15 +207,25 @@ public class MainController implements LibraryObserver{
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
         if (selectedTrack == null) return;
 
-        
+
         showEditTrackDialog("TrackDialog.fxml", "Modifica Traccia",selectedTrack ,(controller) -> {
-            
+
             /*if (!controller.validate()) {
                 controller.showValidationError();
                 return;
             }*/
-            selectedTrack.updateTrack(controller.getTitle(),controller.getAuthor(),controller.getGenre(),controller.getYear(),controller.getTag());
 
+            //before to update the model check first if user edited title or author in order to have a duplicate record
+            if(trackDao.existsByAuthorAndTitle(controller.getAuthor(), controller.getTitle())){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Errore");
+                alert.setHeaderText("Errore");
+                alert.setContentText("Esiste giá una traccia con titolo "+ controller.getTitle() + " e autore " + controller.getAuthor());
+                alert.showAndWait();
+                return; //avoid to continue updating
+            }
+
+            selectedTrack.updateTrack(controller.getTitle(),controller.getAuthor(),controller.getGenre(),controller.getYear(),controller.getTag());
             ConcreteLibrary.getInstance().updateTrack(selectedTrack);
 
 
@@ -257,6 +269,7 @@ public class MainController implements LibraryObserver{
             progressSlider.setValue(0);
             currentTimeLabel.setText("0:00");
             ConcreteLibrary.getInstance().removeTrack(selectedTrack);
+            clearDetails(); //clear all details aside to avoid inconsistencies
         }
     }
 
@@ -465,8 +478,9 @@ public class MainController implements LibraryObserver{
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Errore");
             alert.setHeaderText("Traccia duplicata");
-            alert.setContentText("Hai giá una traccia con titolo: " + e.getMessage());
+            alert.setContentText(e.getMessage());
             alert.showAndWait();
+            return;
         }
 
         File selectedFile = controller.getSelectedFile();
@@ -494,12 +508,7 @@ public class MainController implements LibraryObserver{
     // Riempie il pannello di dettaglio con i dati della traccia selezionata
     private void showTrackDetails(Track track) {
         if (track == null) {            // nessuna traccia selezionata: svuota tutto
-            detailTitle.setText("");
-            detailAuthor.setText("");
-            detailGenre.setText("");
-            detailLength.setText("");
-            detailYear.setText("");
-            detailTag.setText("");
+            clearDetails();
             return;
         }
 
@@ -514,6 +523,18 @@ public class MainController implements LibraryObserver{
         totalTimeLabel.setText(formatTime(TimeUtils.parseFormattedDuration(track.getLength())));
 
 
+    }
+
+
+    private void clearDetails() {
+        detailTitle.setText("");
+        detailAuthor.setText("");
+        detailGenre.setText("");
+        detailLength.setText("");
+        detailYear.setText("");
+        detailTag.setText("");
+        tagLabel.setText("");
+        totalTimeLabel.setText("");
     }
 
 }

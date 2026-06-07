@@ -87,16 +87,11 @@ public class TrackDao implements Dao<Track , Integer>{
 
     @Override
     public void save(Track track) throws DuplicateTitleTrackException {
-        // controlla se esiste già una track con lo stesso titolo
-        String checkSql = "SELECT COUNT(*) FROM track WHERE title = ?";
-        try {
-            PreparedStatement checkStmt = sqlConnection.prepareStatement(checkSql);
-            checkStmt.setString(1, track.getTitle());
-            ResultSet rs = checkStmt.executeQuery();
-            if (rs.next() && rs.getInt(1) > 0) {
-                throw new DuplicateTitleTrackException(track.getTitle());
-            }
+        //check first whether exists a track with same author and title or not
+        if(existsByAuthorAndTitle(track.getAuthor(), track.getTitle())) throw new DuplicateTitleTrackException("Esiste già una traccia con titolo "+track.getTitle()+ " e autore "+ track.getAuthor());
 
+        //if we got till here it means we can proceed with insertion hence has not been found any duplicate record
+        try{
             String sql = "INSERT INTO track (title, tag, author, genre, year_of_publication, length, count_played, file_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = sqlConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, track.getTitle());
@@ -183,7 +178,7 @@ public class TrackDao implements Dao<Track , Integer>{
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Error updating track with id: " + track.getId(), e);
+
         }
     }
 
@@ -196,5 +191,21 @@ public class TrackDao implements Dao<Track , Integer>{
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+
+    //Method to check if exists already a record with that author and that title. Check is consistent to upper and lower case words
+    public boolean existsByAuthorAndTitle(String author, String title){
+        String sql = "SELECT COUNT(*) FROM track WHERE LOWER(author) = ? AND LOWER(title) = ?";
+        try{
+            PreparedStatement checkStmt = sqlConnection.prepareStatement(sql);
+            checkStmt.setString(1, author.toLowerCase());
+            checkStmt.setString(2, title.toLowerCase());
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) return true;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 }
