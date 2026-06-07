@@ -43,7 +43,7 @@
       <VBox minWidth="200.0" prefHeight="432.0" prefWidth="137.0" styleClass="sidebar" BorderPane.alignment="CENTER">
          <children>
             <Label styleClass="section-label" text="LE MIE PLAYLIST" />
-            <ListView styleClass="playlist-list" VBox.vgrow="ALWAYS" />
+            <ListView fx:id="playlistListView"  onMouseClicked="#handleSidebarClick" styleClass="playlist-list" VBox.vgrow="ALWAYS" />
             <Separator prefWidth="200.0" />
             <VBox alignment="CENTER" prefHeight="90.0" prefWidth="137.0" spacing="10.0">
                <children>
@@ -55,6 +55,16 @@
                   <Button fx:id="generatePlaylistBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleGeneratePlaylist" prefHeight="32.0" prefWidth="124.0" styleClass="btn-secondary" text="Genera Playlist">
                      <graphic>
                         <FontIcon />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="showAllTracksBtn" maxWidth="1.7976931348623157E308" 
+                        mnemonicParsing="false" 
+                        onAction="#handleShowAllTracks" 
+                        prefHeight="30.0" prefWidth="123.0" 
+                        styleClass="btn-secondary" 
+                        text="Tutte le tracce">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-music" iconSize="13" />
                      </graphic>
                   </Button>
                </children>
@@ -71,6 +81,15 @@
    <center>
       <VBox prefHeight="200.0" prefWidth="100.0" styleClass="main-panel" BorderPane.alignment="CENTER">
          <children>
+            <Label fx:id="playlistTitleLabel" 
+                  text="Nome Playlist" 
+                  styleClass="playlist-header-title"
+                  managed="false"
+                  visible="false">
+               <VBox.margin>
+                  <Insets left="16.0" top="15.0" bottom="15.0"/>
+               </VBox.margin>
+            </Label>
             <HBox prefHeight="46.0" prefWidth="550.0" spacing="8.0">
                <children>
                   <Button fx:id="playAll" mnemonicParsing="false" onAction="#handlePlayAll" styleClass="btn-play" text="Riproduci">
@@ -96,7 +115,7 @@
                   </Button>
                </children>
             </HBox>
-            <HBox alignment="CENTER" spacing="8.0" styleClass="filter-bar">
+            <HBox fx:id="filterBar" alignment="CENTER" spacing="8.0" styleClass="filter-bar">
                <children>
                   <Label styleClass="filter-label" text="Filtra:" />
                   <ComboBox fx:id="genreFilter" onAction="#handleFilter" prefWidth="150.0" promptText="Genere" />
@@ -229,6 +248,11 @@
                         <FontIcon iconLiteral="fas-edit" iconSize="13" />
                      </graphic>
                   </Button>
+                  <Button fx:id="addToPlaylistBtn" maxWidth="1.7976931348623157E308"  mnemonicParsing="false" onAction="#handleAddToPlaylist" prefHeight="30.0" styleClass="btn-primary" text="Aggiungi a Playlist" visible="true" managed="true">
+                  <graphic>
+                     <FontIcon iconLiteral="fas-plus" iconSize="13" />
+                  </graphic>
+               </Button>
                   <Button fx:id="removeFromPlaylistBtn" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleRemoveFromPlaylist" styleClass="btn-danger" text="Rimuovi dalla Playlist">
                      <graphic>
                         <FontIcon iconLiteral="fas-minus-circle" iconSize="13" />

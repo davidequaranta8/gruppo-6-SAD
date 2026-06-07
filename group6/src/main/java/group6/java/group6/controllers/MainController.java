@@ -6,18 +6,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import group6.java.group6.HelloApplication;
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
+import group6.java.group6.exceptions.DuplicatePlaylistException;
 import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Library;
 import group6.java.group6.models.LibraryObserver;
+import group6.java.group6.models.Playlist;
+import group6.java.group6.models.PlaylistManager;
+import group6.java.group6.models.PlaylistObserver;
 import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
 import group6.java.group6.utils.TimeUtils;
@@ -41,15 +48,21 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
 
+
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
-public class MainController implements LibraryObserver{
+public class MainController implements LibraryObserver, PlaylistObserver {
 
     private final AudioPlayer audioPlayer = new AudioPlayer();
+
+    
+     // ── State pattern ─────────────────────────────────────────────────────────
+    private MainViewContext viewContext;
 
     // ── Top bar ──────────────────────────────────────────────────────────────
     @FXML private TextField searchField;
@@ -66,8 +79,13 @@ public class MainController implements LibraryObserver{
     // Nel FXML il bottone Rinomina ha fx:id="RenamePlaylist"
     @FXML private Button RenamePlaylist;       // nome esatto come nel FXML
     @FXML private Button deletePlaylistBtn;
+    @FXML private Button addToPlaylistBtn;
+
+    // ── Titolo playlist attiva (sopra la tabella) ─────────────────────────────
+    @FXML private Label playlistTitleLabel;
 
     // ── Filtri ───────────────────────────────────────────────────────────────
+    @FXML private HBox filterBar;
     @FXML private ComboBox<GenreEnum> genreFilter;
     @FXML private ComboBox<String> yearFilter;
     @FXML private Button addTrackBtn;
@@ -112,6 +130,8 @@ public class MainController implements LibraryObserver{
     @FXML private Button editTrackBtn;
     @FXML private Button removeFromPlaylistBtn;
     @FXML private Button deleteTrackBtn;
+
+     // ── Stato runtime ─────────────────────────────────────────────────────────
     private Track currentPlayingTrack = null;
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -119,6 +139,8 @@ public class MainController implements LibraryObserver{
     // ═════════════════════════════════════════════════════════════════════════
     @FXML
     public void initialize() {
+        viewContext = new MainViewContext(filterBar, addTrackBtn, addToPlaylistBtn, deleteTrackBtn, removeFromPlaylistBtn, RenamePlaylist, playlistTitleLabel);
+        viewContext.setState(MainViewContext.LIBRARY_STATE);
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
         genreFilter.getItems().setAll(GenreEnum.values());
         //tell to the player what Runnable has to execute when the media ends playing
@@ -150,7 +172,12 @@ public class MainController implements LibraryObserver{
         Library myLibrary = ConcreteLibrary.getInstance();
         myLibrary.addObserver(this); // inserisco l'observer nella lista degli osservatori da aggiornare
         updateTracksTable(); // effettuo uno primo aggiornamento della tabella
-
+        
+        //observer per playlist
+        PlaylistManager.getInstance().addObserver(this);
+        // effettuo uno primo aggiornamento della sidebar per caricare eventuali playlist già presenti
+        updatePlaylistSidebar();
+      
 
     }
 
@@ -163,7 +190,21 @@ public class MainController implements LibraryObserver{
     // ── Playlist ──────────────────────────────────────────────────────────────
     @FXML
     protected void handleNewPlaylist() {
-        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Nuova Playlist",null);
+        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Nuova Playlist",(PlaylistDialogController ctrl) -> {
+                    if (!ctrl.validate()) { 
+                        ctrl.showValidationError(); 
+                        return;
+                     }
+                    try {
+                        PlaylistManager.getInstance().createPlaylist(ctrl.getName());
+                    } catch (DuplicatePlaylistException e) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Errore");
+                        alert.setHeaderText("Playlist duplicata");
+                        alert.setContentText("Hai giá una playlist con nome: " + e.getMessage());
+                        alert.showAndWait();
+                        }
+        });    
     }
 
     @FXML
@@ -177,11 +218,42 @@ public class MainController implements LibraryObserver{
     }
 
     @FXML
-    protected void handleRenamePlaylist() {
-        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Rinomina Playlist",null);
+    protected void handleRenamePlaylist() {         
+        Playlist selected = PlaylistManager.getInstance().getSelectedPlaylist();
+        if (selected == null)
+            return;
+        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Rinomina Playlist",
+                (PlaylistDialogController ctrl) -> {
+                     if (!ctrl.validate()) { 
+                        ctrl.showValidationError(); 
+                        return;
+                    }
+                    try {
+                        PlaylistManager.getInstance().renamePlaylist(selected, ctrl.getName());
+                    } catch (DuplicatePlaylistException e) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Errore");
+                        alert.setHeaderText("Playlist duplicata");
+                        alert.setContentText("Hai giá una playlist con nome: " + e.getMessage());
+                        alert.showAndWait();
+                    }
+                });
     }
 
-    @FXML protected void handleDeletePlaylist() {}
+    @FXML protected void handleDeletePlaylist() {
+        Playlist selected = PlaylistManager.getInstance().getSelectedPlaylist();
+        if (selected == null) return;
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Conferma eliminazione");
+        confirm.setHeaderText("Eliminazione playlist");
+        confirm.setContentText("Eliminare \"" + selected.getTitle() + "\"?");
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.OK){ 
+                PlaylistManager.getInstance().deletePlaylist(selected);
+                handleShowAllTracks(); //torno alla libreria originale
+            }
+        });
+    }
 
 
 
@@ -212,6 +284,7 @@ public class MainController implements LibraryObserver{
             }
             ConcreteLibrary.getInstance().removeTrack(selectedTrack);
             saveTrackFromDialog(controller, selectedTrack);
+            showTrackDetails(selectedTrack); // aggiorna il pannello di dettaglio con i nuovi dati
         });
     }
 
@@ -248,8 +321,10 @@ public class MainController implements LibraryObserver{
         if (result.isPresent() && result.get() == ButtonType.OK) {
             ConcreteLibrary.getInstance().removeTrack(selectedTrack);
         }
+        showTrackDetails(null); // svuota il pannello di dettaglio dopo l'eliminazione
     }
 
+    @FXML protected void handleAddToPlaylist() {}
     @FXML protected void handleRemoveFromPlaylist() {}
 
     @FXML protected void handleFilter() {}
@@ -305,6 +380,42 @@ public class MainController implements LibraryObserver{
     protected void handleGeneratePlaylist(){ }
 
 
+    @FXML public void handleSeekTrack(MouseEvent mouseEvent) {
+        double seekSeconds = (progressSlider.getValue() / 100) * audioPlayer.getTotalDuration();
+        audioPlayer.seekTo(seekSeconds);
+
+    }
+
+
+     // Seleziona una playlist dalla sidebar e ne mostra il contenuto. 
+    @FXML
+    protected void handleSidebarClick(javafx.scene.input.MouseEvent event) {
+    String clickedName = playlistListView.getSelectionModel().getSelectedItem();
+    
+    if (clickedName != null) {
+        Set<Playlist> tutteLePlaylist = PlaylistManager.getInstance().getPlaylists();
+        Playlist selezionata = tutteLePlaylist.stream()
+                .filter(p -> p.getTitle().trim().equalsIgnoreCase(clickedName.trim()))
+                .findFirst()
+                .orElse(null);
+
+        if (selezionata != null) {
+            PlaylistManager.getInstance().setSelectedPlaylist(selezionata);
+            showPlaylistContent(selezionata);
+            } 
+        }
+    }
+
+    //Torna a mostrare tutte le tracce nella tabella
+    @FXML
+    protected void handleShowAllTracks() {
+        PlaylistManager.getInstance().setSelectedPlaylist(null);
+        playlistListView.getSelectionModel().clearSelection();
+        updateTracksTable();
+        viewContext.setState(MainViewContext.LIBRARY_STATE);
+    }
+
+
     //  metodo per mostrare i DialogPane ed effettuare operazioni nel momento in cui si cliccano i btn associati ad essa
     private <T> void showDialog(String fxmlFile, String title, Consumer<T> onOkAction) {
         try{
@@ -336,17 +447,22 @@ public class MainController implements LibraryObserver{
         }
     }
 
-@FXML public void handleSeekTrack(MouseEvent mouseEvent) {
-    double seekSeconds = (progressSlider.getValue() / 100) * audioPlayer.getTotalDuration();
-    audioPlayer.seekTo(seekSeconds);
-
-}
-
     @Override
     public void onLibraryChanged(){ // metodo ricavato da LibraryObserver per il pattern Observer
         updateTracksTable();
     }
 
+
+    @Override
+    public void onPlaylistChanged() {
+        updatePlaylistSidebar();
+        Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
+        if (selectedPlaylist != null) {
+            showPlaylistContent(selectedPlaylist);
+        } else {
+            viewContext.setState(MainViewContext.LIBRARY_STATE);
+        }
+    }
 
     // Metodo per prelevare la durata delle Track dal file
     public void setDuration(File audioFile,Track track) {
@@ -449,6 +565,31 @@ public class MainController implements LibraryObserver{
         detailTag.setText(track.getTag() != null ? track.getTag().toString() : "");
         totalTimeLabel.setText(formatTime(TimeUtils.parseFormattedDuration(track.getLength())));
 
+
+    }
+
+    private void updatePlaylistSidebar() {
+    if (playlistListView == null) return;
+    Playlist currentPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
+    String currentTitle = currentPlaylist != null ? currentPlaylist.getTitle() : null;
+    List<String> names = PlaylistManager.getInstance().getPlaylists()
+                .stream()
+                .map(Playlist::getTitle)
+                .collect(Collectors.toList()); 
+
+        playlistListView.getItems().setAll(names);
+
+        if (currentTitle != null && names.contains(currentTitle)) {
+            playlistListView.getSelectionModel().select(currentTitle);
+        }
+    
+    }
+    
+   private void showPlaylistContent(Playlist playlist) {
+        PlaylistManager.getInstance().loadTracksForPlaylist(playlist);
+        tracksTableView.getItems().setAll(playlist.getTracks());
+        playlistTitleLabel.setText(playlist.getTitle());
+        viewContext.setState(MainViewContext.PLAYLIST_STATE);
 
     }
 
