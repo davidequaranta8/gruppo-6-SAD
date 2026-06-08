@@ -660,8 +660,13 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
 
     @Override
-    public void onLibraryChanged() { // metodo ricavato da LibraryObserver per il pattern Observer
-        updateTracksTable();
+    public void onLibraryChanged() {
+        Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
+        if (selectedPlaylist != null) {
+            showPlaylistContent(selectedPlaylist);
+        } else {
+            updateTracksTable();
+        }
     }
 
 
