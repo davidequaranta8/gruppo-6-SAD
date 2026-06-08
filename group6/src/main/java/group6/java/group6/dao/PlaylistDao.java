@@ -199,16 +199,30 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-              Track track = new Track(
-                      rs.getString("title"),
-                      rs.getString("author"),
+                Track track;
+                if(rs.getString("tag").equals("")){
+                    track = new Track(
+                            rs.getString("title"),
+                            rs.getString("author"),
 
-                      //TODO: be sure the elements in db genre are the same as in db column (caps included) otherwise will launch IllegalException: use parseGenre below
-                      GenreEnum.valueOf(rs.getString("genre")),
-                      rs.getInt("year_of_publication"),
-                      //TODO: be sure the tags saved is provided by the enum (we will do this through radio buttons for each option of the enum both for genre and tag [db fix!])
-                      TagEnum.valueOf(rs.getString("tag"))
-              );
+                            //TODO: be sure the elements in db genre are the same as in db column (caps included) otherwise will launch IllegalException: use parseGenre below
+                            GenreEnum.valueOf(rs.getString("genre")),
+                            rs.getInt("year_of_publication")
+                            //TODO: be sure the tags saved is provided by the enum (we will do this through radio buttons for each option of the enum both for genre and tag [db fix!])
+
+                    );
+                }else {
+                    track = new Track(
+                            rs.getString("title"),
+                            rs.getString("author"),
+
+                            //TODO: be sure the elements in db genre are the same as in db column (caps included) otherwise will launch IllegalException: use parseGenre below
+                            GenreEnum.valueOf(rs.getString("genre")),
+                            rs.getInt("year_of_publication"),
+                            //TODO: be sure the tags saved is provided by the enum (we will do this through radio buttons for each option of the enum both for genre and tag [db fix!])
+                            TagEnum.valueOf(rs.getString("tag"))
+                    );
+                }
               track.setCountPlayed(rs.getInt("count_played"));
               track.setId(rs.getInt("id"));
               track.setLength(rs.getDouble("length"));

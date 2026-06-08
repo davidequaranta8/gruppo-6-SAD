@@ -6,10 +6,10 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DialogPane?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -89,21 +89,24 @@
                <Insets left="5.0" />
             </VBox.margin></Label>
             <HBox spacing="20">
-            <RadioButton fx:id="starredBtn" mnemonicParsing="false" styleClass="form-label" text="Preferiti">
+            <ToggleButton fx:id="starredBtn" mnemonicParsing="false" text="Preferiti">
                <graphic>
                   <FontIcon iconLiteral="fas-star" />
                </graphic>
-            </RadioButton>
-            <RadioButton fx:id="chillBtn" mnemonicParsing="false" styleClass="form-label" text="Chill">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </ToggleButton>
+            <ToggleButton fx:id="chillBtn" mnemonicParsing="false" text="Chill">
                <graphic>
                   <FontIcon iconLiteral="fas-coffee" />
                </graphic>
-            </RadioButton>
-            <RadioButton fx:id="workoutBtn" mnemonicParsing="false" styleClass="form-label" text="Allenamento">
+            </ToggleButton>
+            <ToggleButton fx:id="workoutBtn" mnemonicParsing="false" text="Allenamento">
                <graphic>
                   <FontIcon iconLiteral="fas-dumbbell" />
                </graphic>
-            </RadioButton>
+            </ToggleButton>
             </HBox>
         </VBox>
     </content>

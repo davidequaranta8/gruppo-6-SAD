@@ -349,7 +349,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             }*/
 
             //before to update the model check first if user edited title or author in order to have a duplicate record
-            if (trackDao.existsByAuthorAndTitle(controller.getAuthor(), controller.getTitle())) {
+            if (trackDao.existsByAuthorAndTitleAndId(controller.getAuthor(), controller.getTitle(),selectedTrack.getId())) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Errore");
                 alert.setHeaderText("Errore");

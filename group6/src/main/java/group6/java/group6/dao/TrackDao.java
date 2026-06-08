@@ -210,4 +210,19 @@ public class TrackDao implements Dao<Track , Integer>{
         }
         return false;
     }
+
+    public boolean existsByAuthorAndTitleAndId(String author, String title,int id){
+        String sql = "SELECT COUNT(*) FROM track WHERE LOWER(author) = ? AND LOWER(title) = ? AND id <> ?";
+        try{
+            PreparedStatement checkStmt = sqlConnection.prepareStatement(sql);
+            checkStmt.setString(1, author.toLowerCase());
+            checkStmt.setString(2, title.toLowerCase());
+            checkStmt.setInt(3,id);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) return true;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
 }
