@@ -287,53 +287,55 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
         final String oldFilePath = selectedTrack.getFilePath();
 
-        showDialog("TrackDialog.fxml", "Modifica Traccia", (TrackDialogController controller) -> {
-            controller.setTitleField(selectedTrack.getTitle());
-            controller.setAuthorField(selectedTrack.getAuthor());
-            controller.setGenreCombo(selectedTrack.getGenre());
-            controller.setYearSpinner(selectedTrack.getYear());
-            controller.setToggleGroup(selectedTrack.getTag());
-
-            if (oldFilePath != null) {
-                File existingFile = new File(oldFilePath);
-                if (existingFile.exists()) {
-                    controller.setFileNameLabel(oldFilePath);
-                    controller.setSelectedFile(existingFile);
-                }
-            }
-
-            if (!controller.validate()) {
-                controller.showValidationError();
-                return;
-            }
-
-            selectedTrack.setTitle(controller.getTitle());
-            selectedTrack.setAuthor(controller.getAuthor());
-            selectedTrack.setGenre(controller.getGenre());
-            selectedTrack.setYear(controller.getYear());
-            selectedTrack.setTag(controller.getTag());
-
-            File newFile = controller.getSelectedFile();
-            boolean isNewFile = oldFilePath == null || !newFile.getPath().equals(oldFilePath);
-
-            if (isNewFile) {
-                try {
-                    Path dest = Paths.get(selectedTrack.getFilePath());
-                    if (dest == null) {
-                        dest = Paths.get("music", selectedTrack.getId() + ".mp3");
-                        selectedTrack.setFilePath(dest.toString());
+        showDialog("TrackDialog.fxml", "Modifica Traccia",
+            (TrackDialogController controller) -> {
+                controller.setTitleField(selectedTrack.getTitle());
+                controller.setAuthorField(selectedTrack.getAuthor());
+                controller.setGenreCombo(selectedTrack.getGenre());
+                controller.setYearSpinner(selectedTrack.getYear());
+                controller.setToggleGroup(selectedTrack.getTag());
+                if (oldFilePath != null) {
+                    File existingFile = new File(oldFilePath);
+                    if (existingFile.exists()) {
+                        controller.setFileNameLabel(oldFilePath);
+                        controller.setSelectedFile(existingFile);
                     }
-                    Files.createDirectories(dest.getParent());
-                    Files.copy(newFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-                setDuration(newFile, selectedTrack);
-            }
+            },
+            (TrackDialogController controller) -> {
+                if (!controller.validate()) {
+                    controller.showValidationError();
+                    return;
+                }
 
-            ConcreteLibrary.getInstance().updateTrack(selectedTrack);
-            showTrackDetails(selectedTrack);
-        });
+                selectedTrack.setTitle(controller.getTitle());
+                selectedTrack.setAuthor(controller.getAuthor());
+                selectedTrack.setGenre(controller.getGenre());
+                selectedTrack.setYear(controller.getYear());
+                selectedTrack.setTag(controller.getTag());
+
+                File newFile = controller.getSelectedFile();
+                boolean isNewFile = oldFilePath == null || !newFile.getPath().equals(oldFilePath);
+
+                if (isNewFile) {
+                    try {
+                        Path dest = Paths.get(selectedTrack.getFilePath());
+                        if (dest == null) {
+                            dest = Paths.get("music", selectedTrack.getId() + ".mp3");
+                            selectedTrack.setFilePath(dest.toString());
+                        }
+                        Files.createDirectories(dest.getParent());
+                        Files.copy(newFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    setDuration(newFile, selectedTrack);
+                }
+
+                ConcreteLibrary.getInstance().updateTrack(selectedTrack);
+                showTrackDetails(selectedTrack);
+            }
+        );
     }
 
     /*@FXML
@@ -531,27 +533,27 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
 
 
-    //  metodo per mostrare i DialogPane ed effettuare operazioni nel momento in cui si cliccano i btn associati ad essa
     private <T> void showDialog(String fxmlFile, String title, Consumer<T> onOkAction) {
+        showDialog(fxmlFile, title, null, onOkAction);
+    }
+
+    private <T> void showDialog(String fxmlFile, String title, Consumer<T> preShowAction, Consumer<T> onOkAction) {
         try{
-            // carico la scena del TrackDialog
             var url = HelloApplication.class.getResource(fxmlFile);
             FXMLLoader fxmlLoader = new FXMLLoader(url);
             DialogPane dialogPane = fxmlLoader.load();
-
-            // Recupera il controller TrackDialogController
             T controller = fxmlLoader.getController();
 
-            // setto la scena del TrackDialog nel PopUp del DialogPane
+            if (preShowAction != null) {
+                preShowAction.accept(controller);
+            }
+
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setDialogPane(dialogPane);
             dialog.setTitle(title);
 
-            // Mostriamo il dialog e aspettiamo che venga chiuso in qualche modo
             dialog.showAndWait().ifPresent(buttonType -> {
-                // se premi il bottone SALVA sul popUp allora esegue accept del consumer
                 if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                    // Eseguiamo la Lambda Expression passandole il controller
                     if (onOkAction != null) {
                         onOkAction.accept(controller);
                     }
