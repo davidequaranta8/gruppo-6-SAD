@@ -1,12 +1,22 @@
 package group6.java.group6.controllers;
 
 import java.io.File;
+import java.time.Year;
 
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -114,17 +124,18 @@ public class TrackDialogController {
         this.selectedFile = file;
     }
 
-    public boolean validate() {
+    public boolean validate(boolean isEditMode) {
+    int currentYear = Year.now().getValue();
     return getTitle() != null && !getTitle().isBlank()
             && getAuthor() != null && !getAuthor().isBlank()
-            && getGenre() != null
-            && getSelectedFile() != null;
+            && getGenre() != null && getYear() <= currentYear
+            && (isEditMode || getSelectedFile() != null);
 }
 
 public void showValidationError() {
     Alert alert = new Alert(Alert.AlertType.WARNING);
-    alert.setHeaderText("Dati mancanti");
-    alert.setContentText("Compila titolo, autore, genere e scegli un file audio.");
+    alert.setHeaderText("Dati mancanti o sbagliati");
+    alert.setContentText("Controlla titolo, autore, genere, anno e scegli un file audio.");
     alert.showAndWait();
 }
 
