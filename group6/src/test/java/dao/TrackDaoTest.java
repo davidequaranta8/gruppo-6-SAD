@@ -69,7 +69,7 @@ public class TrackDaoTest {
     @Test
     public void insertDuplicateTrackTest() {
         Track track1 = new Track("Same Title", "Author 1", GenreEnum.POP, 2020, TagEnum.Allenamento);
-        Track track2 = new Track("Same Title", "Author 2", GenreEnum.ROCK, 2021, TagEnum.Chill);
+        Track track2 = new Track("Same Title", "Author 1", GenreEnum.ROCK, 2021, TagEnum.Chill);
 
         try {
             ConcreteLibrary.getInstance().addTrack(track1);

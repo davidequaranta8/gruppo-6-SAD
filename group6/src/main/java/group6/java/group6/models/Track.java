@@ -25,6 +25,13 @@ public class Track {
         countPlayed = 0;
     }
 
+    public Track(String title, String author, GenreEnum genre, int year) {
+        this.title = title;
+        this.author = author;
+        this.length = 0;
+        this.genre = genre;
+        this.year = year;
+    }
 
     public int getCountPlayed() {
         return countPlayed;
@@ -78,7 +85,7 @@ public class Track {
         countPlayed++;
     }
 
-    public void updateTrack(String title, String author, double length, GenreEnum genre, int year, TagEnum tag){
+    public void updateTrack(String title, String author, GenreEnum genre, int year, TagEnum tag){
         setAuthor(author);
         setGenre(genre);
         setLength(length);

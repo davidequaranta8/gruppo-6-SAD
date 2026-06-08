@@ -28,7 +28,16 @@ public class TrackDao implements Dao<Track , Integer>{
             stmt.setInt(1 , key);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
-                Track track  = new Track(rs.getString("title") , rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")) , rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+                Track track;
+                //it there is the tag then use constructor with the tag
+                if (!rs.getString("tag").isEmpty()) {
+                    track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+
+                }
+                //there is no tag for that track hence use the other constructor, the one without the tag
+                else {
+                    track = new Track(rs.getString("title"), rs.getString("author"), GenreEnum.valueOf(rs.getString("genre")), rs.getInt("year_of_publication"));
+                }
                 track.setCountPlayed(rs.getInt("count_played"));
                 track.setId(rs.getInt("id"));
                 track.setLength(rs.getInt("length"));
@@ -51,7 +60,16 @@ public class TrackDao implements Dao<Track , Integer>{
             Set<Track> tracks = new HashSet<>();
             ResultSet rs = stmt.executeQuery();
             while(rs.next()){
-                Track track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+                Track track;
+                //it there is the tag then use constructor with the tag
+                if (!rs.getString("tag").isEmpty()) {
+                    track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+
+                }
+                //there is no tag for that track hence use the other constructor, the one without the tag
+                else {
+                     track = new Track(rs.getString("title"), rs.getString("author"), GenreEnum.valueOf(rs.getString("genre")), rs.getInt("year_of_publication"));
+                }
                 track.setCountPlayed(rs.getInt("count_played"));
                 track.setId(rs.getInt("id"));
                 track.setFilePath(rs.getString("file_path"));
@@ -69,20 +87,20 @@ public class TrackDao implements Dao<Track , Integer>{
 
     @Override
     public void save(Track track) throws DuplicateTitleTrackException {
-        // controlla se esiste già una track con lo stesso titolo
-        String checkSql = "SELECT COUNT(*) FROM track WHERE title = ?";
-        try {
-            PreparedStatement checkStmt = sqlConnection.prepareStatement(checkSql);
-            checkStmt.setString(1, track.getTitle());
-            ResultSet rs = checkStmt.executeQuery();
-            if (rs.next() && rs.getInt(1) > 0) {
-                throw new DuplicateTitleTrackException(track.getTitle());
-            }
+        //check first whether exists a track with same author and title or not
+        if(existsByAuthorAndTitle(track.getAuthor(), track.getTitle())) throw new DuplicateTitleTrackException("Esiste già una traccia con titolo "+track.getTitle()+ " e autore "+ track.getAuthor());
 
+        //if we got till here it means we can proceed with insertion hence has not been found any duplicate record
+        try{
             String sql = "INSERT INTO track (title, tag, author, genre, year_of_publication, length, count_played, file_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = sqlConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, track.getTitle());
-            stmt.setString(2, track.getTag().name());
+            if(track.getTag() !=  null) {
+                stmt.setString(2, track.getTag().name());
+            }
+            else {
+                stmt.setString(2, "");
+            }
             stmt.setString(3, track.getAuthor());
             stmt.setString(4, track.getGenre().name());
             stmt.setInt(5, track.getYear());
@@ -132,6 +150,8 @@ public class TrackDao implements Dao<Track , Integer>{
 
     @Override
     public void update(Track track) {
+        //TODO: creare un metodo isPresentWithTitleAndAuthor a parte per la verifica dei duplicati nel DB
+
         String sql = "UPDATE track  "
                 + "SET title = ?, "
                 + "    tag = ?, "
@@ -144,7 +164,12 @@ public class TrackDao implements Dao<Track , Integer>{
 
         try (PreparedStatement ps = sqlConnection.prepareStatement(sql)) {
             ps.setString(1, track.getTitle());
-            ps.setString(2, track.getTag().name());
+            if(track.getTag() !=  null) {
+                ps.setString(2, track.getTag().name());
+            }
+            else {
+                ps.setString(2, "");
+            }
             ps.setString(3, track.getAuthor());
             ps.setString(4, track.getGenre().name());
             ps.setInt(5, track.getYear());
@@ -155,7 +180,7 @@ public class TrackDao implements Dao<Track , Integer>{
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Error updating track with id: " + track.getId(), e);
+
         }
     }
 
@@ -168,5 +193,21 @@ public class TrackDao implements Dao<Track , Integer>{
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+
+    //Method to check if exists already a record with that author and that title. Check is consistent to upper and lower case words
+    public boolean existsByAuthorAndTitle(String author, String title){
+        String sql = "SELECT COUNT(*) FROM track WHERE LOWER(author) = ? AND LOWER(title) = ?";
+        try{
+            PreparedStatement checkStmt = sqlConnection.prepareStatement(sql);
+            checkStmt.setString(1, author.toLowerCase());
+            checkStmt.setString(2, title.toLowerCase());
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) return true;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 }

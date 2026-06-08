@@ -11,9 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import group6.java.group6.dao.TrackDao;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import group6.java.group6.HelloApplication;
@@ -62,79 +64,130 @@ import javafx.scene.media.MediaPlayer;
 public class MainController implements LibraryObserver, PlaylistObserver {
 
     private final AudioPlayer audioPlayer = new AudioPlayer();
+    private final TrackDao trackDao = new TrackDao();
 
-    
-     // ── State pattern ─────────────────────────────────────────────────────────
+
+    // ── State pattern ─────────────────────────────────────────────────────────
     private MainViewContext viewContext;
 
     // ── Top bar ──────────────────────────────────────────────────────────────
-    @FXML private TextField searchField;
-    @FXML private Button undoBtn;
+    @FXML
+    private TextField searchField;
+    @FXML
+    private Button undoBtn;
 
     // ── Sidebar sinistra ─────────────────────────────────────────────────────
-    @FXML private ListView<String> playlistListView;
-    @FXML private ListView<String> autoPlaylistListView;
-    @FXML private Button newPlaylistBtn;
-    @FXML private Button generateByGenreBtn;   // mancava
-    @FXML private Button generateByYearBtn;    // mancava
+    @FXML
+    private ListView<String> playlistListView;
+    @FXML
+    private ListView<String> autoPlaylistListView;
+    @FXML
+    private Button newPlaylistBtn;
+    @FXML
+    private Button generateByGenreBtn;   // mancava
+    @FXML
+    private Button generateByYearBtn;    // mancava
 
     // ── Barra azioni playlist ────────────────────────────────────────────────
     // Nel FXML il bottone Rinomina ha fx:id="RenamePlaylist"
-    @FXML private Button RenamePlaylist;       // nome esatto come nel FXML
-    @FXML private Button deletePlaylistBtn;
-    @FXML private Button addToPlaylistBtn;
+    @FXML
+    private Button RenamePlaylist;       // nome esatto come nel FXML
+    @FXML
+    private Button deletePlaylistBtn;
+    @FXML
+    private Button addToPlaylistBtn;
 
     // ── Titolo playlist attiva (sopra la tabella) ─────────────────────────────
-    @FXML private Label playlistTitleLabel;
+    @FXML
+    private Label playlistTitleLabel;
 
     // ── Filtri ───────────────────────────────────────────────────────────────
-    @FXML private HBox filterBar;
-    @FXML private ComboBox<GenreEnum> genreFilter;
-    @FXML private ComboBox<String> yearFilter;
-    @FXML private Button addTrackBtn;
+    @FXML
+    private HBox filterBar;
+    @FXML
+    private ComboBox<GenreEnum> genreFilter;
+    @FXML
+    private ComboBox<String> yearFilter;
+    @FXML
+    private Button addTrackBtn;
 
     // ── Tabella tracce ────────────────────────────────────────────────────────
-    @FXML private TableView<Track> tracksTableView;
-    @FXML private TableColumn<Track, Integer> colNow;
-    @FXML private TableColumn<Track, String> colTitle;
-    @FXML private TableColumn<Track, String> colAuthor;
-    @FXML private TableColumn<Track, GenreEnum> colGenre;
-    @FXML private TableColumn<Track, Double> colLength;
+    @FXML
+    private TableView<Track> tracksTableView;
+    @FXML
+    private TableColumn<Track, Integer> colNow;
+    @FXML
+    private TableColumn<Track, String> colTitle;
+    @FXML
+    private TableColumn<Track, String> colAuthor;
+    @FXML
+    private TableColumn<Track, GenreEnum> colGenre;
+    @FXML
+    private TableColumn<Track, Double> colLength;
 
     // ── Sezione home ──────────────────────────────────────────────────────────
-    @FXML private VBox homeSectionBox;
-    @FXML private ListView<String> topTracksListView;
+    @FXML
+    private VBox homeSectionBox;
+    @FXML
+    private ListView<String> topTracksListView;
 
     // ── Player bar ────────────────────────────────────────────────────────────
-    @FXML private VBox playerBar;
-    @FXML private Label currentTimeLabel;
-    @FXML private Slider progressSlider;
-    @FXML private Label totalTimeLabel;
-    @FXML private ToggleButton shuffleToggleBtn;
-    @FXML private ToggleButton loopBtn;
-    @FXML private Button prevBtn;
-    @FXML private Button playPauseBtn;
-    @FXML private Button nextBtn;
-    @FXML private Label nowPlayingTitle;
-    @FXML private Label nowPlayingAuthor;
+    @FXML
+    private VBox playerBar;
+    @FXML
+    private Label currentTimeLabel;
+    @FXML
+    private Slider progressSlider;
+    @FXML
+    private Label totalTimeLabel;
+    @FXML
+    private ToggleButton shuffleToggleBtn;
+    @FXML
+    private ToggleButton loopBtn;
+    @FXML
+    private Button prevBtn;
+    @FXML
+    private Button playPauseBtn;
+    @FXML
+    private Button nextBtn;
+    @FXML
+    private Label nowPlayingTitle;
+    @FXML
+    private Label nowPlayingAuthor;
 
     // ── Pannello dettaglio ────────────────────────────────────────────────────
-    @FXML private VBox detailPanel;
-    @FXML private Label detailTitle;
-    @FXML private Label detailAuthor;
-    @FXML private Label detailGenre;
-    @FXML private Label detailYear;
-    @FXML private Label detailLength;
-    @FXML private Label curretTimeLabel;
-    @FXML private Label detailTag;
-    @FXML private CheckBox tagFavourite;
-    @FXML private CheckBox tagExplicit;
-    @FXML private CheckBox tagNewRelease;
-    @FXML private Button editTrackBtn;
-    @FXML private Button removeFromPlaylistBtn;
-    @FXML private Button deleteTrackBtn;
+    @FXML
+    private VBox detailPanel;
+    @FXML
+    private Label detailTitle;
+    @FXML
+    private Label detailAuthor;
+    @FXML
+    private Label detailGenre;
+    @FXML
+    private Label detailYear;
+    @FXML
+    private Label detailLength;
+    @FXML
+    private Label curretTimeLabel;
+    @FXML
+    private Label detailTag;
+    @FXML
+    private Label tagLabel;
+    @FXML
+    private CheckBox tagFavourite;
+    @FXML
+    private CheckBox tagExplicit;
+    @FXML
+    private CheckBox tagNewRelease;
+    @FXML
+    private Button editTrackBtn;
+    @FXML
+    private Button removeFromPlaylistBtn;
+    @FXML
+    private Button deleteTrackBtn;
 
-     // ── Stato runtime ─────────────────────────────────────────────────────────
+    // ── Stato runtime ─────────────────────────────────────────────────────────
     private Track currentPlayingTrack = null;
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -175,12 +228,12 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         Library myLibrary = ConcreteLibrary.getInstance();
         myLibrary.addObserver(this); // inserisco l'observer nella lista degli osservatori da aggiornare
         updateTracksTable(); // effettuo uno primo aggiornamento della tabella
-        
+
         //observer per playlist
         PlaylistManager.getInstance().addObserver(this);
         // effettuo uno primo aggiornamento della sidebar per caricare eventuali playlist già presenti
         updatePlaylistSidebar();
-      
+
 
     }
 
@@ -188,47 +241,49 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     //  HANDLERS
     // ═════════════════════════════════════════════════════════════════════════
 
-    @FXML protected void handleUndo() {}
+    @FXML
+    protected void handleUndo() {
+    }
 
     // ── Playlist ──────────────────────────────────────────────────────────────
     @FXML
     protected void handleNewPlaylist() {
-        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Nuova Playlist",(PlaylistDialogController ctrl) -> {
-                    if (!ctrl.validate()) { 
-                        ctrl.showValidationError(); 
-                        return;
-                     }
-                    try {
-                        PlaylistManager.getInstance().createPlaylist(ctrl.getName());
-                    } catch (DuplicatePlaylistException e) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Errore");
-                        alert.setHeaderText("Playlist duplicata");
-                        alert.setContentText("Hai giá una playlist con nome: " + e.getMessage());
-                        alert.showAndWait();
-                        }
-        });    
+        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Nuova Playlist", (PlaylistDialogController ctrl) -> {
+            if (!ctrl.validate()) {
+                ctrl.showValidationError();
+                return;
+            }
+            try {
+                PlaylistManager.getInstance().createPlaylist(ctrl.getName());
+            } catch (DuplicatePlaylistException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Errore");
+                alert.setHeaderText("Playlist duplicata");
+                alert.setContentText("Hai giá una playlist con nome: " + e.getMessage());
+                alert.showAndWait();
+            }
+        });
     }
 
     @FXML
     protected void handleGenerateByGenre() {
-        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Genere",null);
+        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Genere", null);
     }
 
     @FXML
     protected void handleGenerateByYear() {
-        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Anno",null);
+        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Anno", null);
     }
 
     @FXML
-    protected void handleRenamePlaylist() {         
+    protected void handleRenamePlaylist() {
         Playlist selected = PlaylistManager.getInstance().getSelectedPlaylist();
         if (selected == null)
             return;
         showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Rinomina Playlist",
                 (PlaylistDialogController ctrl) -> {
-                     if (!ctrl.validate()) { 
-                        ctrl.showValidationError(); 
+                    if (!ctrl.validate()) {
+                        ctrl.showValidationError();
                         return;
                     }
                     try {
@@ -243,7 +298,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
                 });
     }
 
-    @FXML protected void handleDeletePlaylist() {
+    @FXML
+    protected void handleDeletePlaylist() {
         Playlist selected = PlaylistManager.getInstance().getSelectedPlaylist();
         if (selected == null) return;
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
@@ -251,13 +307,12 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         confirm.setHeaderText("Eliminazione playlist");
         confirm.setContentText("Eliminare \"" + selected.getTitle() + "\"?");
         confirm.showAndWait().ifPresent(btn -> {
-            if (btn == ButtonType.OK){ 
+            if (btn == ButtonType.OK) {
                 PlaylistManager.getInstance().deletePlaylist(selected);
                 handleShowAllTracks(); //torno alla libreria originale
             }
         });
     }
-
 
 
     @FXML
@@ -269,7 +324,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
                 return;
             }
 
-            saveTrackFromDialog(controller, null);
+            saveTrackFromDialog(controller);
         });
     }
 
@@ -285,73 +340,46 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             return;
         }
 
-        final String oldFilePath = selectedTrack.getFilePath();
 
-        showDialog("TrackDialog.fxml", "Modifica Traccia",
-            (TrackDialogController controller) -> {
-                controller.setTitleField(selectedTrack.getTitle());
-                controller.setAuthorField(selectedTrack.getAuthor());
-                controller.setGenreCombo(selectedTrack.getGenre());
-                controller.setYearSpinner(selectedTrack.getYear());
-                controller.setToggleGroup(selectedTrack.getTag());
-                if (oldFilePath != null) {
-                    File existingFile = new File(oldFilePath);
-                    if (existingFile.exists()) {
-                        controller.setFileNameLabel(oldFilePath);
-                        controller.setSelectedFile(existingFile);
-                    }
-                }
-            },
-            (TrackDialogController controller) -> {
-                if (!controller.validate()) {
-                    controller.showValidationError();
-                    return;
-                }
+        showEditTrackDialog("TrackDialog.fxml", "Modifica Traccia", selectedTrack, (controller) -> {
 
-                selectedTrack.setTitle(controller.getTitle());
-                selectedTrack.setAuthor(controller.getAuthor());
-                selectedTrack.setGenre(controller.getGenre());
-                selectedTrack.setYear(controller.getYear());
-                selectedTrack.setTag(controller.getTag());
+            /*if (!controller.validate()) {
+                controller.showValidationError();
+                return;
+            }*/
 
-                File newFile = controller.getSelectedFile();
-                boolean isNewFile = oldFilePath == null || !newFile.getPath().equals(oldFilePath);
-
-                if (isNewFile) {
-                    try {
-                        Path dest = Paths.get(selectedTrack.getFilePath());
-                        if (dest == null) {
-                            dest = Paths.get("music", selectedTrack.getId() + ".mp3");
-                            selectedTrack.setFilePath(dest.toString());
-                        }
-                        Files.createDirectories(dest.getParent());
-                        Files.copy(newFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    setDuration(newFile, selectedTrack);
-                }
-
-                ConcreteLibrary.getInstance().updateTrack(selectedTrack);
-                showTrackDetails(selectedTrack);
+            //before to update the model check first if user edited title or author in order to have a duplicate record
+            if (trackDao.existsByAuthorAndTitle(controller.getAuthor(), controller.getTitle())) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Errore");
+                alert.setHeaderText("Errore");
+                alert.setContentText("Esiste giá una traccia con titolo " + controller.getTitle() + " e autore " + controller.getAuthor());
+                alert.showAndWait();
+                return; //avoid to continue updating
             }
-        );
+
+            selectedTrack.updateTrack(controller.getTitle(), controller.getAuthor(), controller.getGenre(), controller.getYear(), controller.getTag());
+            ConcreteLibrary.getInstance().updateTrack(selectedTrack);
+
+
+            File selectedFile = controller.getSelectedFile();
+            //TODO: compute the length of the track here and update in db
+
+            if (selectedFile != null) {
+
+                try {
+                    Path dest = Paths.get(selectedTrack.getFilePath()); // es. "music/42.mp3"
+                    Files.createDirectories(dest.getParent());     // crea la cartella "music/" se non esiste
+                    Files.copy(selectedFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                setDuration(selectedFile, selectedTrack);
+            }
+
+        });
     }
 
-    /*@FXML
-    protected void handleEditTrack() { // correggere il fatto che i set stanno nel consumer che viene eseguito dopo
-        Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
-        if (selectedTrack == null) return;
-
-        showDialog("TrackDialog.fxml", "Modifica Traccia", (TrackDialogController controller) -> {
-            controller.setAuthorField(selectedTrack.getAuthor());
-            controller.setGenreCombo(selectedTrack.getGenre());
-            controller.setTitleField(selectedTrack.getTitle());
-            controller.setYearSpinner(selectedTrack.getYear());
-            controller.setToggleGroup(selectedTrack.getTag());
-            controller.setFileNameLabel(selectedTrack.getFilePath());
-        });
-    }*/
 
     @FXML
     protected void handleDeleteTrack() {
@@ -369,12 +397,17 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         Optional<ButtonType> result = confirmation.showAndWait();
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
+            audioPlayer.stop(); //stop track cause otherwise it continues to play even if we deleted the track
+            progressSlider.setValue(0);
+            currentTimeLabel.setText("0:00");
             ConcreteLibrary.getInstance().removeTrack(selectedTrack);
+            clearDetails(); //clear all details aside to avoid inconsistencies
         }
         showTrackDetails(null); // svuota il pannello di dettaglio dopo l'eliminazione
     }
 
-    @FXML protected void handleAddToPlaylist() {
+    @FXML
+    protected void handleAddToPlaylist() {
         Playlist playlist = PlaylistManager.getInstance().getSelectedPlaylist();
         if (playlist == null) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -413,7 +446,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         });
     }
 
-    @FXML protected void handleRemoveFromPlaylist() {
+    @FXML
+    protected void handleRemoveFromPlaylist() {
         Playlist playlist = PlaylistManager.getInstance().getSelectedPlaylist();
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
         if (playlist == null) {
@@ -444,12 +478,25 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         });
     }
 
-    @FXML protected void handleFilter() {}
-    @FXML protected void handleResetFilter() {}
+    @FXML
+    protected void handleFilter() {
+    }
 
-    @FXML protected void handlePlayAll() {}
-    @FXML protected void handleShuffle() {}
-    @FXML protected void handlePrev() {}
+    @FXML
+    protected void handleResetFilter() {
+    }
+
+    @FXML
+    protected void handlePlayAll() {
+    }
+
+    @FXML
+    protected void handleShuffle() {
+    }
+
+    @FXML
+    protected void handlePrev() {
+    }
 
 
     @FXML
@@ -489,37 +536,38 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             }
         }
     }
-    @FXML protected void handleNext() {}
-
-    @FXML protected void handleTagChange() {}
 
     @FXML
-    protected void handleGeneratePlaylist(){ }
+    protected void handleNext() {
+    }
 
+    @FXML
+    protected void handleTagChange() {
+    }
 
-    @FXML public void handleSeekTrack(MouseEvent mouseEvent) {
-        double seekSeconds = (progressSlider.getValue() / 100) * audioPlayer.getTotalDuration();
-        audioPlayer.seekTo(seekSeconds);
-
+    @FXML
+    protected void handleGeneratePlaylist() {
     }
 
 
-     // Seleziona una playlist dalla sidebar e ne mostra il contenuto. 
+
+
+    // Seleziona una playlist dalla sidebar e ne mostra il contenuto.
     @FXML
     protected void handleSidebarClick(javafx.scene.input.MouseEvent event) {
-    String clickedName = playlistListView.getSelectionModel().getSelectedItem();
-    
-    if (clickedName != null) {
-        Set<Playlist> tutteLePlaylist = PlaylistManager.getInstance().getPlaylists();
-        Playlist selezionata = tutteLePlaylist.stream()
-                .filter(p -> p.getTitle().trim().equalsIgnoreCase(clickedName.trim()))
-                .findFirst()
-                .orElse(null);
+        String clickedName = playlistListView.getSelectionModel().getSelectedItem();
 
-        if (selezionata != null) {
-            PlaylistManager.getInstance().setSelectedPlaylist(selezionata);
-            showPlaylistContent(selezionata);
-            } 
+        if (clickedName != null) {
+            Set<Playlist> tutteLePlaylist = PlaylistManager.getInstance().getPlaylists();
+            Playlist selezionata = tutteLePlaylist.stream()
+                    .filter(p -> p.getTitle().trim().equalsIgnoreCase(clickedName.trim()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (selezionata != null) {
+                PlaylistManager.getInstance().setSelectedPlaylist(selezionata);
+                showPlaylistContent(selezionata);
+            }
         }
     }
 
@@ -538,7 +586,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
 
     private <T> void showDialog(String fxmlFile, String title, Consumer<T> preShowAction, Consumer<T> onOkAction) {
-        try{
+        try {
             var url = HelloApplication.class.getResource(fxmlFile);
             FXMLLoader fxmlLoader = new FXMLLoader(url);
             DialogPane dialogPane = fxmlLoader.load();
@@ -564,8 +612,55 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         }
     }
 
+
+    private void showEditTrackDialog(String fxmlFile, String title, Track track, Consumer<TrackDialogController> onOkAction) {
+        try {
+            // carico la scena del TrackDialog
+            var url = HelloApplication.class.getResource(fxmlFile);
+            FXMLLoader fxmlLoader = new FXMLLoader(url);
+            DialogPane dialogPane = fxmlLoader.load();
+
+            // Recupera il controller TrackDialogController
+            TrackDialogController controller = fxmlLoader.getController();
+
+            // setto la scena del TrackDialog nel PopUp del DialogPane
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setDialogPane(dialogPane);
+            dialog.setTitle(title);
+
+            controller.setAuthorField(track.getAuthor());
+            controller.setGenreCombo(track.getGenre());
+            controller.setTitleField(track.getTitle());
+            controller.setFileNameLabel(track.getFilePath());
+            controller.setToggleGroup(track.getTag());
+            controller.setYearSpinner(track.getYear());
+
+            // Mostriamo il dialog e aspettiamo che venga chiuso in qualche modo
+            dialog.showAndWait().ifPresent(buttonType -> {
+
+                // se premi il bottone SALVA sul popUp allora esegue accept del consumer
+                if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                    // Eseguiamo la Lambda Expression passandole il controller
+                    if (onOkAction != null) {
+                        onOkAction.accept(controller);
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleSeekTrack(MouseEvent mouseEvent) {
+        double seekSeconds = (progressSlider.getValue() / 100) * audioPlayer.getTotalDuration();
+        audioPlayer.seekTo(seekSeconds);
+
+    }
+
+
     @Override
-    public void onLibraryChanged(){ // metodo ricavato da LibraryObserver per il pattern Observer
+    public void onLibraryChanged() { // metodo ricavato da LibraryObserver per il pattern Observer
         updateTracksTable();
     }
 
@@ -582,7 +677,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
 
     // Metodo per prelevare la durata delle Track dal file
-    public void setDuration(File audioFile,Track track) {
+    public void setDuration(File audioFile, Track track) {
         // correggere la vista e il salvataggio su DB perchè non viene aggiornato con la setLength
         String uriString = audioFile.toURI().toString(); // permette di trasformare il path relativo in URI
 
@@ -615,15 +710,28 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
 
     // metodo privato comune 
-    private void saveTrackFromDialog(TrackDialogController controller, Track oldTrack){
+
+    private void saveTrackFromDialog(TrackDialogController controller) {
+        Track track;
+
         // 1. Preleviamo i dati usando i getter del TrackDialogController
-        Track track = new Track(
-                controller.getTitle(),
-                controller.getAuthor(),
-                controller.getGenre(),
-                controller.getYear(),
-                TagEnum.valueOf(controller.getOptionSelected())
-        );
+        if (controller.getOptionSelected() != null) {
+            track = new Track(
+                    controller.getTitle(),
+                    controller.getAuthor(),
+                    controller.getGenre(),
+                    controller.getYear(),
+                    TagEnum.valueOf(controller.getOptionSelected())
+            );
+        } else {
+            track = new Track(
+                    controller.getTitle(),
+                    controller.getAuthor(),
+                    controller.getGenre(),
+                    controller.getYear()
+            );
+        }
+
 
         // 2. Aggiungiamo la traccia al Singleton
         // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
@@ -636,8 +744,9 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Errore");
             alert.setHeaderText("Traccia duplicata");
-            alert.setContentText("Hai giá una traccia con titolo: " + e.getMessage());
+            alert.setContentText(e.getMessage());
             alert.showAndWait();
+            return;
         }
 
         File selectedFile = controller.getSelectedFile();
@@ -665,12 +774,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     // Riempie il pannello di dettaglio con i dati della traccia selezionata
     private void showTrackDetails(Track track) {
         if (track == null) {            // nessuna traccia selezionata: svuota tutto
-            detailTitle.setText("");
-            detailAuthor.setText("");
-            detailGenre.setText("");
-            detailLength.setText("");
-            detailYear.setText("");
-            detailTag.setText("");
+            clearDetails();
             return;
         }
 
@@ -680,29 +784,32 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         detailYear.setText(String.valueOf(track.getYear()));
         detailLength.setText(formatTime(TimeUtils.parseFormattedDuration(track.getLength())));
         detailTag.setText(track.getTag() != null ? track.getTag().toString() : "");
+        tagLabel.setText(track.getTag() != null ? "Tag" : "");
+
         totalTimeLabel.setText(formatTime(TimeUtils.parseFormattedDuration(track.getLength())));
 
 
     }
 
+
     private void updatePlaylistSidebar() {
-    if (playlistListView == null) return;
-    Playlist currentPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
-    String currentTitle = currentPlaylist != null ? currentPlaylist.getTitle() : null;
-    List<String> names = PlaylistManager.getInstance().getPlaylists()
+        if (playlistListView == null) return;
+        Playlist currentPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
+        String currentTitle = currentPlaylist != null ? currentPlaylist.getTitle() : null;
+        List<String> names = PlaylistManager.getInstance().getPlaylists()
                 .stream()
                 .map(Playlist::getTitle)
-                .collect(Collectors.toList()); 
+                .collect(Collectors.toList());
 
         playlistListView.getItems().setAll(names);
 
         if (currentTitle != null && names.contains(currentTitle)) {
             playlistListView.getSelectionModel().select(currentTitle);
         }
-    
+
     }
-    
-   private void showPlaylistContent(Playlist playlist) {
+
+    private void showPlaylistContent(Playlist playlist) {
         tracksTableView.getSelectionModel().clearSelection();
         showTrackDetails(null);
         PlaylistManager.getInstance().loadTracksForPlaylist(playlist);
@@ -712,4 +819,16 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     }
 
+
+    private void clearDetails() {
+        detailTitle.setText("");
+        detailAuthor.setText("");
+        detailGenre.setText("");
+        detailLength.setText("");
+        detailYear.setText("");
+        detailTag.setText("");
+        tagLabel.setText("");
+        totalTimeLabel.setText("");
+
+    }
 }
