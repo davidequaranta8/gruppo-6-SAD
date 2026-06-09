@@ -116,6 +116,27 @@ public class PlaylistManager {
         // Le tracce di ogni playlist vengono caricate lazy in setSelectedPlaylist()
     }
 
+    public void updateTrackInPlaylists(Track updatedTrack) {
+        for (Playlist p : playlists) {
+            for (Track t : p.getTracks()) {
+                if (t.getId() == updatedTrack.getId() && t != updatedTrack) {
+                    t.updateTrack(updatedTrack.getTitle(), updatedTrack.getAuthor(), updatedTrack.getGenre(), updatedTrack.getYear(), updatedTrack.getTag());
+                    t.setLength(updatedTrack.getLength());
+                    t.setFilePath(updatedTrack.getFilePath());
+                    t.setCountPlayed(updatedTrack.getCountPlayed());
+                }
+            }
+        }
+        notifyObservers();
+    }
+
+    public void removeTrackFromAllPlaylists(Track track) {
+        for (Playlist p : playlists) {
+            p.removeTrack(track);
+        }
+        notifyObservers();
+    }
+
     private void verifyDuplicateTitle(String title, Playlist exclude) throws DuplicatePlaylistException {
         for (Playlist p : playlists) {
             if (p != exclude && p.getTitle().equalsIgnoreCase(title)) {

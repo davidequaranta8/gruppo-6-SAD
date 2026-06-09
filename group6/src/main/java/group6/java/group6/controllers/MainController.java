@@ -11,14 +11,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import group6.java.group6.dao.TrackDao;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import group6.java.group6.HelloApplication;
+import group6.java.group6.dao.TrackDao;
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.exceptions.DuplicatePlaylistException;
@@ -319,7 +318,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     protected void handleAddTrack() {
         // definiamo il metodo accept() del Consumer
         showDialog("TrackDialog.fxml", "Aggiungi Traccia", (TrackDialogController controller) -> {
-            if (!controller.validate()) {
+            if (!controller.validate(false)) {
                 controller.showValidationError();
                 return;
             }
@@ -339,14 +338,14 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             alert.showAndWait();
             return;
         }
-
+        
 
         showEditTrackDialog("TrackDialog.fxml", "Modifica Traccia", selectedTrack, (controller) -> {
 
-            /*if (!controller.validate()) {
+            if (!controller.validate(true)) {
                 controller.showValidationError();
                 return;
-            }*/
+            }
 
             //before to update the model check first if user edited title or author in order to have a duplicate record
             if (trackDao.existsByAuthorAndTitleAndId(controller.getAuthor(), controller.getTitle(),selectedTrack.getId())) {
@@ -378,6 +377,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             }
 
         });
+        showTrackDetails(selectedTrack); //aggiorna il pannello di dettaglio con i nuovi dati della traccia
     }
 
 
@@ -660,8 +660,13 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
 
     @Override
-    public void onLibraryChanged() { // metodo ricavato da LibraryObserver per il pattern Observer
-        updateTracksTable();
+    public void onLibraryChanged() {
+        Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
+        if (selectedPlaylist != null) {
+            showPlaylistContent(selectedPlaylist);
+        } else {
+            updateTracksTable();
+        }
     }
 
 

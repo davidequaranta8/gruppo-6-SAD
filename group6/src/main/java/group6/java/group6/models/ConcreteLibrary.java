@@ -46,12 +46,24 @@ public class ConcreteLibrary implements Library{
 
     public void updateTrack(Track t){
         trackDao.update(t);
+        // Ensure the track in the library is also updated if it's a different instance
+        for (Track track : tracks) {
+            if (track.getId() == t.getId() && track != t) {
+                track.updateTrack(t.getTitle(), t.getAuthor(), t.getGenre(), t.getYear(), t.getTag());
+                track.setLength(t.getLength());
+                track.setFilePath(t.getFilePath());
+                track.setCountPlayed(t.getCountPlayed());
+                break;
+            }
+        }
+        PlaylistManager.getInstance().updateTrackInPlaylists(t);
         notifyObservers();
     }
 
     public void removeTrack(Track t){
         tracks.remove(t);
         trackDao.delete(t);
+        PlaylistManager.getInstance().removeTrackFromAllPlaylists(t);
         notifyObservers();
     }
 
