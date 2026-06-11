@@ -402,6 +402,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             currentTimeLabel.setText("0:00");
             ConcreteLibrary.getInstance().removeTrack(selectedTrack);
             clearDetails(); //clear all details aside to avoid inconsistencies
+            FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
+            icon.setIconLiteral("fas-play");icon.setIconLiteral("fas-play");
         }
         showTrackDetails(null); // svuota il pannello di dettaglio dopo l'eliminazione
     }
