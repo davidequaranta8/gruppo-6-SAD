@@ -54,7 +54,7 @@ public class AudioPlayer {
         mediaPlayer.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
             if (onTimeChanged != null && newTime != null) {
                 double current = newTime.toSeconds();
-                double total   = mediaPlayer.getTotalDuration() != null
+                double total   = mediaPlayer != null
                         ? mediaPlayer.getTotalDuration().toSeconds()
                         : 0;
                 Platform.runLater(() -> onTimeChanged.accept(current, total));
