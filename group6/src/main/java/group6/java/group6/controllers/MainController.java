@@ -136,6 +136,10 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     @FXML
     private Label currentTimeLabel;
     @FXML
+    private Label currentTitle;
+    @FXML
+    private Label currentAuthor;
+    @FXML
     private Slider progressSlider;
     @FXML
     private Label totalTimeLabel;
