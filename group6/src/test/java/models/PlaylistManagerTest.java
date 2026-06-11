@@ -1,4 +1,6 @@
 package models;
+import group6.java.group6.dao.TrackDao;
+import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import org.junit.jupiter.api.BeforeEach;
 
 import group6.java.group6.enumerations.GenreEnum;
@@ -13,6 +15,7 @@ public class PlaylistManagerTest {
 
     private PlaylistManager manager;
     private String title;
+    private TrackDao trackDao = new TrackDao();
 
     @BeforeEach
     public void setUp() {
@@ -72,28 +75,32 @@ public class PlaylistManagerTest {
     }
     
     @Test
-    void testAddTrackToPlaylist() throws DuplicatePlaylistException {
+    void testAddTrackToPlaylist() throws DuplicatePlaylistException, DuplicateTitleTrackException {
         Playlist p = manager.createPlaylist(title);
+        Track track = new Track("Canzone di Test", "Autore di Test", GenreEnum.ROCK, 2020);
         try {
-            Track track = new Track("Canzone di Test", "Autore di Test", GenreEnum.ROCK, 2020);
-            
+
+            trackDao.save(track);
             assertDoesNotThrow(() -> manager.addTrackToPlaylist(p, track));
         } finally {
             manager.deletePlaylist(p);
+            trackDao.delete(track);
         }
     }
 
     @Test
-    void testRemoveTrackFromPlaylist() throws DuplicatePlaylistException {
+    void testRemoveTrackFromPlaylist() throws DuplicatePlaylistException, DuplicateTitleTrackException {
         Playlist p = manager.createPlaylist(title);
+        Track track = new Track("Canzone di Test", "Autore di Test", GenreEnum.BLUES, 2020);
         try {
-            Track track = new Track("Canzone di Test", "Autore di Test", GenreEnum.BLUES, 2020);       
+            trackDao.save(track);
             manager.addTrackToPlaylist(p, track); 
 
             assertDoesNotThrow(() -> {manager.removeTrackFromPlaylist(p, track); });
             
         } finally {
             manager.deletePlaylist(p);
+            trackDao.delete(track);
         }
     }
 }
