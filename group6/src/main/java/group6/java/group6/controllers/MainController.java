@@ -517,7 +517,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
         //check to see if the track selected has been changed
         boolean isNewTrack = selectedTrack != null && !selectedTrack.equals(currentPlayingTrack);
-
+        currentAuthor.setText(selectedTrack.getAuthor());
+        currentTitle.setText(selectedTrack.getTitle());
         if (audioPlayer.isPlaying()) {
             //if audio was playing but selectedTrack has been changed play the currenTrack
             if (isNewTrack) {
