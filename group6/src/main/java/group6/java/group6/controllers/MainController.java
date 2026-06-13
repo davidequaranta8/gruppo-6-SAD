@@ -28,7 +28,6 @@ import group6.java.group6.models.Playlist;
 import group6.java.group6.models.PlaylistManager;
 import group6.java.group6.models.PlaylistObserver;
 import group6.java.group6.models.Track;
-import group6.java.group6.player.AudioPlayer;
 
 import static group6.java.group6.utils.TimeUtils.formatTime;
 import javafx.fxml.FXML;
@@ -209,7 +208,11 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
         genreFilter.getItems().setAll(GenreEnum.values());
         //istanziamo il service per il player che nel costruttore fa il setup delle callback
-       playerService = new PlayerService(trackService , currentTimeLabel , totalTimeLabel ,progressSlider , playPauseBtn , currentTitle , currentAuthor);
+        playerService = new PlayerService(trackService , currentTimeLabel , totalTimeLabel ,progressSlider , playPauseBtn , currentTitle , currentAuthor);
+
+        // passo la funzione handleNext al service cosi quando finisce la riproduzione esegue handleNext()
+        playerService.setOnTrackEnd(() -> handleNext());
+
         // collegamento tra le colonne e gli attributi della classe Track
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
         colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));

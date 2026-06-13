@@ -12,6 +12,8 @@ public class PlayerService {
 
     private final AudioPlayer audioPlayer = new AudioPlayer();
     private final TrackService trackService;
+    // Callback per avvisare il Controller che la traccia è finita
+    private Runnable onTrackEnd;
 
     // Elementi UI
     private final Label currentTimeLabel;
@@ -44,7 +46,13 @@ public class PlayerService {
             currentTimeLabel.setText("0:00");
             totalTimeLabel.setText("0:00");
             progressSlider.setValue(0);
+
+            if (onTrackEnd != null) {
+                onTrackEnd.run();
+            }
         });
+
+
 
         audioPlayer.setOnTimeChanged((current, total) -> {
             if (total > 0) {
@@ -127,5 +135,9 @@ public class PlayerService {
             newTrack.incrementCountPlayed();
             trackService.updateTrack(newTrack, null);
         }
+    }
+
+    public void setOnTrackEnd(Runnable onTrackEnd) {
+        this.onTrackEnd = onTrackEnd;
     }
 }
