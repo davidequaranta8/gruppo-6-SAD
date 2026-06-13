@@ -69,9 +69,9 @@
             <VBox fx:id="tagPane" spacing="8" managed="false" visible="false">
                 <Label text="Tag" styleClass="form-label"/>
                 <HBox spacing="16">
-                    <CheckBox fx:id="tagFavourite"  text="⭐ Preferite"/>
-                    <CheckBox fx:id="tagExplicit"   text="🅴 Esplicite"/>
-                    <CheckBox fx:id="tagNewRelease" text="🆕 Nuove uscite"/>
+                    <CheckBox fx:id="tagPreferiti"  text="Preferiti"/>
+                    <CheckBox fx:id="tagChill"      text="Chill"/>
+                    <CheckBox fx:id="tagAllenamento" text="Allenamento"/>
                 </HBox>
             </VBox>
 

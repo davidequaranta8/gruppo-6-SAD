@@ -327,7 +327,7 @@
 }
 
 /* ── CheckBox ── */
-.check-box .mark {
+.check-box:selected .mark {
     -fx-background-color: #e94560;
 }
 .check-box {
