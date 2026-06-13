@@ -1,12 +1,13 @@
 package group6.java.group6.services;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
 import group6.java.group6.utils.TimeUtils;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 public class PlayerService {
 

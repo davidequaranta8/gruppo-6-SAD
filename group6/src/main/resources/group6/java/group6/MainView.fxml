@@ -88,11 +88,6 @@
                         <FontIcon iconLiteral="fas-play" iconSize="13" />
                      </graphic>
                   </Button>
-                  <Button fx:id="shuffleBtn" mnemonicParsing="false" onAction="#handleShuffle" styleClass="btn-secondary" text="Shuffle">
-                     <graphic>
-                        <FontIcon iconLiteral="fas-random" iconSize="13" />
-                     </graphic>
-                  </Button>
                   <Button fx:id="RenamePlaylist" mnemonicParsing="false" onAction="#handleRenamePlaylist" styleClass="btn-secondary" text="Rinomina">
                      <graphic>
                         <FontIcon iconLiteral="fas-pencil-alt" iconSize="13" />
