@@ -74,12 +74,14 @@ public class PlaylistManager {
  
     // Aggiunge una traccia alla playlist ed evita duplicati.
     public void addTrackToPlaylist(Playlist playlist, Track track) {
-        playlistDao.addTrack(playlist, track);  // aggiorna anche il modello via DAO
+        playlist.addTrack(track); //update the model
+        playlistDao.addTrack(playlist, track); //update the db through use of DAO
         notifyObservers();
     }
  
 
      public void removeTrackFromPlaylist(Playlist playlist, Track track) {
+        playlist.removeTrack(track);
         playlistDao.removeTrack(playlist, track);
         notifyObservers();
     }

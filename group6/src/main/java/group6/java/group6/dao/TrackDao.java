@@ -5,6 +5,7 @@ import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.Track;
+import group6.java.group6.utils.TrackMapper;
 
 import java.io.File;
 import java.sql.*;
@@ -26,21 +27,7 @@ public class TrackDao implements Dao<Track , Integer>{
             stmt.setInt(1 , key);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
-                Track track;
-                //it there is the tag then use constructor with the tag
-                if (!rs.getString("tag").isEmpty()) {
-                    track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
-
-                }
-                //there is no tag for that track hence use the other constructor, the one without the tag
-                else {
-                    track = new Track(rs.getString("title"), rs.getString("author"), GenreEnum.valueOf(rs.getString("genre")), rs.getInt("year_of_publication"));
-                }
-                track.setCountPlayed(rs.getInt("count_played"));
-                track.setId(rs.getInt("id"));
-                track.setLength(rs.getInt("length"));
-                track.setFilePath(rs.getString("file_path"));
-                return Optional.of(track);
+                return Optional.of(TrackMapper.extractTrackFromResultSet(rs));
             }
 
 
@@ -58,21 +45,7 @@ public class TrackDao implements Dao<Track , Integer>{
             Set<Track> tracks = new HashSet<>();
             ResultSet rs = stmt.executeQuery();
             while(rs.next()){
-                Track track;
-                //it there is the tag then use constructor with the tag
-                if (!rs.getString("tag").isEmpty()) {
-                    track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
-
-                }
-                //there is no tag for that track hence use the other constructor, the one without the tag
-                else {
-                     track = new Track(rs.getString("title"), rs.getString("author"), GenreEnum.valueOf(rs.getString("genre")), rs.getInt("year_of_publication"));
-                }
-                track.setCountPlayed(rs.getInt("count_played"));
-                track.setId(rs.getInt("id"));
-                track.setFilePath(rs.getString("file_path"));
-                track.setLength(rs.getDouble("length"));
-                tracks.add(track);
+                tracks.add(TrackMapper.extractTrackFromResultSet(rs));
             }
             return tracks;
         } catch (SQLException e) {
@@ -133,13 +106,6 @@ public class TrackDao implements Dao<Track , Integer>{
             PreparedStatement stmt = sqlConnection.prepareStatement(sql);
             stmt.setInt(1, track.getId());
             stmt.executeUpdate();
-
-            // delete also the copy of the file from the disk
-            File file = new File(track.getFilePath());
-            if (file.exists()) {
-                file.delete();
-            }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -236,22 +202,7 @@ public class TrackDao implements Dao<Track , Integer>{
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                Track track;
-                //it there is the tag then use constructor with the tag
-                if (!rs.getString("tag").isEmpty()) {
-                    track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
-
-                }
-                //there is no tag for that track hence use the other constructor, the one without the tag
-                else {
-                    track = new Track(rs.getString("title"), rs.getString("author"), GenreEnum.valueOf(rs.getString("genre")), rs.getInt("year_of_publication"));
-                }
-                track.setCountPlayed(rs.getInt("count_played"));
-                track.setId(rs.getInt("id"));
-                track.setLength(rs.getInt("length"));
-                track.setFilePath(rs.getString("file_path"));
-
-                topTracks.add(track);
+                topTracks.add(TrackMapper.extractTrackFromResultSet(rs));
             }
 
         } catch (SQLException e) {
