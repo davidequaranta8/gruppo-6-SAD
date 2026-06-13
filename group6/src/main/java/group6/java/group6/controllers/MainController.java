@@ -1,11 +1,5 @@
 package group6.java.group6.controllers;
-
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +8,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import group6.java.group6.services.PlayerService;
 import group6.java.group6.utils.*;
 import group6.java.group6.services.TrackService;
 import javafx.event.ActionEvent;
@@ -66,11 +61,10 @@ import javafx.scene.media.MediaPlayer;
 public class MainController implements LibraryObserver, PlaylistObserver {
 
     // ── Utils ─────────────────────────────────────────────────────────
-    private final AudioPlayer audioPlayer = new AudioPlayer();
     private final TrackDao trackDao = new TrackDao();
     private final CommandInvoker invoker = new CommandInvoker();
     private final TrackService trackService = new TrackService();
-
+    private PlayerService playerService;
 
     // ── State pattern ─────────────────────────────────────────────────────────
     private MainViewContext viewContext;
@@ -209,24 +203,9 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         viewContext.setState(MainViewContext.LIBRARY_STATE);
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
         genreFilter.getItems().setAll(GenreEnum.values());
-        //tell to the player what Runnable has to execute when the media ends playing
-        audioPlayer.setOnEndOfMedia(() -> {
-            FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
-            icon.setIconLiteral("fas-play"); // rimette l'icona play quando la canzone finisce
-            currentTimeLabel.setText("0:00");
-            totalTimeLabel.setText("0:00");
-            progressSlider.setValue(0);
-        });
-        //Pass the callback to the audioPlayer that will be executed everytime the audio goes on
-        audioPlayer.setOnTimeChanged((current, total) -> {
-            if (total > 0) {
-                // aggiorna lo slider (0–100)
-                progressSlider.setValue((current / total) * 100);
-            }
-            // formatta mm:ss per le label
-            currentTimeLabel.setText(formatTime(current));
-            totalTimeLabel.setText(formatTime(total));
-        });
+        //istanziamo il service per il player che nel costruttore fa il setup delle callback
+       playerService = new PlayerService(trackService , currentTimeLabel , totalTimeLabel ,progressSlider , playPauseBtn , currentTitle , currentAuthor);
+
 
         // collegamento tra le colonne e gli attributi della classe Track
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
@@ -379,13 +358,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             selectedTrack.updateTrack(controller.getTitle(), controller.getAuthor(), controller.getGenre(), controller.getYear(), controller.getTag());
 
             //Se aggiorniamo un file audio di una tracci che é attualmente in riproduzione
-            if (controller.getSelectedFile() != null && selectedTrack.equals(currentPlayingTrack)) {
-                audioPlayer.stop(); //ferma la traccia in riproduzione
-                currentPlayingTrack = null; // Questo forzerà il tasto play a creare un nuovo MediaPlayer
-                progressSlider.setValue(0);
-                currentTimeLabel.setText("0:00");
-                FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
-                icon.setIconLiteral("fas-play");
+            if (controller.getSelectedFile() != null) {
+                playerService.stopAndClearIfPlaying(selectedTrack);
             }
             //update db and file (if needed)
             trackService.updateTrack(selectedTrack, controller.getSelectedFile());
@@ -410,9 +384,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         Optional<ButtonType> result = confirmation.showAndWait();
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            audioPlayer.stop(); //stop track cause otherwise it continues to play even if we deleted the track
-            progressSlider.setValue(0);
-            currentTimeLabel.setText("0:00");
+            playerService.stopAndClearIfPlaying(selectedTrack);
             trackService.deleteTrack(selectedTrack);
             clearDetails(); //clear all details aside to avoid inconsistencies
             FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
@@ -532,39 +504,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @FXML
     protected void handlePlayPause() {
-        FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
-        //check to see if the track selected has been changed
-        boolean isNewTrack = selectedTrack != null && !selectedTrack.equals(currentPlayingTrack);
-        currentAuthor.setText(selectedTrack.getAuthor());
-        currentTitle.setText(selectedTrack.getTitle());
-        if (audioPlayer.isPlaying()) {
-            //if audio was playing but selectedTrack has been changed play the currenTrack
-            if (isNewTrack) {
-                audioPlayer.play(selectedTrack);
-                currentPlayingTrack = selectedTrack;
-                icon.setIconLiteral("fas-pause");
-                selectedTrack.incrementCountPlayed();
-                trackDao.update(selectedTrack);
-            } else {
-                //audio was playing and track was the same , stop it
-                audioPlayer.pause();
-                icon.setIconLiteral("fas-play");
-            }
-        } else if (audioPlayer.isPaused() && !isNewTrack) {
-            //resume only if the selected track was the same
-            audioPlayer.resume();
-            icon.setIconLiteral("fas-pause");
-        } else {
-            //no track playing
-            if (selectedTrack != null) {
-                audioPlayer.play(selectedTrack);
-                currentPlayingTrack = selectedTrack;
-                icon.setIconLiteral("fas-pause");
-                selectedTrack.incrementCountPlayed();
-                trackDao.update(selectedTrack);
-            }
-        }
+        playerService.handlePlayPause(selectedTrack);
     }
 
     @FXML
@@ -693,9 +634,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @FXML
     public void handleSeekTrack(MouseEvent mouseEvent) {
-        double seekSeconds = (progressSlider.getValue() / 100) * audioPlayer.getTotalDuration();
-        audioPlayer.seekTo(seekSeconds);
-
+        playerService.seekTrack();
     }
 
 
