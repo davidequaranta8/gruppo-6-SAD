@@ -20,11 +20,11 @@ public class RemoveTrackCommand implements Command{
 
     @Override
     public void execute() {
-        // 1. Memorizziamo l'indice ESATTO prima di cancellare usando una lista di appoggio
+        // Memorizziamo l'indice ESATTO prima di cancellare usando una lista di appoggio
         List<Track> tempForIndex = new ArrayList<>(playlist.getTracks());
         this.originalPosition = tempForIndex.indexOf(track);
 
-        // 2. Usiamo il PlaylistManager per eliminare la traccia dal DB e dal Modello
+        // Usiamo il PlaylistManager per eliminare la traccia dal DB e dal Modello
         PlaylistManager.getInstance().removeTrackFromPlaylist(playlist, track);
     }
 
@@ -32,10 +32,10 @@ public class RemoveTrackCommand implements Command{
     public void undo() {
         if (originalPosition == -1) return;
 
-        // 1. Usiamo il PlaylistManager per rimettere la traccia nel DB e nel modello.
+        // Usiamo il PlaylistManager per rimettere la traccia nel DB e nel modello.
         PlaylistManager.getInstance().addTrackToPlaylist(playlist, track);
 
-        // 2. Ripristiniamo l'ordine corretto per la sessione corrente
+        // Ripristiniamo l'ordine corretto per la sessione corrente
         List<Track> tempList = new ArrayList<>(playlist.getTracks());
 
         // La rimuoviamo dal fondo (dove l'ha appena messa il manager)
@@ -48,12 +48,12 @@ public class RemoveTrackCommand implements Command{
             tempList.add(track);
         }
 
-        // 3. Svuotiamo il set e riversiamo i dati ordinati
+        // Svuotiamo il set e riversiamo i dati ordinati
         playlist.getTracks().clear();
         playlist.getTracks().addAll(tempList);
 
-        // 4. Forziamo il tuo manager ad avvisare l'interfaccia grafica
-        // che l'ordine delle tracce è cambiato!
+        // Forziamo il PlaylistManager ad avvisare l'interfaccia grafica
+        // che l'ordine delle tracce è cambiato
         PlaylistManager.getInstance().notifyObservers();
     }
 

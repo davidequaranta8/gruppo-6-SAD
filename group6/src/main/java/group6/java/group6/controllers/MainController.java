@@ -6,11 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -196,6 +192,10 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     // ── Stato runtime ─────────────────────────────────────────────────────────
     private Track currentPlayingTrack = null;
 
+    // Rappresenta la coda di riproduzione corrente in modo tale da poter salvare le tracce da dover riprodurre
+    // e poter navigare liberamente
+    private List<Track> playbackQueue = new ArrayList<>();
+
 
     // ═════════════════════════════════════════════════════════════════════════
     //  INITIALIZE
@@ -208,12 +208,10 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         genreFilter.getItems().setAll(GenreEnum.values());
         //tell to the player what Runnable has to execute when the media ends playing
         audioPlayer.setOnEndOfMedia(() -> {
-            FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
-            icon.setIconLiteral("fas-play"); // rimette l'icona play quando la canzone finisce
-            currentTimeLabel.setText("0:00");
-            totalTimeLabel.setText("0:00");
-            progressSlider.setValue(0);
+            // Quando la traccia fisica finisce, simula automaticamente la pressione del tasto "Avanti"
+            handleNext();
         });
+
         //Pass the callback to the audioPlayer that will be executed everytime the audio goes on
         audioPlayer.setOnTimeChanged((current, total) -> {
             if (total > 0) {
@@ -464,7 +462,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         dialog.showAndWait().ifPresent(key -> {
             Track trackToAdd = trackMap.get(key);
 
-            // Crei il comando e lo passi all'Invoker!
+            // Crei il comando e lo passi all'Invoker
             Command addCmd = new AddTrackCommand(trackToAdd,playlist);
             invoker.executeCommand(addCmd);
         });
@@ -516,17 +514,35 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     protected void handleResetFilter() {
     }
 
+    // collegato al tasto Riproduci, permette di riprodurre la collezione di tracce visualizzata nella TableView
     @FXML
     protected void handlePlayAll() {
+        // Preleviamo tutte le tracce attualmente visibili (la playlist intera)
+        List<Track> currentList = tracksTableView.getItems();
+
+        if (currentList == null || currentList.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Riproduzione");
+            alert.setHeaderText("Nessuna traccia da riprodurre");
+            alert.showAndWait();
+            return;
+        }
+
+        // Facciamo la fotografia dell'intera lista salvandola nella coda
+        playbackQueue = new ArrayList<>(currentList);
+
+        // Preleviamo la primissima traccia (indice 0)
+        Track firstTrack = playbackQueue.get(0);
+
+        // Sfruttiamo il metodo che abbiamo creato prima per avviarla
+        cambiaTraccia(firstTrack);
     }
 
     @FXML
     protected void handleShuffle() {
     }
 
-    @FXML
-    protected void handlePrev() {
-    }
+
 
 
     @FXML
@@ -541,11 +557,12 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
         //check to see if the track selected has been changed
         boolean isNewTrack = selectedTrack != null && !selectedTrack.equals(currentPlayingTrack);
-        currentAuthor.setText(selectedTrack.getAuthor());
-        currentTitle.setText(selectedTrack.getTitle());
+
         if (audioPlayer.isPlaying()) {
             //if audio was playing but selectedTrack has been changed play the currenTrack
             if (isNewTrack) {
+                playbackQueue = new ArrayList<>(tracksTableView.getItems()); // salvo la lista corrente in modo da poter riprodurre in ordine
+
                 audioPlayer.play(selectedTrack);
                 currentPlayingTrack = selectedTrack;
                 icon.setIconLiteral("fas-pause");
@@ -563,6 +580,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         } else {
             //no track playing
             if (selectedTrack != null) {
+                playbackQueue = new ArrayList<>(tracksTableView.getItems()); // salvo la lista corrente in modo da poter riprodurre in ordine
+
                 audioPlayer.play(selectedTrack);
                 currentPlayingTrack = selectedTrack;
                 icon.setIconLiteral("fas-pause");
@@ -570,10 +589,86 @@ public class MainController implements LibraryObserver, PlaylistObserver {
                 trackDao.update(selectedTrack);
             }
         }
+
+        // se stiamo riproducendo viene riportato Title e Author della Track in ascolto altrimenti ""
+        currentTitle.setText(currentPlayingTrack != null ? currentPlayingTrack.getTitle() : "");
+        currentAuthor.setText(currentPlayingTrack != null ? currentPlayingTrack.getAuthor() : "");
     }
 
+    // Handler per riprodurre la traccia successiva
     @FXML
     protected void handleNext() {
+        if (currentPlayingTrack == null || playbackQueue.isEmpty()) return;
+
+        // Cerchiamo la traccia nella CODA e non nella vista
+        int currentIndex = playbackQueue.indexOf(currentPlayingTrack);
+
+        if (currentIndex == -1) return;
+
+        // prelevo la traccia successiva tramite l'idx
+        if (currentIndex < playbackQueue.size() - 1) {
+            Track nextTrack = playbackQueue.get(currentIndex + 1);
+            cambiaTraccia(nextTrack);
+        } else { // se sono all'ultima track fermo la riproduzione
+            fermaRiproduzione();
+        }
+    }
+
+    // Handler per riprodurre la traccia precedente
+    @FXML
+    protected void handlePrev() {
+        if (currentPlayingTrack == null || playbackQueue.isEmpty()) return;
+
+        // Cerchiamo la traccia nella CODA e non nella vista
+        int currentIndex = playbackQueue.indexOf(currentPlayingTrack);
+
+
+        if (currentIndex > 0) {
+            Track prevTrack = playbackQueue.get(currentIndex - 1);
+            cambiaTraccia(prevTrack);
+        }
+    }
+
+    private void cambiaTraccia(Track nuovaTraccia) {
+        boolean eraInPausa = audioPlayer.isPaused();
+        currentPlayingTrack = nuovaTraccia;
+
+        // Evidenzia la nuova canzone e aggiorna i dettagli a lato solo ed esclusivamente se
+        // l'utente si trova nella schermata della playlist/libreria che sta riproducendo
+        if (tracksTableView.getItems().contains(nuovaTraccia)) {
+            tracksTableView.getSelectionModel().select(nuovaTraccia);
+        }
+
+        // aggiorniamo Title e Author della traccia in ascolto
+        currentTitle.setText(nuovaTraccia.getTitle());
+        currentAuthor.setText(nuovaTraccia.getAuthor());
+
+        audioPlayer.play(nuovaTraccia);
+        FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
+
+        if (eraInPausa) {
+            audioPlayer.pause();
+            icon.setIconLiteral("fas-play");
+        } else {
+            icon.setIconLiteral("fas-pause");
+            nuovaTraccia.incrementCountPlayed();
+            trackDao.update(nuovaTraccia);
+        }
+    }
+
+    private void fermaRiproduzione() {
+        audioPlayer.stop();
+        currentPlayingTrack = null;
+
+        FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
+        icon.setIconLiteral("fas-play");
+
+        currentTimeLabel.setText("0:00");
+        progressSlider.setValue(0);
+        currentTitle.setText("");
+        currentAuthor.setText("");
+
+        tracksTableView.getSelectionModel().clearSelection();
     }
 
     @FXML
@@ -731,10 +826,10 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         // correggere la vista e il salvataggio su DB perchè non viene aggiornato con la setLength
         String uriString = audioFile.toURI().toString(); // permette di trasformare il path relativo in URI
 
-        // 1. Creiamo l'oggetto Media
+        // Creiamo l'oggetto Media
         Media media = new Media(uriString);
 
-        // 2. Lo "avvolgiamo" nel MediaPlayer per utilizzare setOnReady
+        // Lo "avvolgiamo" nel MediaPlayer per utilizzare setOnReady
         MediaPlayer mediaPlayer = new MediaPlayer(media);
 
         // Utilizziamo il listener SetOnReady, siccome la lettura dei metadati del file è asincronala, leggiamo quando il valore diventa valido, non al primo onReady (che a volte arriva troppo presto).
@@ -764,7 +859,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     private void saveTrackFromDialog(TrackDialogController controller) {
         Track track;
 
-        // 1. Preleviamo i dati usando i getter del TrackDialogController
+        // Preleviamo i dati usando i getter del TrackDialogController
         if (controller.getOptionSelected() != null) {
             track = new Track(
                     controller.getTitle(),
