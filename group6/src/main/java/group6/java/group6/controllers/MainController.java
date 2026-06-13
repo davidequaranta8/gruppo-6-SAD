@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javafx.event.ActionEvent;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import group6.java.group6.HelloApplication;
@@ -525,6 +526,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
                 audioPlayer.play(selectedTrack);
                 currentPlayingTrack = selectedTrack;
                 icon.setIconLiteral("fas-pause");
+                selectedTrack.incrementCountPlayed();
+                trackDao.update(selectedTrack);
             } else {
                 //audio was playing and track was the same , stop it
                 audioPlayer.pause();
@@ -540,6 +543,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
                 audioPlayer.play(selectedTrack);
                 currentPlayingTrack = selectedTrack;
                 icon.setIconLiteral("fas-pause");
+                selectedTrack.incrementCountPlayed();
+                trackDao.update(selectedTrack);
             }
         }
     }
@@ -585,6 +590,16 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         playlistListView.getSelectionModel().clearSelection();
         updateTracksTable();
         viewContext.setState(MainViewContext.LIBRARY_STATE);
+    }
+
+
+    @FXML
+    protected void handleShowTopPlayedTracks(ActionEvent event) {
+        List<Track> topTracks = trackDao.getTopPlayedTracks(10);
+        tracksTableView.getItems().setAll(topTracks);
+        playlistTitleLabel.setText("Brani più ascoltati");
+        playlistTitleLabel.setVisible(true);
+        playlistTitleLabel.setManaged(true);
     }
 
 

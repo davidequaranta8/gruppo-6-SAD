@@ -8,9 +8,7 @@ import group6.java.group6.models.Track;
 
 import java.io.File;
 import java.sql.*;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class TrackDao implements Dao<Track , Integer>{
     private final Connection sqlConnection;
@@ -150,7 +148,6 @@ public class TrackDao implements Dao<Track , Integer>{
 
     @Override
     public void update(Track track) {
-        //TODO: creare un metodo isPresentWithTitleAndAuthor a parte per la verifica dei duplicati nel DB
 
         String sql = "UPDATE track  "
                 + "SET title = ?, "
@@ -224,5 +221,43 @@ public class TrackDao implements Dao<Track , Integer>{
             throw new RuntimeException(e);
         }
         return false;
+    }
+
+
+
+    /*This method provides the top k songs played*/
+    public List<Track> getTopPlayedTracks(int k) {
+        List<Track> topTracks = new ArrayList<>();
+        String sql = "SELECT * FROM track  WHERE count_played <> 0 ORDER BY count_played DESC LIMIT ?";
+
+        try{
+            PreparedStatement stmt = sqlConnection.prepareStatement(sql);
+            stmt.setInt(1, k);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Track track;
+                //it there is the tag then use constructor with the tag
+                if (!rs.getString("tag").isEmpty()) {
+                    track  = new Track(rs.getString("title"),rs.getString("author") , GenreEnum.valueOf(rs.getString("genre")),rs.getInt("year_of_publication") , TagEnum.valueOf(rs.getString("tag")));
+
+                }
+                //there is no tag for that track hence use the other constructor, the one without the tag
+                else {
+                    track = new Track(rs.getString("title"), rs.getString("author"), GenreEnum.valueOf(rs.getString("genre")), rs.getInt("year_of_publication"));
+                }
+                track.setCountPlayed(rs.getInt("count_played"));
+                track.setId(rs.getInt("id"));
+                track.setLength(rs.getInt("length"));
+                track.setFilePath(rs.getString("file_path"));
+
+                topTracks.add(track);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return topTracks;
     }
 }
