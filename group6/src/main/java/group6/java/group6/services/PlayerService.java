@@ -133,11 +133,12 @@ public class PlayerService {
         } else {
             icon.setIconLiteral("fas-pause");
             newTrack.incrementCountPlayed();
-            trackService.updateTrack(newTrack, null);
+            trackService.incrementPlayCount(newTrack);
         }
     }
 
     public void setOnTrackEnd(Runnable onTrackEnd) {
         this.onTrackEnd = onTrackEnd;
     }
+
 }

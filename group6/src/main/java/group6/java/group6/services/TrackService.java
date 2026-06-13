@@ -1,5 +1,6 @@
 package group6.java.group6.services;
 
+import group6.java.group6.dao.TrackDao;
 import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Track;
@@ -14,6 +15,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 public class TrackService {
+private final TrackDao  trackDao = new TrackDao();
+
 
     public void saveTrack(Track track, File audioFile) throws DuplicateTitleTrackException {
         //Salva nel DB e aggiorna i metadati
@@ -77,5 +80,11 @@ public class TrackService {
                 mediaPlayer.dispose();
             }
         });
+    }
+
+
+    // Aggiungi in TrackService.java:
+    public void incrementPlayCount(Track track) {
+        trackDao.update(track);
     }
 }
