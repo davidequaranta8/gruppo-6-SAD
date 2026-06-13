@@ -273,15 +273,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         });
     }
 
-    @FXML
-    protected void handleGenerateByGenre() {
-        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Genere", null);
-    }
 
-    @FXML
-    protected void handleGenerateByYear() {
-        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist da Anno", null);
-    }
 
     @FXML
     protected void handleRenamePlaylist() {
