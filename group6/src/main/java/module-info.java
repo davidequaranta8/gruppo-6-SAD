@@ -13,4 +13,5 @@ module group6.java.group6 {
     exports group6.java.group6.controllers;
     opens group6.java.group6.controllers to javafx.fxml;
     opens group6.java.group6.models to javafx.base;
+    opens group6.java.group6.utils to javafx.base;
 }

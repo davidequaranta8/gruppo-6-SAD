@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import group6.java.group6.utils.*;
 import javafx.event.ActionEvent;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -31,7 +32,7 @@ import group6.java.group6.models.PlaylistManager;
 import group6.java.group6.models.PlaylistObserver;
 import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
-import group6.java.group6.utils.TimeUtils;
+
 import static group6.java.group6.utils.TimeUtils.formatTime;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -63,9 +64,10 @@ import javafx.scene.media.MediaPlayer;
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
 public class MainController implements LibraryObserver, PlaylistObserver {
 
+    // ── Utils ─────────────────────────────────────────────────────────
     private final AudioPlayer audioPlayer = new AudioPlayer();
     private final TrackDao trackDao = new TrackDao();
-
+    private final CommandInvoker invoker = new CommandInvoker();
 
     // ── State pattern ─────────────────────────────────────────────────────────
     private MainViewContext viewContext;
@@ -194,6 +196,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     // ── Stato runtime ─────────────────────────────────────────────────────────
     private Track currentPlayingTrack = null;
 
+
     // ═════════════════════════════════════════════════════════════════════════
     //  INITIALIZE
     // ═════════════════════════════════════════════════════════════════════════
@@ -247,6 +250,16 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @FXML
     protected void handleUndo() {
+        boolean success = invoker.undoLastCommand();
+
+        // Se la pila è vuota
+        if (!success) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Annulla operazione");
+            alert.setHeaderText(null);
+            alert.setContentText("Non ci sono operazioni recenti da annullare.");
+            alert.showAndWait();
+        }
     }
 
     // ── Playlist ──────────────────────────────────────────────────────────────
@@ -449,7 +462,11 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         dialog.setContentText("Traccia:");
 
         dialog.showAndWait().ifPresent(key -> {
-            PlaylistManager.getInstance().addTrackToPlaylist(playlist, trackMap.get(key));
+            Track trackToAdd = trackMap.get(key);
+
+            // Crei il comando e lo passi all'Invoker!
+            Command addCmd = new AddTrackCommand(trackToAdd,playlist);
+            invoker.executeCommand(addCmd);
         });
     }
 
@@ -480,7 +497,13 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
         confirm.showAndWait().ifPresent(btn -> {
             if (btn == ButtonType.OK) {
-                PlaylistManager.getInstance().removeTrackFromPlaylist(playlist, selectedTrack);
+
+                // Creiamo il comando concreto per la rimozione
+                Command removeCmd = new RemoveTrackCommand(selectedTrack,playlist);
+
+                // Lo passiamo all'Invoker che lo esegue e lo salva nello storico
+                invoker.executeCommand(removeCmd);
+
             }
         });
     }
