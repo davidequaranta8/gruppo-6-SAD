@@ -1,5 +1,4 @@
 package group6.java.group6.controllers;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -25,11 +24,11 @@ import group6.java.group6.models.Playlist;
 import group6.java.group6.models.PlaylistManager;
 import group6.java.group6.models.PlaylistObserver;
 import group6.java.group6.models.Track;
-import group6.java.group6.player.AudioPlayer;
 import group6.java.group6.player.LoopStrategy;
 import group6.java.group6.player.PlaybackStrategy;
 import group6.java.group6.player.SequentialStrategy;
 import group6.java.group6.player.ShuffleStrategy;
+import group6.java.group6.services.PlayerService;
 import group6.java.group6.services.TrackService;
 import group6.java.group6.utils.AddTrackCommand;
 import group6.java.group6.utils.Command;
@@ -63,15 +62,15 @@ import javafx.scene.layout.VBox;
 
 
 
+
 // questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
 public class MainController implements LibraryObserver, PlaylistObserver {
 
     // ── Utils ─────────────────────────────────────────────────────────
-    private final AudioPlayer audioPlayer = new AudioPlayer();
     private final TrackDao trackDao = new TrackDao();
     private final CommandInvoker invoker = new CommandInvoker();
     private final TrackService trackService = new TrackService();
-
+    private PlayerService playerService;
 
     // ── State pattern ─────────────────────────────────────────────────────────
     private MainViewContext viewContext;
@@ -198,7 +197,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     private Button deleteTrackBtn;
 
     // ── Stato runtime ─────────────────────────────────────────────────────────
-    private Track currentPlayingTrack = null;
     private PlaybackStrategy strategy = new SequentialStrategy();
     // Rappresenta la coda di riproduzione corrente in modo tale da poter salvare le tracce da dover riprodurre
     // e poter navigare liberamente
@@ -214,22 +212,11 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         viewContext.setState(MainViewContext.LIBRARY_STATE);
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
         genreFilter.getItems().setAll(GenreEnum.values());
-        //tell to the player what Runnable has to execute when the media ends playing
-        audioPlayer.setOnEndOfMedia(() -> {
-            // Quando la traccia fisica finisce, simula automaticamente la pressione del tasto "Avanti"
-            handleNext();
-        });
+        //istanziamo il service per il player che nel costruttore fa il setup delle callback
+        playerService = new PlayerService(trackService , currentTimeLabel , totalTimeLabel ,progressSlider , playPauseBtn , currentTitle , currentAuthor);
 
-        //Pass the callback to the audioPlayer that will be executed everytime the audio goes on
-        audioPlayer.setOnTimeChanged((current, total) -> {
-            if (total > 0) {
-                // aggiorna lo slider (0–100)
-                progressSlider.setValue((current / total) * 100);
-            }
-            // formatta mm:ss per le label
-            currentTimeLabel.setText(formatTime(current));
-            totalTimeLabel.setText(formatTime(total));
-        });
+        // passo la funzione handleNext al service cosi quando finisce la riproduzione esegue handleNext()
+        playerService.setOnTrackEnd(() -> handleNext());
 
         // collegamento tra le colonne e gli attributi della classe Track
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
@@ -246,10 +233,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         PlaylistManager.getInstance().addObserver(this);
         // effettuo uno primo aggiornamento della sidebar per caricare eventuali playlist già presenti
         updatePlaylistSidebar();
-        audioPlayer.setOnEndOfMedia(() -> {
-            handleNext();
-        });
-
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -384,21 +367,17 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             selectedTrack.updateTrack(controller.getTitle(), controller.getAuthor(), controller.getGenre(), controller.getYear(), controller.getTag());
 
             //Se aggiorniamo un file audio di una tracci che é attualmente in riproduzione
-            if (controller.getSelectedFile() != null && selectedTrack.equals(currentPlayingTrack)) {
-                audioPlayer.stop(); //ferma la traccia in riproduzione
-                currentPlayingTrack = null; // Questo forzerà il tasto play a creare un nuovo MediaPlayer
-                progressSlider.setValue(0);
-                currentTimeLabel.setText("0:00");
-                FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
-                icon.setIconLiteral("fas-play");
+            if (controller.getSelectedFile() != null) {
+                playerService.stopAndClearIfPlaying(selectedTrack);
             }
             //update db and file (if needed)
             trackService.updateTrack(selectedTrack, controller.getSelectedFile());
             showTrackDetails(selectedTrack); // aggiorna il pannello di dettaglio con i nuovi dati della traccia
         });
-        if(currentPlayingTrack == selectedTrack){
-            currentTitle.setText(currentPlayingTrack != null ? currentPlayingTrack.getTitle() : "");
-            currentAuthor.setText(currentPlayingTrack != null ? currentPlayingTrack.getAuthor() : "");
+
+        if(playerService.getCurrentPlayingTrack() == selectedTrack){
+            currentTitle.setText(playerService.getCurrentPlayingTrack() != null ? playerService.getCurrentPlayingTrack().getTitle() : "");
+            currentAuthor.setText(playerService.getCurrentPlayingTrack() != null ? playerService.getCurrentPlayingTrack().getAuthor() : "");
      
         }
     }
@@ -420,9 +399,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         Optional<ButtonType> result = confirmation.showAndWait();
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
-           // audioPlayer.stop(); //stop track cause otherwise it continues to play even if we deleted the track
-            progressSlider.setValue(0);
-            currentTimeLabel.setText("0:00");
+
+            //playerService.stopAndClearIfPlaying(selectedTrack);
             trackService.deleteTrack(selectedTrack);
             clearDetails(); //clear all details aside to avoid inconsistencies
             FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
@@ -536,13 +514,14 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         }
 
         // Facciamo la fotografia dell'intera lista salvandola nella coda
-        playbackQueue = new ArrayList<>(currentList);
-
+        playbackQueue = strategy.buildQueue(new ArrayList<>(currentList), null);
+        
         // Preleviamo la primissima traccia (indice 0)
         Track firstTrack = playbackQueue.get(0);
+        cambiaTraccia(firstTrack); //seleziona la prima
 
         // Sfruttiamo il metodo che abbiamo creato prima per avviarla
-        cambiaTraccia(firstTrack);
+        playerService.changeTrack(firstTrack);
     }
 
     @FXML
@@ -577,117 +556,52 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @FXML
     protected void handlePlayPause() {
-        FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
-        //check to see if the track selected has been changed
-        boolean isNewTrack = selectedTrack != null && !selectedTrack.equals(currentPlayingTrack);
-
-        if (audioPlayer.isPlaying()) {
-            //if audio was playing but selectedTrack has been changed play the currenTrack
-            if (isNewTrack) {
-                playbackQueue = new ArrayList<>(tracksTableView.getItems()); // salvo la lista corrente in modo da poter riprodurre in ordine
-
-                audioPlayer.play(selectedTrack);
-                currentPlayingTrack = selectedTrack;
-                icon.setIconLiteral("fas-pause");
-                selectedTrack.incrementCountPlayed();
-                trackDao.update(selectedTrack);
-            } else {
-                //audio was playing and track was the same , stop it
-                audioPlayer.pause();
-                icon.setIconLiteral("fas-play");
-            }
-        } else if (audioPlayer.isPaused() && !isNewTrack) {
-            //resume only if the selected track was the same
-            audioPlayer.resume();
-            icon.setIconLiteral("fas-pause");
-        } else {
-            //no track playing
-            if (selectedTrack != null) {
-                playbackQueue = new ArrayList<>(tracksTableView.getItems()); // salvo la lista corrente in modo da poter riprodurre in ordine
-
-                audioPlayer.play(selectedTrack);
-                currentPlayingTrack = selectedTrack;
-                icon.setIconLiteral("fas-pause");
-                selectedTrack.incrementCountPlayed();
-                trackDao.update(selectedTrack);
-            }
-        }
-
-        // se stiamo riproducendo viene riportato Title e Author della Track in ascolto altrimenti ""
-        currentTitle.setText(currentPlayingTrack != null ? currentPlayingTrack.getTitle() : "");
-        currentAuthor.setText(currentPlayingTrack != null ? currentPlayingTrack.getAuthor() : "");
+        playerService.handlePlayPause(selectedTrack);
+        showTrackDetails(selectedTrack);
     }
 
-    // Handler per riprodurre la traccia successiva
     @FXML
     protected void handleNext() {
-        if (currentPlayingTrack == null || playbackQueue.isEmpty()) return;
-
-        Track next = strategy.nextTrack(playbackQueue, currentPlayingTrack);
-        
+        Track current = playerService.getCurrentPlayingTrack();
+        if (current == null || playbackQueue.isEmpty()) return;
+        Track next = strategy.nextTrack(playbackQueue, current);
         if (next != null)
             cambiaTraccia(next);
-         else  // se sono all'ultima track fermo la riproduzione
+        else
             fermaRiproduzione();
-        
     }
 
-    // Handler per riprodurre la traccia precedente
     @FXML
     protected void handlePrev() {
-        if (currentPlayingTrack == null || playbackQueue.isEmpty()) return;
-
-        Track prev = strategy.prevTrack(playbackQueue, currentPlayingTrack);
-        
-        if (prev != null) 
+        Track current = playerService.getCurrentPlayingTrack();
+        if (current == null || playbackQueue.isEmpty()) return;
+        Track prev = strategy.prevTrack(playbackQueue, current);
+        if (prev != null)
             cambiaTraccia(prev);
-    }
-
-
-    private void cambiaTraccia(Track nuovaTraccia) {
-        boolean eraInPausa = audioPlayer.isPaused();
-        currentPlayingTrack = nuovaTraccia;
-
-        // Evidenzia la nuova canzone e aggiorna i dettagli a lato solo ed esclusivamente se
-        // l'utente si trova nella schermata della playlist/libreria che sta riproducendo
+        }
+    
+    private void cambiaTraccia(Track nuovaTraccia) {    
         if (tracksTableView.getItems().contains(nuovaTraccia)) {
             tracksTableView.getSelectionModel().select(nuovaTraccia);
         }
-
-        // aggiorniamo Title e Author della traccia in ascolto
-        currentTitle.setText(nuovaTraccia.getTitle());
-        currentAuthor.setText(nuovaTraccia.getAuthor());
-
-        audioPlayer.play(nuovaTraccia);
-        FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
-
-        if (eraInPausa) {
-            audioPlayer.pause();
-            icon.setIconLiteral("fas-play");
-        } else {
-            icon.setIconLiteral("fas-pause");
-            nuovaTraccia.incrementCountPlayed();
-            trackDao.update(nuovaTraccia);
-        }
         showTrackDetails(nuovaTraccia);
+        playerService.changeTrack(nuovaTraccia);    
     }
 
     private void fermaRiproduzione() {
-        audioPlayer.stop();
-        currentPlayingTrack = null;
-
-        FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
-        icon.setIconLiteral("fas-play");
-
-        currentTimeLabel.setText("0:00");
-        progressSlider.setValue(0);
+        playerService.stopAndClearIfPlaying(playerService.getCurrentPlayingTrack());
+        tracksTableView.getSelectionModel().clearSelection();
         currentTitle.setText("");
         currentAuthor.setText("");
-
-        tracksTableView.getSelectionModel().clearSelection();
-
     }
+
+    private void stopPlayback() {
+        // Usiamo il metodo stopAndClearIfPlaying del service, passandogli la traccia corrente
+        playerService.stopAndClearIfPlaying(playerService.getCurrentPlayingTrack());
+    }
+
+
 
     @FXML
     protected void handleTagChange() {
@@ -695,10 +609,147 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @FXML
     protected void handleGeneratePlaylist() {
+        if (ConcreteLibrary.getInstance().getTracks().isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Libreria vuota");
+            alert.setHeaderText("Nessuna traccia disponibile");
+            alert.setContentText("La libreria è vuota. Aggiungi delle tracce prima di generare una playlist.");
+            alert.showAndWait();
+            return;
+        }
+
+        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist Automatica",
+                (AutoPlaylistDialogController ctrl) -> ctrl.setName("Playlist Automatica"),
+                (AutoPlaylistDialogController ctrl) -> {
+                    if (ctrl.isTagSelected()) {
+                        generateByTag(ctrl);
+                    } else if (ctrl.isYearSelected()) {
+                        generateByYear(ctrl);
+                    } else if (ctrl.isGenreSelected()) {
+                        generateByGenre(ctrl);
+                    }
+                });
     }
 
+    private void generateByTag(AutoPlaylistDialogController ctrl) {
+        List<TagEnum> selectedTags = ctrl.getSelectedTags();
+        if (selectedTags.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Nessun tag selezionato");
+            alert.setHeaderText("Seleziona almeno un tag");
+            alert.setContentText("Devi selezionare almeno un tag per generare la playlist.");
+            alert.showAndWait();
+            return;
+        }
 
+        String name = ctrl.getPlaylistName();
+        if (name.isEmpty()) {
+            name = selectedTags.stream()
+                    .map(TagEnum::name)
+                    .collect(Collectors.joining(", "));
+        }
 
+        List<Track> matchingTracks = ConcreteLibrary.getInstance().getTracks().stream()
+                .filter(t -> t.getTag() != null && selectedTags.contains(t.getTag()))
+                .collect(Collectors.toList());
+
+        if (matchingTracks.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Generazione Playlist");
+            alert.setHeaderText("Nessuna traccia trovata");
+            alert.setContentText("Nessuna traccia nella libreria possiede i tag selezionati.");
+            alert.showAndWait();
+            return;
+        }
+
+        createPlaylistWithTracks(name, matchingTracks);
+    }
+
+    private void generateByYear(AutoPlaylistDialogController ctrl) {
+        int yearFrom = Math.min(ctrl.getYearFrom(), ctrl.getYearTo());
+        int yearTo = Math.max(ctrl.getYearFrom(), ctrl.getYearTo());
+
+        String name = ctrl.getPlaylistName();
+        if (name.isEmpty()) {
+            if (yearFrom == yearTo) {
+                name = String.valueOf(yearFrom);
+            } else {
+                name = yearFrom + " - " + yearTo;
+            }
+        }
+
+        List<Track> matchingTracks = ConcreteLibrary.getInstance().getTracks().stream()
+                .filter(t -> t.getYear() >= yearFrom && t.getYear() <= yearTo)
+                .collect(Collectors.toList());
+
+        if (matchingTracks.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Generazione Playlist");
+            alert.setHeaderText("Nessuna traccia trovata");
+            alert.setContentText("Nessuna traccia nella libreria è stata pubblicata tra il " + yearFrom + " e il " + yearTo + ".");
+            alert.showAndWait();
+            return;
+        }
+
+        createPlaylistWithTracks(name, matchingTracks);
+    }
+
+    private void generateByGenre(AutoPlaylistDialogController ctrl) {
+        GenreEnum selectedGenre = ctrl.getSelectedGenre();
+        if (selectedGenre == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Nessun genere selezionato");
+            alert.setHeaderText("Seleziona un genere");
+            alert.setContentText("Devi selezionare un genere per generare la playlist.");
+            alert.showAndWait();
+            return;
+        }
+
+        String name = ctrl.getPlaylistName();
+        if (name.isEmpty()) {
+            name = selectedGenre.name();
+        }
+
+        List<Track> matchingTracks = ConcreteLibrary.getInstance().getTracks().stream()
+                .filter(t -> t.getGenre() == selectedGenre)
+                .collect(Collectors.toList());
+
+        if (matchingTracks.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Generazione Playlist");
+            alert.setHeaderText("Nessuna traccia trovata");
+            alert.setContentText("Nessuna traccia nella libreria appartiene al genere " + selectedGenre.name() + ".");
+            alert.showAndWait();
+            return;
+        }
+
+        createPlaylistWithTracks(name, matchingTracks);
+    }
+
+    private void createPlaylistWithTracks(String name, List<Track> matchingTracks) {
+        try {
+            String finalName = name;
+            Set<String> existingNames = PlaylistManager.getInstance().getPlaylists().stream()
+                    .map(Playlist::getTitle)
+                    .map(String::toLowerCase)
+                    .collect(Collectors.toSet());
+            int suffix = 1;
+            while (existingNames.contains(finalName.toLowerCase())) {
+                finalName = name + " (" + suffix + ")";
+                suffix++;
+            }
+            Playlist playlist = PlaylistManager.getInstance().createPlaylist(finalName);
+            for (Track t : matchingTracks) {
+                PlaylistManager.getInstance().addTrackToPlaylist(playlist, t);
+            }
+        } catch (DuplicatePlaylistException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Errore");
+            alert.setHeaderText("Playlist duplicata");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
+    }
 
     // Seleziona una playlist dalla sidebar e ne mostra il contenuto.
     @FXML
@@ -811,9 +862,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @FXML
     public void handleSeekTrack(MouseEvent mouseEvent) {
-        double seekSeconds = (progressSlider.getValue() / 100) * audioPlayer.getTotalDuration();
-        audioPlayer.seekTo(seekSeconds);
-
+        playerService.seekTrack();
     }
 
 
@@ -945,10 +994,12 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
 
     private void syncQueue() {
-    List<Track> currentVisible = new ArrayList<>(tracksTableView.getItems());
-    playbackQueue = strategy.buildQueue(currentVisible, currentPlayingTrack);
+        Track current = playerService.getCurrentPlayingTrack();
+        List<Track> currentVisible = new ArrayList<>(tracksTableView.getItems());
+        playbackQueue = strategy.buildQueue(currentVisible, current);
 
-    if (currentPlayingTrack != null && !playbackQueue.contains(currentPlayingTrack)) {
+        // ferma solo se la traccia è stata eliminata fisicamente dalla libreria
+        if (current != null && !ConcreteLibrary.getInstance().getTracks().contains(current)) {
             fermaRiproduzione();
         }
     }

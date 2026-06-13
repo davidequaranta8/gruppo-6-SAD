@@ -1,19 +1,24 @@
 package group6.java.group6.services;
 
+import group6.java.group6.dao.TrackDao;
 import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Track;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-
+import group6.java.group6.models.Playlist;
+import group6.java.group6.models.PlaylistManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import group6.java.group6.models.ConcreteLibrary;
 
 public class TrackService {
+private final TrackDao  trackDao = new TrackDao();
+
 
     public void saveTrack(Track track, File audioFile) throws DuplicateTitleTrackException {
         //Salva nel DB e aggiorna i metadati
@@ -78,4 +83,32 @@ public class TrackService {
             }
         });
     }
-}
+
+
+
+    public void incrementPlayCount(Track track) {
+        trackDao.update(track);
+
+
+
+
+            // 2. Cerchiamo la traccia "gemella" (stesso ID) nella Libreria Principale e la aggiorniamo
+            for (Track t : ConcreteLibrary.getInstance().getTracks()) {
+                if (t.getId() == track.getId() && t != track) {
+                    t.setCountPlayed(track.getCountPlayed());
+                    break;
+                }
+            }
+
+            // 3. Cerchiamo la traccia gemella anche nella Playlist corrente per evitare inconsistenze incrociate
+           Playlist currentPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
+            if (currentPlaylist != null) {
+                for (Track t : currentPlaylist.getTracks()) {
+                    if (t.getId() == track.getId() && t != track) {
+                        t.setCountPlayed(track.getCountPlayed());
+                        break;
+                    }
+                }
+            }
+        }
+    }
