@@ -5,6 +5,7 @@ import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.models.Playlist;
 import group6.java.group6.models.Track;
+import group6.java.group6.utils.TrackMapper;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -166,7 +167,6 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
             stmt.setInt(1, playlist.getId());
             stmt.setInt(2, track.getId());
             stmt.executeUpdate();
-            playlist.addTrack(track); /*add the track also inside the playlist model*/
         } catch (SQLException e) {
 
             e.printStackTrace();
@@ -182,7 +182,6 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
             stmt.setInt(1, playlist.getId());
             stmt.setInt(2, track.getId());
             stmt.executeUpdate();
-            playlist.removeTrack(track); /*remove the track also from the playlist model*/
         }catch (SQLException exception){
             exception.printStackTrace();
         }
@@ -199,53 +198,14 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                Track track;
-                if(rs.getString("tag").equals("")){
-                    track = new Track(
-                            rs.getString("title"),
-                            rs.getString("author"),
+                Track track = TrackMapper.extractTrackFromResultSet(rs);
+                playlist.addTrack(track);
 
-                            GenreEnum.valueOf(rs.getString("genre")),
-                            rs.getInt("year_of_publication")
-
-                    );
-                }else {
-                    track = new Track(
-                            rs.getString("title"),
-                            rs.getString("author"),
-
-                            GenreEnum.valueOf(rs.getString("genre")),
-                            rs.getInt("year_of_publication"),
-                            TagEnum.valueOf(rs.getString("tag"))
-                    );
-                }
-              track.setCountPlayed(rs.getInt("count_played"));
-              track.setId(rs.getInt("id"));
-              track.setLength(rs.getDouble("length"));
-              track.setFilePath(rs.getString("file_path"));
-              playlist.addTrack(track);
             }
         }catch (SQLException exception){
             exception.printStackTrace();
         }
     }
-/*Utility method to avoid throwing exceptions if exception genre in db is not in genre enum in java */
-    private GenreEnum parseGenre(String value) {
-        try {
-            return GenreEnum.valueOf(value);
-        } catch (IllegalArgumentException e) {
-            System.err.println("GenreEnum sconosciuto: " + value);
-            return GenreEnum.OTHER; // fallback sicuro
-        }
+
     }
 
-
-
-
-
-
-
-
-
-
-}

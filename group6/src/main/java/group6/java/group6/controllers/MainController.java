@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import group6.java.group6.utils.*;
+import group6.java.group6.services.TrackService;
 import javafx.event.ActionEvent;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -64,6 +65,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     private final AudioPlayer audioPlayer = new AudioPlayer();
     private final TrackDao trackDao = new TrackDao();
     private final CommandInvoker invoker = new CommandInvoker();
+    private final TrackService trackService = new TrackService();
+
 
     // ── State pattern ─────────────────────────────────────────────────────────
     private MainViewContext viewContext;
@@ -354,8 +357,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             alert.showAndWait();
             return;
         }
-        
-
         showEditTrackDialog("TrackDialog.fxml", "Modifica Traccia", selectedTrack, (controller) -> {
 
             if (!controller.validate(true)) {
@@ -364,7 +365,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             }
 
             //before to update the model check first if user edited title or author in order to have a duplicate record
-            if (trackDao.existsByAuthorAndTitleAndId(controller.getAuthor(), controller.getTitle(),selectedTrack.getId())) {
+            if (trackDao.existsByAuthorAndTitleAndId(controller.getAuthor(), controller.getTitle(), selectedTrack.getId())) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Errore");
                 alert.setHeaderText("Errore");
@@ -372,28 +373,22 @@ public class MainController implements LibraryObserver, PlaylistObserver {
                 alert.showAndWait();
                 return; //avoid to continue updating
             }
-
+            //update model
             selectedTrack.updateTrack(controller.getTitle(), controller.getAuthor(), controller.getGenre(), controller.getYear(), controller.getTag());
-            ConcreteLibrary.getInstance().updateTrack(selectedTrack);
 
-
-            File selectedFile = controller.getSelectedFile();
-            //TODO: compute the length of the track here and update in db
-
-            if (selectedFile != null) {
-
-                try {
-                    Path dest = Paths.get(selectedTrack.getFilePath()); // es. "music/42.mp3"
-                    Files.createDirectories(dest.getParent());     // crea la cartella "music/" se non esiste
-                    Files.copy(selectedFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                setDuration(selectedFile, selectedTrack);
+            //Se aggiorniamo un file audio di una tracci che é attualmente in riproduzione
+            if (controller.getSelectedFile() != null && selectedTrack.equals(currentPlayingTrack)) {
+                audioPlayer.stop(); //ferma la traccia in riproduzione
+                currentPlayingTrack = null; // Questo forzerà il tasto play a creare un nuovo MediaPlayer
+                progressSlider.setValue(0);
+                currentTimeLabel.setText("0:00");
+                FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
+                icon.setIconLiteral("fas-play");
             }
-
+            //update db and file (if needed)
+            trackService.updateTrack(selectedTrack, controller.getSelectedFile());
+            showTrackDetails(selectedTrack); // aggiorna il pannello di dettaglio con i nuovi dati della traccia
         });
-        showTrackDetails(selectedTrack); //aggiorna il pannello di dettaglio con i nuovi dati della traccia
     }
 
 
@@ -416,7 +411,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             audioPlayer.stop(); //stop track cause otherwise it continues to play even if we deleted the track
             progressSlider.setValue(0);
             currentTimeLabel.setText("0:00");
-            ConcreteLibrary.getInstance().removeTrack(selectedTrack);
+            trackService.deleteTrack(selectedTrack);
             clearDetails(); //clear all details aside to avoid inconsistencies
             FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
             icon.setIconLiteral("fas-play");icon.setIconLiteral("fas-play");
@@ -821,41 +816,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         }
     }
 
-    // Metodo per prelevare la durata delle Track dal file
-    public void setDuration(File audioFile, Track track) {
-        // correggere la vista e il salvataggio su DB perchè non viene aggiornato con la setLength
-        String uriString = audioFile.toURI().toString(); // permette di trasformare il path relativo in URI
-
-        // Creiamo l'oggetto Media
-        Media media = new Media(uriString);
-
-        // Lo "avvolgiamo" nel MediaPlayer per utilizzare setOnReady
-        MediaPlayer mediaPlayer = new MediaPlayer(media);
-
-        // Utilizziamo il listener SetOnReady, siccome la lettura dei metadati del file è asincronala, leggiamo quando il valore diventa valido, non al primo onReady (che a volte arriva troppo presto).
-        media.durationProperty().addListener((obs, oldDur, newDur) -> {
-            if (newDur != null && !newDur.isUnknown() && newDur.toSeconds() > 0) {
-
-                double totalSeconds = media.getDuration().toSeconds();
-
-                // 2. Calcoliamo i minuti interi dividendo per 60
-                int minutes = (int) (totalSeconds / 60);
-
-                // 3. Calcoliamo i secondi rimanenti usando l'operatore modulo (%)
-                int seconds = (int) (totalSeconds % 60);
-
-                // 4. Creiamo il valore decimale (es. 3 + (10 / 100) = 3.1)
-                double formattedDuration = minutes + (seconds / 100.0); // in questo modo rappresentiamo x minuti : y secondi
-
-                track.setLength(formattedDuration);
-                ConcreteLibrary.getInstance().updateTrack(track);
-                mediaPlayer.dispose();
-            }
-        });
-    }
-
-    // metodo privato comune 
-
     private void saveTrackFromDialog(TrackDialogController controller) {
         Track track;
 
@@ -877,14 +837,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             );
         }
 
-
-        // 2. Aggiungiamo la traccia al Singleton
-        // Questo farà scattare automaticamente l'Observer e aggiornerà la tabella
-        //ConcreteLibrary.getInstance().addTrack(newTrack); //chiama internamente il trackDao che salva nel db e costruisce il filepath della track
-        //prendiamoci il file selezionato nel dialog e
-
         try {
-            ConcreteLibrary.getInstance().addTrack(track);
+            trackService.saveTrack(track ,controller.getSelectedFile());
         } catch (DuplicateTitleTrackException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Errore");
@@ -894,19 +848,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             return;
         }
 
-        File selectedFile = controller.getSelectedFile();
-        //TODO: compute the length of the track here and update in db
 
-        if (selectedFile != null) {
-            try {
-                Path dest = Paths.get(track.getFilePath()); // es. "music/42.mp3"
-                Files.createDirectories(dest.getParent());     // crea la cartella "music/" se non esiste
-                Files.copy(selectedFile.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        setDuration(selectedFile, track);
 
     }
 
