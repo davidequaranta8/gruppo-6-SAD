@@ -1,18 +1,15 @@
 package group6.java.group6.controllers;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import group6.java.group6.utils.*;
-import group6.java.group6.services.TrackService;
-import javafx.event.ActionEvent;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import group6.java.group6.HelloApplication;
@@ -29,8 +26,18 @@ import group6.java.group6.models.PlaylistManager;
 import group6.java.group6.models.PlaylistObserver;
 import group6.java.group6.models.Track;
 import group6.java.group6.player.AudioPlayer;
-
+import group6.java.group6.player.LoopStrategy;
+import group6.java.group6.player.PlaybackStrategy;
+import group6.java.group6.player.SequentialStrategy;
+import group6.java.group6.player.ShuffleStrategy;
+import group6.java.group6.services.TrackService;
+import group6.java.group6.utils.AddTrackCommand;
+import group6.java.group6.utils.Command;
+import group6.java.group6.utils.CommandInvoker;
+import group6.java.group6.utils.RemoveTrackCommand;
+import group6.java.group6.utils.TimeUtils;
 import static group6.java.group6.utils.TimeUtils.formatTime;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
@@ -53,8 +60,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 
 
 
@@ -194,7 +199,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     // ── Stato runtime ─────────────────────────────────────────────────────────
     private Track currentPlayingTrack = null;
-
+    private PlaybackStrategy strategy = new SequentialStrategy();
     // Rappresenta la coda di riproduzione corrente in modo tale da poter salvare le tracce da dover riprodurre
     // e poter navigare liberamente
     private List<Track> playbackQueue = new ArrayList<>();
@@ -241,7 +246,9 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         PlaylistManager.getInstance().addObserver(this);
         // effettuo uno primo aggiornamento della sidebar per caricare eventuali playlist già presenti
         updatePlaylistSidebar();
-
+        audioPlayer.setOnEndOfMedia(() -> {
+            handleNext();
+        });
 
     }
 
@@ -389,6 +396,11 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             trackService.updateTrack(selectedTrack, controller.getSelectedFile());
             showTrackDetails(selectedTrack); // aggiorna il pannello di dettaglio con i nuovi dati della traccia
         });
+        if(currentPlayingTrack == selectedTrack){
+            currentTitle.setText(currentPlayingTrack != null ? currentPlayingTrack.getTitle() : "");
+            currentAuthor.setText(currentPlayingTrack != null ? currentPlayingTrack.getAuthor() : "");
+     
+        }
     }
 
 
@@ -408,7 +420,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         Optional<ButtonType> result = confirmation.showAndWait();
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            audioPlayer.stop(); //stop track cause otherwise it continues to play even if we deleted the track
+           // audioPlayer.stop(); //stop track cause otherwise it continues to play even if we deleted the track
             progressSlider.setValue(0);
             currentTimeLabel.setText("0:00");
             trackService.deleteTrack(selectedTrack);
@@ -535,11 +547,28 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @FXML
     protected void handleShuffle() {
+       if (shuffleToggleBtn.isSelected()) {
+            loopBtn.setSelected(false);
+            strategy = new ShuffleStrategy();
+        } else {
+            strategy = new SequentialStrategy();
+        }      
+        syncQueue();
     }
 
 
 
-
+    @FXML
+    protected void handleLoop() {
+        if (loopBtn.isSelected()) {
+            shuffleToggleBtn.setSelected(false);
+            strategy = new LoopStrategy(); 
+        } else{
+            strategy = new SequentialStrategy();
+    }
+    syncQueue();
+}
+    
     @FXML
     protected void handleTrackSelected() {
         showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
@@ -595,18 +624,13 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     protected void handleNext() {
         if (currentPlayingTrack == null || playbackQueue.isEmpty()) return;
 
-        // Cerchiamo la traccia nella CODA e non nella vista
-        int currentIndex = playbackQueue.indexOf(currentPlayingTrack);
-
-        if (currentIndex == -1) return;
-
-        // prelevo la traccia successiva tramite l'idx
-        if (currentIndex < playbackQueue.size() - 1) {
-            Track nextTrack = playbackQueue.get(currentIndex + 1);
-            cambiaTraccia(nextTrack);
-        } else { // se sono all'ultima track fermo la riproduzione
+        Track next = strategy.nextTrack(playbackQueue, currentPlayingTrack);
+        
+        if (next != null)
+            cambiaTraccia(next);
+         else  // se sono all'ultima track fermo la riproduzione
             fermaRiproduzione();
-        }
+        
     }
 
     // Handler per riprodurre la traccia precedente
@@ -614,15 +638,12 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     protected void handlePrev() {
         if (currentPlayingTrack == null || playbackQueue.isEmpty()) return;
 
-        // Cerchiamo la traccia nella CODA e non nella vista
-        int currentIndex = playbackQueue.indexOf(currentPlayingTrack);
-
-
-        if (currentIndex > 0) {
-            Track prevTrack = playbackQueue.get(currentIndex - 1);
-            cambiaTraccia(prevTrack);
-        }
+        Track prev = strategy.prevTrack(playbackQueue, currentPlayingTrack);
+        
+        if (prev != null) 
+            cambiaTraccia(prev);
     }
+
 
     private void cambiaTraccia(Track nuovaTraccia) {
         boolean eraInPausa = audioPlayer.isPaused();
@@ -649,6 +670,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             nuovaTraccia.incrementCountPlayed();
             trackDao.update(nuovaTraccia);
         }
+        showTrackDetails(nuovaTraccia);
     }
 
     private void fermaRiproduzione() {
@@ -664,6 +686,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         currentAuthor.setText("");
 
         tracksTableView.getSelectionModel().clearSelection();
+
     }
 
     @FXML
@@ -802,6 +825,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         } else {
             updateTracksTable();
         }
+        syncQueue();
     }
 
 
@@ -814,6 +838,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         } else {
             viewContext.setState(MainViewContext.LIBRARY_STATE);
         }
+        syncQueue();
     }
 
     private void saveTrackFromDialog(TrackDialogController controller) {
@@ -917,5 +942,14 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         tagLabel.setText("");
         totalTimeLabel.setText("");
 
+    }
+
+    private void syncQueue() {
+    List<Track> currentVisible = new ArrayList<>(tracksTableView.getItems());
+    playbackQueue = strategy.buildQueue(currentVisible, currentPlayingTrack);
+
+    if (currentPlayingTrack != null && !playbackQueue.contains(currentPlayingTrack)) {
+            fermaRiproduzione();
+        }
     }
 }

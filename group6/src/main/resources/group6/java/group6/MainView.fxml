@@ -146,12 +146,12 @@
                   </HBox>
                   <HBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="12.0">
                      <children>
-                        <ToggleButton fx:id="shuffleToggleBtn" mnemonicParsing="false" styleClass="mode-btn" text="Shuffle">
+                        <ToggleButton fx:id="shuffleToggleBtn" mnemonicParsing="false" styleClass="mode-btn" text="Shuffle" onAction="#handleShuffle">
                            <graphic>
                               <FontIcon iconLiteral="fas-random" iconSize="13" />
                            </graphic>
                         </ToggleButton>
-                        <ToggleButton fx:id="loopBtn" mnemonicParsing="false" styleClass="mode-btn" text="Loop">
+                        <ToggleButton fx:id="loopBtn" mnemonicParsing="false" styleClass="mode-btn" text="Loop" onAction="#handleLoop">
                            <graphic>
                               <FontIcon iconLiteral="fas-redo" iconSize="13" />
                            </graphic>
