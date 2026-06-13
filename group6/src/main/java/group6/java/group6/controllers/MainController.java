@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -193,6 +194,10 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     // ── Stato runtime ─────────────────────────────────────────────────────────
     private Track currentPlayingTrack = null;
 
+    // Rappresenta la coda di riproduzione corrente in modo tale da poter salvare le tracce da dover riprodurre
+    // e poter navigare liberamente
+    private List<Track> playbackQueue = new ArrayList<>();
+
 
     // ═════════════════════════════════════════════════════════════════════════
     //  INITIALIZE
@@ -205,8 +210,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         genreFilter.getItems().setAll(GenreEnum.values());
         //istanziamo il service per il player che nel costruttore fa il setup delle callback
        playerService = new PlayerService(trackService , currentTimeLabel , totalTimeLabel ,progressSlider , playPauseBtn , currentTitle , currentAuthor);
-
-
         // collegamento tra le colonne e gli attributi della classe Track
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
         colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
@@ -431,7 +434,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         dialog.showAndWait().ifPresent(key -> {
             Track trackToAdd = trackMap.get(key);
 
-            // Crei il comando e lo passi all'Invoker!
+            // Crei il comando e lo passi all'Invoker
             Command addCmd = new AddTrackCommand(trackToAdd,playlist);
             invoker.executeCommand(addCmd);
         });
@@ -483,17 +486,35 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     protected void handleResetFilter() {
     }
 
+    // collegato al tasto Riproduci, permette di riprodurre la collezione di tracce visualizzata nella TableView
     @FXML
     protected void handlePlayAll() {
+        // Preleviamo tutte le tracce attualmente visibili (la playlist intera)
+        List<Track> currentList = tracksTableView.getItems();
+
+        if (currentList == null || currentList.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Riproduzione");
+            alert.setHeaderText("Nessuna traccia da riprodurre");
+            alert.showAndWait();
+            return;
+        }
+
+        // Facciamo la fotografia dell'intera lista salvandola nella coda
+        playbackQueue = new ArrayList<>(currentList);
+
+        // Preleviamo la primissima traccia (indice 0)
+        Track firstTrack = playbackQueue.get(0);
+
+        // Sfruttiamo il metodo che abbiamo creato prima per avviarla
+        changeTrack(firstTrack);
     }
 
     @FXML
     protected void handleShuffle() {
     }
 
-    @FXML
-    protected void handlePrev() {
-    }
+
 
 
     @FXML
@@ -508,9 +529,54 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         playerService.handlePlayPause(selectedTrack);
     }
 
+    // Handler per riprodurre la traccia successiva
     @FXML
     protected void handleNext() {
+        Track currentPlayingTrack = playerService.getCurrentPlayingTrack();
+        if (currentPlayingTrack == null || playbackQueue == null || playbackQueue.isEmpty()) return;
+        // Cerchiamo la traccia nella CODA
+        int currentIndex = playbackQueue.indexOf(currentPlayingTrack);
+        if (currentIndex == -1) return;
+        // Prelevo la traccia successiva tramite l'index
+        if (currentIndex < playbackQueue.size() - 1) {
+            Track nextTrack = playbackQueue.get(currentIndex + 1);
+            changeTrack(nextTrack);
+        } else { // Se sono all'ultima track fermo la riproduzione
+            stopPlayback();
+        }
     }
+
+    // Handler per riprodurre la traccia precedente
+    @FXML
+    protected void handlePrev() {
+        Track currentPlayingTrack = playerService.getCurrentPlayingTrack();
+        if (currentPlayingTrack == null || playbackQueue == null || playbackQueue.isEmpty()) return;
+        // Cerchiamo la traccia nella CODA
+        int currentIndex = playbackQueue.indexOf(currentPlayingTrack);
+        if (currentIndex > 0) {
+            Track prevTrack = playbackQueue.get(currentIndex - 1);
+            changeTrack(prevTrack);
+        }
+    }
+
+    private void changeTrack(Track newTrack) {
+        // Troviamo il numero della riga (l'indice) che corrisponde alla canzone
+        int index = tracksTableView.getItems().indexOf(newTrack);
+
+        if (index >= 0) {
+            tracksTableView.getSelectionModel().select(index);
+            tracksTableView.scrollTo(index);
+            showTrackDetails(newTrack);
+        }
+
+        playerService.changeTrack(newTrack);
+    }
+    private void stopPlayback() {
+        // Usiamo il metodo stopAndClearIfPlaying del service, passandogli la traccia corrente
+        playerService.stopAndClearIfPlaying(playerService.getCurrentPlayingTrack());
+    }
+
+
 
     @FXML
     protected void handleTagChange() {
@@ -660,12 +726,10 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         }
     }
 
-       // metodo privato comune
-
     private void saveTrackFromDialog(TrackDialogController controller) {
         Track track;
 
-        // 1. Preleviamo i dati usando i getter del TrackDialogController
+        // Preleviamo i dati usando i getter del TrackDialogController
         if (controller.getOptionSelected() != null) {
             track = new Track(
                     controller.getTitle(),

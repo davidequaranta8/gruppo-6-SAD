@@ -200,6 +200,7 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
             while (rs.next()) {
                 Track track = TrackMapper.extractTrackFromResultSet(rs);
                 playlist.addTrack(track);
+
             }
         }catch (SQLException exception){
             exception.printStackTrace();
@@ -207,14 +208,4 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
     }
 
     }
-
-
-
-
-
-
-
-
-
-
 

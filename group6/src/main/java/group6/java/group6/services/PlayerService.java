@@ -103,5 +103,29 @@ public class PlayerService {
             FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
             icon.setIconLiteral("fas-play");
         }
+
+
+    }
+
+    public Track getCurrentPlayingTrack() {
+        return currentPlayingTrack;
+    }
+
+
+    public void changeTrack(Track newTrack) {
+        boolean wasPaused = audioPlayer.isPaused();
+        currentPlayingTrack = newTrack;
+        currentTitle.setText(newTrack.getTitle());
+        currentAuthor.setText(newTrack.getAuthor());
+        audioPlayer.play(newTrack);
+        FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
+        if (wasPaused) {
+            audioPlayer.pause();
+            icon.setIconLiteral("fas-play");
+        } else {
+            icon.setIconLiteral("fas-pause");
+            newTrack.incrementCountPlayed();
+            trackService.updateTrack(newTrack, null);
+        }
     }
 }

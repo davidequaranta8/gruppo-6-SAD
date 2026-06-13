@@ -22,7 +22,7 @@ public class LibraryTest {
     public void setUp() {
         library = ConcreteLibrary.getInstance();
 
-        // Svuotiamo forzatamente la libreria per resettare lo stato del Singleton!
+        // Svuotiamo forzatamente la libreria per resettare lo stato del Singleton
         library.setTracks(new HashSet<>());
 
         // Inizializziamo la traccia di test

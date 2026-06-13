@@ -81,16 +81,16 @@ public class TrackDialogController {
     }
 
     public String getOptionSelected() {
-        // 1. Chiediamo al gruppo quale elemento è attualmente selezionato
+        //  Chiediamo al gruppo quale elemento è attualmente selezionato
         // Restituisce un oggetto generico di tipo "Toggle"
         Toggle selezionato = toggleGroup.getSelectedToggle();
 
-        // 2. Controllo di sicurezza: l'utente potrebbe non aver cliccato nulla
+        // Controllo di sicurezza: l'utente potrebbe non aver cliccato nulla
         if (selezionato != null) {
-            // 3. Facciamo il "cast" da Toggle a RadioButton per poter leggere il testo
+            // Facciamo il "cast" da Toggle a RadioButton per poter leggere il testo
             ToggleButton bottoneCliccato = (ToggleButton) selezionato;
 
-            // 4. Restituiamo la stringa (es. "Rock", "Pop", "Preferiti")
+            // Restituiamo la stringa (es. "Rock", "Pop", "Preferiti")
             return bottoneCliccato.getText();
         }
 
@@ -168,7 +168,7 @@ public void showValidationError() {
             // Controlli se l'Enum nascosto (UserData) corrisponde a quello cercato
             if (toggle.getUserData() == tag) {
 
-                // Trovato! Lo selezioni e interrompi il ciclo
+
                 toggle.setSelected(true);
                 break;
 
