@@ -484,6 +484,32 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
 
     @FXML
+    protected void handleSearch(){
+        String query = searchField.getText();
+        if (query == null) query = "";
+        String q = query.trim().toLowerCase();
+
+        Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
+        Set<Track> sourceTracks = selectedPlaylist != null ? selectedPlaylist.getTracks() : ConcreteLibrary.getInstance().getTracks();
+
+        if (q.isEmpty()) {
+            tracksTableView.getItems().setAll(sourceTracks);
+            return;
+        }
+
+         List<Track> filteredTracks = new ArrayList<>();
+        for (Track t : sourceTracks) {
+            if (t.getTitle().toLowerCase().contains(q) || t.getAuthor().toLowerCase().contains(q)) {
+                filteredTracks.add(t);
+            }
+        }
+        
+        tracksTableView.getItems().setAll(filteredTracks);
+        syncQueue();
+    }
+
+
+    @FXML
     protected void handleFilter() {
     }
 
