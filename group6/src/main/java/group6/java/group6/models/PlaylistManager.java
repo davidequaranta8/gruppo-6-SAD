@@ -12,7 +12,7 @@ public class PlaylistManager {
     // ── Singleton ─────────────────────────────────────────────────────────────
     private static PlaylistManager instance;
  
-    public static PlaylistManager getInstance() {
+    public static synchronized PlaylistManager getInstance() {
         if (instance == null) {
             instance = new PlaylistManager();
         }

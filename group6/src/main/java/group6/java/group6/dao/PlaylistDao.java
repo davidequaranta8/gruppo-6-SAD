@@ -141,7 +141,6 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
             stmt.executeUpdate();
             playlist.incrementCountPlayed(); /*update also the counter of model*/
         } catch (SQLException e) {
-            //TODO: define a proper exception to handle here
             e.printStackTrace();
         }
 
