@@ -23,12 +23,13 @@ public class PlayerService {
     private final Button playPauseBtn;
     private final Label currentTitle;
     private final Label currentAuthor;
+    private final Label currentPlaylist;
 
     private Track currentPlayingTrack = null;
 
     public PlayerService(TrackService trackService, Label currentTimeLabel, Label totalTimeLabel,
                          Slider progressSlider, Button playPauseBtn,
-                         Label currentTitle, Label currentAuthor) {
+                         Label currentTitle, Label currentAuthor, Label currentPlaylist) {
         this.trackService = trackService;
         this.currentTimeLabel = currentTimeLabel;
         this.totalTimeLabel = totalTimeLabel;
@@ -36,6 +37,7 @@ public class PlayerService {
         this.playPauseBtn = playPauseBtn;
         this.currentTitle = currentTitle;
         this.currentAuthor = currentAuthor;
+        this.currentPlaylist = currentPlaylist;
 
         setupPlayerCallbacks();
     }
@@ -47,6 +49,7 @@ public class PlayerService {
             currentTimeLabel.setText("0:00");
             totalTimeLabel.setText("0:00");
             progressSlider.setValue(0);
+            currentPlaylist.setText("");
 
             if (onTrackEnd != null) {
                 onTrackEnd.run();
@@ -109,6 +112,7 @@ public class PlayerService {
             currentPlayingTrack = null;
             progressSlider.setValue(0);
             currentTimeLabel.setText("0:00");
+            currentPlaylist.setText("");
             FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
             icon.setIconLiteral("fas-play");
         }
@@ -141,5 +145,9 @@ public class PlayerService {
     public void setOnTrackEnd(Runnable onTrackEnd) {
         this.onTrackEnd = onTrackEnd;
     }
+
+    public void setCurrentPlaylistLabel(String playlistName) {
+    currentPlaylist.setText(playlistName != null ? playlistName : "");
+}
 
 }

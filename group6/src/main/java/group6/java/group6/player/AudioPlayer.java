@@ -1,13 +1,13 @@
 package group6.java.group6.player;
 
+import java.io.File;
+import java.util.function.BiConsumer;
+
 import group6.java.group6.models.Track;
 import javafx.application.Platform;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
-
-import java.io.File;
-import java.util.function.BiConsumer;
 
 public class AudioPlayer {
 

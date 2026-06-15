@@ -146,6 +146,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     @FXML
     private Label currentTitle;
     @FXML
+    private Label currentPlaylist;
+    @FXML
     private Label currentAuthor;
     @FXML
     private Slider progressSlider;
@@ -203,6 +205,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     // Rappresenta la coda di riproduzione corrente in modo tale da poter salvare le tracce da dover riprodurre
     // e poter navigare liberamente
     private List<Track> playbackQueue = new ArrayList<>();
+    //playlist attiva, in riproduzione
+    private Playlist activePlaylist = null; // null, cioè libreria
 
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -215,7 +219,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
         genreFilter.getItems().setAll(GenreEnum.values());
         //istanziamo il service per il player che nel costruttore fa il setup delle callback
-        playerService = new PlayerService(trackService , currentTimeLabel , totalTimeLabel ,progressSlider , playPauseBtn , currentTitle , currentAuthor);
+        playerService = new PlayerService(trackService , currentTimeLabel , totalTimeLabel ,progressSlider , playPauseBtn , currentTitle , currentAuthor, currentPlaylist);
 
         // passo la funzione handleNext al service cosi quando finisce la riproduzione esegue handleNext()
         playerService.setOnTrackEnd(() -> handleNext());
@@ -341,7 +345,9 @@ public class MainController implements LibraryObserver, PlaylistObserver {
                         alert.setContentText("Hai giá una playlist con nome: " + e.getMessage());
                         alert.showAndWait();
                     }
+                    playerService.setCurrentPlaylistLabel(activePlaylist != null ? activePlaylist.getTitle() : "Libreria");
                 });
+
     }
 
     @FXML
@@ -354,6 +360,13 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         confirm.setContentText("Eliminare \"" + selected.getTitle() + "\"?");
         confirm.showAndWait().ifPresent(btn -> {
             if (btn == ButtonType.OK) {
+                if(selected.getTracks().contains(playerService.getCurrentPlayingTrack())){    
+                    playerService.stopAndClearIfPlaying(playerService.getCurrentPlayingTrack());
+                    currentAuthor.setText("");
+                    currentTitle.setText("");
+                    playerService.setCurrentPlaylistLabel("");
+                    
+                }
                 PlaylistManager.getInstance().deletePlaylist(selected);
                 handleShowAllTracks(); //torno alla libreria originale
             }
@@ -407,18 +420,20 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             selectedTrack.updateTrack(controller.getTitle(), controller.getAuthor(), controller.getGenre(), controller.getYear(), controller.getTag());
 
             //Se aggiorniamo un file audio di una tracci che é attualmente in riproduzione
-            if (controller.getSelectedFile() != null) {
+            if (controller.getSelectedFile() != null && selectedTrack.equals(playerService.getCurrentPlayingTrack())) {
                 playerService.stopAndClearIfPlaying(selectedTrack);
             }
+
             //update db and file (if needed)
             trackService.updateTrack(selectedTrack, controller.getSelectedFile());
             showTrackDetails(selectedTrack); // aggiorna il pannello di dettaglio con i nuovi dati della traccia
+            syncQueue();
+
         });
 
-        if(playerService.getCurrentPlayingTrack() == selectedTrack){
-            currentTitle.setText(playerService.getCurrentPlayingTrack() != null ? playerService.getCurrentPlayingTrack().getTitle() : "");
-            currentAuthor.setText(playerService.getCurrentPlayingTrack() != null ? playerService.getCurrentPlayingTrack().getAuthor() : "");
-     
+        if (playerService.getCurrentPlayingTrack() != null && playerService.getCurrentPlayingTrack().equals(selectedTrack)) {
+            currentTitle.setText(playerService.getCurrentPlayingTrack().getTitle());
+            currentAuthor.setText(playerService.getCurrentPlayingTrack().getAuthor());
         }
         initFilters();
     }
@@ -443,11 +458,11 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
             //playerService.stopAndClearIfPlaying(selectedTrack);
             trackService.deleteTrack(selectedTrack);
-            clearDetails(); //clear all details aside to avoid inconsistencies
             FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
-            icon.setIconLiteral("fas-play");icon.setIconLiteral("fas-play");
-        }
+            icon.setIconLiteral("fas-play");
+            }
         showTrackDetails(null); // svuota il pannello di dettaglio dopo l'eliminazione
+        syncQueue();
     }
 
     @FXML
@@ -491,6 +506,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             // Crei il comando e lo passi all'Invoker
             Command addCmd = new AddTrackCommand(trackToAdd,playlist);
             invoker.executeCommand(addCmd);
+        syncQueue();
         });
         initFilters();
     }
@@ -530,6 +546,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
                 invoker.executeCommand(removeCmd);
 
             }
+        syncQueue();
+ 
         });
     }
 
@@ -555,7 +573,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         }
         
         tracksTableView.getItems().setAll(filteredTracks);
-        syncQueue();
     }
 
 
@@ -595,15 +612,14 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             return;
         }
 
+        activePlaylist = PlaylistManager.getInstance().getSelectedPlaylist(); // null se libreria
         // Facciamo la fotografia dell'intera lista salvandola nella coda
-        playbackQueue = strategy.buildQueue(new ArrayList<>(currentList), null);
-        
+        playbackQueue = strategy.buildQueue(currentList, null); // ← usa direttamente la tabella
+
         // Preleviamo la primissima traccia (indice 0)
         Track firstTrack = playbackQueue.get(0);
         changeTrack(firstTrack); //seleziona la prima
 
-        // Sfruttiamo il metodo che abbiamo creato prima per avviarla
-        playerService.changeTrack(firstTrack);
     }
 
     @FXML
@@ -614,7 +630,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         } else {
             strategy = new SequentialStrategy();
         }      
-        syncQueue();
     }
 
 
@@ -627,7 +642,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         } else{
             strategy = new SequentialStrategy();
     }
-    syncQueue();
 }
     
     @FXML
@@ -639,9 +653,16 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     @FXML
     protected void handlePlayPause() {
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
+        
+        if(selectedTrack != null && selectedTrack != playerService.getCurrentPlayingTrack() ){
+            activePlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
+            playerService.setCurrentPlaylistLabel(activePlaylist != null ? activePlaylist.getTitle() : "Libreria");
+
+        }        
         playerService.handlePlayPause(selectedTrack);
+        syncQueue();
         showTrackDetails(selectedTrack);
-        handleResetFilter();
+        //handleResetFilter();
 
     }
 
@@ -670,7 +691,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             tracksTableView.getSelectionModel().select(nuovaTraccia);
         }
         showTrackDetails(nuovaTraccia);
-        playerService.changeTrack(nuovaTraccia);    
+        playerService.changeTrack(nuovaTraccia);  
+        playerService.setCurrentPlaylistLabel(activePlaylist != null ? activePlaylist.getTitle() : "Libreria");
     }
 
     private void stopPlayback() {
@@ -1037,8 +1059,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     private void updatePlaylistSidebar() {
         if (playlistListView == null) return;
-        Playlist currentPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
-        String currentTitle = currentPlaylist != null ? currentPlaylist.getTitle() : null;
+        Playlist p = PlaylistManager.getInstance().getSelectedPlaylist();
+        String currentTitle = p != null ? p.getTitle() : null;
         List<String> names = PlaylistManager.getInstance().getPlaylists()
                 .stream()
                 .map(Playlist::getTitle)
@@ -1049,6 +1071,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         if (currentTitle != null && names.contains(currentTitle)) {
             playlistListView.getSelectionModel().select(currentTitle);
         }
+
 
     }
 
@@ -1078,12 +1101,23 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     private void syncQueue() {
         Track current = playerService.getCurrentPlayingTrack();
-        List<Track> currentVisible = new ArrayList<>(tracksTableView.getItems());
-        playbackQueue = strategy.buildQueue(currentVisible, current);
 
-        // ferma solo se la traccia è stata eliminata fisicamente dalla libreria
-        if (current != null && !ConcreteLibrary.getInstance().getTracks().contains(current)) {
+        // Determina la sorgente corretta: activePlaylist o libreria completa
+        List<Track> sourceTracks;
+        if (activePlaylist != null) {
+            sourceTracks = new ArrayList<>(activePlaylist.getTracks());
+        } else {
+            sourceTracks = new ArrayList<>(ConcreteLibrary.getInstance().getTracks());
+        }
+
+        playbackQueue = strategy.buildQueue(sourceTracks, current);
+
+        // Se la traccia in play è stata eliminata, ferma tutto
+        if (current != null && !sourceTracks.contains(current)) {
             stopPlayback();
+            playbackQueue.clear();
+        activePlaylist = null;
         }
     }
+
 }
