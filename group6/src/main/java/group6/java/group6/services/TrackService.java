@@ -75,8 +75,9 @@ private final TrackDao  trackDao = new TrackDao();
                 double totalSeconds = media.getDuration().toSeconds();
                 int minutes = (int) (totalSeconds / 60);
                 int seconds = (int) (totalSeconds % 60);
-                double formattedDuration = minutes + (seconds / 100.0);
-
+                double formattedDuration = Double.parseDouble(
+                        String.format("%d.%02d", minutes, seconds)
+                );
                 track.setLength(formattedDuration);
                 ConcreteLibrary.getInstance().updateTrack(track);
                 mediaPlayer.dispose();
