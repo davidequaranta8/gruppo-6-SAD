@@ -70,6 +70,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     private final TrackDao trackDao = new TrackDao();
     private final CommandInvoker invoker = new CommandInvoker();
     private final TrackService trackService = new TrackService();
+    public Button mostPlayedTracksButton;
     private PlayerService playerService;
 
     // ── State pattern ─────────────────────────────────────────────────────────
@@ -792,6 +793,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         playlistListView.getSelectionModel().clearSelection();
         updateTracksTable();
         viewContext.setState(MainViewContext.LIBRARY_STATE);
+        mostPlayedTracksButton.setVisible(true);
     }
 
 
@@ -992,6 +994,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         tracksTableView.getItems().setAll(playlist.getTracks());
         playlistTitleLabel.setText(playlist.getTitle());
         viewContext.setState(MainViewContext.PLAYLIST_STATE);
+        mostPlayedTracksButton.setVisible(false);
 
     }
 

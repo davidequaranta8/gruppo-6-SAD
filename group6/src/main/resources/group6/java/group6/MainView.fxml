@@ -93,7 +93,7 @@
                         <FontIcon iconLiteral="fas-pencil-alt" iconSize="13" />
                      </graphic>
                   </Button>
-                  <Button mnemonicParsing="false" styleClass="btn-secondary" onAction="#handleShowTopPlayedTracks" text="Brani piu ascoltati" />
+                  <Button fx:id="mostPlayedTracksButton" mnemonicParsing="false" styleClass="btn-secondary" onAction="#handleShowTopPlayedTracks" text="Brani piu ascoltati" />
                   <Button fx:id="deleteTrackBtn" mnemonicParsing="false" onAction="#handleDeleteTrack" styleClass="btn-danger" text="Elimina">
                      <graphic>
                         <FontIcon iconLiteral="fas-times" iconSize="13" />
