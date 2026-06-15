@@ -1,98 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.ButtonType?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DialogPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
 <!--
     AutoPlaylistDialog.fxml — Dialogo per generare automaticamente
     una playlist in base a Genere o Anno di pubblicazione.
 -->
-<DialogPane xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="group6.java.group6.controllers.AutoPlaylistDialogController"
-            prefWidth="400"
-            stylesheets="@app.css">
+
+<DialogPane prefWidth="400" stylesheets="@app.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.AutoPlaylistDialogController">
 
     <fx:define>
-        <ToggleGroup fx:id="criterionGroup"/>
+        <ToggleGroup fx:id="criterionGroup" />
     </fx:define>
 
     <header>
-        <Label text="Genera Playlist Automatica" styleClass="dialog-title"/>
+        <Label styleClass="dialog-title" text="Genera Playlist Automatica" />
     </header>
 
     <content>
         <VBox spacing="14">
-            <padding><Insets top="8" bottom="8"/></padding>
+            <padding><Insets bottom="8" top="8" /></padding>
 
             <!-- Criterio di generazione -->
-            <Label text="Criterio" styleClass="form-section-label"/>
+            <Label styleClass="form-section-label" text="Criterio" />
             <HBox spacing="20">
-                <RadioButton fx:id="byGenreRadio"
-                             text="Per Genere"
-                             toggleGroup="$criterionGroup"
-                             selected="true"
-                             onAction="#handleCriterionChange"/>
-                <RadioButton fx:id="byYearRadio"
-                             text="Per Anno"
-                             toggleGroup="$criterionGroup"
-                             onAction="#handleCriterionChange"/>
-                <RadioButton fx:id="byTagRadio"
-                             text="Per Tag"
-                             toggleGroup="$criterionGroup"
-                             onAction="#handleCriterionChange"/>
+                <RadioButton fx:id="byGenreRadio" onAction="#handleCriterionChange" selected="true" text="Per Genere">
+               <toggleGroup>
+                  <ToggleGroup fx:id="criterionGroup" />
+               </toggleGroup></RadioButton>
+                <RadioButton fx:id="byYearRadio" onAction="#handleCriterionChange" text="Per Anno" toggleGroup="$criterionGroup" />
+                <RadioButton fx:id="byTagRadio" onAction="#handleCriterionChange" text="Per Tag" toggleGroup="$criterionGroup" />
             </HBox>
 
-            <Separator/>
+            <Separator />
 
             <!-- Pannello Genere -->
             <VBox fx:id="genrePane" spacing="8">
-                <Label text="Genere" styleClass="form-label"/>
-                <ComboBox fx:id="genreCombo"
-                          promptText="Seleziona genere…"
-                          maxWidth="Infinity"/>
+                <Label styleClass="form-label" text="Genere" />
+                <ComboBox fx:id="genreCombo" maxWidth="Infinity" promptText="Seleziona genere…" />
             </VBox>
 
             <!-- Pannello Anno (nascosto di default) -->
-            <VBox fx:id="yearPane" spacing="8" managed="false" visible="false">
-                <Label text="Anno" styleClass="form-label"/>
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="Da:"/>
-                    <Spinner fx:id="yearFromSpinner" min="1900" max="2099" initialValue="2000" editable="true" prefWidth="90"/>
-                    <Label text="A:"/>
-                    <Spinner fx:id="yearToSpinner"   min="1900" max="2099" initialValue="2024" editable="true" prefWidth="90"/>
+            <VBox fx:id="yearPane" managed="false" spacing="8" visible="false">
+                <Label styleClass="form-label" text="Anno" />
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Label text="Da:" />
+                    <Spinner fx:id="yearFromSpinner" initialValue="2000" max="2099" min="1900" prefWidth="90" />
+                    <Label text="A:" />
+                    <Spinner fx:id="yearToSpinner" initialValue="2024" max="2099" min="1900" prefWidth="90" />
                 </HBox>
             </VBox>
 
             <!-- Pannello Tag (nascosto di default) -->
-            <VBox fx:id="tagPane" spacing="8" managed="false" visible="false">
-                <Label text="Tag" styleClass="form-label"/>
+            <VBox fx:id="tagPane" managed="false" spacing="8" visible="false">
+                <Label styleClass="form-label" text="Tag" />
                 <HBox spacing="16">
-                    <CheckBox fx:id="tagPreferiti"  text="Preferiti"/>
-                    <CheckBox fx:id="tagChill"      text="Chill"/>
-                    <CheckBox fx:id="tagAllenamento" text="Allenamento"/>
+                    <CheckBox fx:id="tagPreferiti" text="Preferiti" />
+                    <CheckBox fx:id="tagChill" text="Chill" />
+                    <CheckBox fx:id="tagAllenamento" text="Allenamento" />
                 </HBox>
             </VBox>
 
-            <Separator/>
+            <Separator />
 
             <!-- Nome della nuova playlist -->
-            <Label text="Nome playlist generata *" styleClass="form-label"/>
-            <TextField fx:id="playlistNameField"
-                       promptText="Es. Rock - Playlist Auto"
-                       maxWidth="Infinity"/>
+            <Label styleClass="form-label" text="Nome playlist generata *" />
+            <TextField fx:id="playlistNameField" maxWidth="Infinity" promptText="Es. Rock - Playlist Auto" />
 
-            <Label fx:id="errorLabel"
-                   text=""
-                   styleClass="error-label"
-                   managed="false" visible="false"/>
+            <Label fx:id="errorLabel" managed="false" styleClass="error-label" text="" visible="false" />
         </VBox>
     </content>
 
     <buttonTypes>
-        <ButtonType buttonData="OK_DONE"     text="Genera"/>
-        <ButtonType buttonData="CANCEL_CLOSE" text="Annulla"/>
+        <ButtonType buttonData="OK_DONE" text="Genera" />
+        <ButtonType buttonData="CANCEL_CLOSE" text="Annulla" />
     </buttonTypes>
 
 </DialogPane>

@@ -49,6 +49,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
@@ -219,11 +220,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         // passo la funzione handleNext al service cosi quando finisce la riproduzione esegue handleNext()
         playerService.setOnTrackEnd(() -> handleNext());
 
-        // collegamento tra le colonne e gli attributi della classe Track
-        colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-        colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
-        colGenre.setCellValueFactory(new PropertyValueFactory<>("genre"));
-        colLength.setCellValueFactory(new PropertyValueFactory<>("length"));
+        //initialize the table
+       initTable();
 
         // registrazione dell'observer
         Library myLibrary = ConcreteLibrary.getInstance();
@@ -234,16 +232,53 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         PlaylistManager.getInstance().addObserver(this);
         // effettuo uno primo aggiornamento della sidebar per caricare eventuali playlist già presenti
         updatePlaylistSidebar();
+        initFilters();
+    }
 
-        // search field — filtra ad ogni rilascio di tasto
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> handleSearch());
 
-        // popola anno filter da 1900 a 2099 + editable per anni personalizzati
-        List<String> years = new ArrayList<>();
-        for (int y = 1900; y <= 2099; y++) {
-            years.add(String.valueOf(y));
-        }
-        yearFilter.getItems().setAll(years);
+
+    private void initYearFilter() {
+        yearFilter.getItems().clear();
+
+        Set<Integer> years = trackDao.getAllYears();
+        List<String> yearStrings = years.stream()
+                .map(String::valueOf)
+                .sorted()
+                .toList();
+
+        yearFilter.getItems().addAll(yearStrings);
+    }
+
+    private void initGenreFilter() {
+        genreFilter.getItems().clear();
+        genreFilter.getItems().addAll(GenreEnum.values());
+    }
+
+    private void initFilters(){
+        initGenreFilter();
+        initYearFilter();
+
+        // ButtonCell custom: mostra il promptText quando non c'è selezione: per risolvere il nbug di javafx perché altrimenti se faccio setPromptTExt non mi rimette il testo di prompt ma rimane vuoto
+        genreFilter.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(GenreEnum item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(item == null || empty ? genreFilter.getPromptText() : item.toString());
+            }
+        });
+        yearFilter.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(item == null || empty ? yearFilter.getPromptText() : item);
+            }
+        });
+    }
+    private void initTable(){
+        colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
+        colGenre.setCellValueFactory(new PropertyValueFactory<>("genre"));
+        colLength.setCellValueFactory(new PropertyValueFactory<>("length"));
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -337,6 +372,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
             saveTrackFromDialog(controller);
         });
+
+        initFilters();
     }
 
     @FXML
@@ -383,6 +420,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             currentAuthor.setText(playerService.getCurrentPlayingTrack() != null ? playerService.getCurrentPlayingTrack().getAuthor() : "");
      
         }
+        initFilters();
     }
 
 
@@ -454,6 +492,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             Command addCmd = new AddTrackCommand(trackToAdd,playlist);
             invoker.executeCommand(addCmd);
         });
+        initFilters();
     }
 
     @FXML
@@ -495,41 +534,38 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
 
     @FXML
-    protected void handleSearch() {
-        applyFilters();
-    }
+    protected void handleSearch(){
+        String query = searchField.getText();
+        if (query == null) query = "";
+        String q = query.trim().toLowerCase();
 
-    @FXML
-    protected void handleFilter() {
-        applyFilters();
-    }
-
-    @FXML
-    protected void handleResetFilter() {
-        genreFilter.getSelectionModel().clearSelection();
-        yearFilter.getSelectionModel().clearSelection();
-        searchField.clear();
-        Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
-        if (selectedPlaylist != null) {
-            tracksTableView.getItems().setAll(selectedPlaylist.getTracks());
-        } else {
-            updateTracksTable();
-        }
-        syncQueue();
-    }
-
-    private void applyFilters() {
         Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
         Set<Track> sourceTracks = selectedPlaylist != null ? selectedPlaylist.getTracks() : ConcreteLibrary.getInstance().getTracks();
 
-        String query = searchField.getText();
-        String q = query == null ? "" : query.trim().toLowerCase();
+        if (q.isEmpty()) {
+            tracksTableView.getItems().setAll(sourceTracks);
+            return;
+        }
 
+         List<Track> filteredTracks = new ArrayList<>();
+        for (Track t : sourceTracks) {
+            if (t.getTitle().toLowerCase().contains(q) || t.getAuthor().toLowerCase().contains(q)) {
+                filteredTracks.add(t);
+            }
+        }
+        
+        tracksTableView.getItems().setAll(filteredTracks);
+        syncQueue();
+    }
+
+
+    @FXML
+    protected void handleFilter() {
         GenreEnum selectedGenre = genreFilter.getValue();
         String selectedYear = yearFilter.getValue();
 
-        List<Track> filtered = sourceTracks.stream()
-                .filter(t -> q.isEmpty() || t.getTitle().toLowerCase().contains(q) || t.getAuthor().toLowerCase().contains(q))
+        List<Track> filtered = new ArrayList<>(ConcreteLibrary.getInstance().getTracks())
+                .stream()
                 .filter(t -> selectedGenre == null || t.getGenre() == selectedGenre)
                 .filter(t -> selectedYear == null || String.valueOf(t.getYear()).equals(selectedYear))
                 .collect(Collectors.toList());
@@ -538,6 +574,13 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         syncQueue();
     }
 
+    @FXML
+    protected void handleResetFilter() {
+        genreFilter.getSelectionModel().clearSelection();
+        yearFilter.getSelectionModel().clearSelection();
+        updateTracksTable();
+        syncQueue();
+    }
     // collegato al tasto Riproduci, permette di riprodurre la collezione di tracce visualizzata nella TableView
     @FXML
     protected void handlePlayAll() {
@@ -598,6 +641,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
         playerService.handlePlayPause(selectedTrack);
         showTrackDetails(selectedTrack);
+        handleResetFilter();
+
     }
 
     @FXML
@@ -802,7 +847,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             if (selezionata != null) {
                 PlaylistManager.getInstance().setSelectedPlaylist(selezionata);
                 showPlaylistContent(selezionata);
-                applyFilters();
             }
         }
     }
@@ -813,7 +857,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         PlaylistManager.getInstance().setSelectedPlaylist(null);
         playlistListView.getSelectionModel().clearSelection();
         updateTracksTable();
-        applyFilters();
         viewContext.setState(MainViewContext.LIBRARY_STATE);
         mostPlayedTracksButton.setVisible(true);
     }
@@ -913,7 +956,6 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         } else {
             updateTracksTable();
         }
-        applyFilters();
         syncQueue();
     }
 

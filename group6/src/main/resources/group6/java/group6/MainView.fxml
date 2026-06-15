@@ -105,12 +105,12 @@
                <children>
                   <Label styleClass="filter-label" text="Filtra:" />
                   <ComboBox fx:id="genreFilter" onAction="#handleFilter" prefWidth="150.0" promptText="Genere" />
-                  <ComboBox fx:id="yearFilter" editable="true" onAction="#handleFilter" prefWidth="150.0" promptText="Anno" />
-                   <Button mnemonicParsing="false" onAction="#handleResetFilter" styleClass="btn-link" text="Reset">
-                      <graphic>
-                         <FontIcon iconLiteral="fas-times-circle" iconSize="13" />
-                      </graphic>
-                   </Button>
+                  <ComboBox fx:id="yearFilter" onAction="#handleFilter" prefWidth="150.0" promptText="Anno" />
+                  <Button onAction="#handleResetFilter" mnemonicParsing="false" styleClass="btn-link" text="Reset">
+                     <graphic>
+                        <FontIcon iconLiteral="fas-times-circle" iconSize="13" />
+                     </graphic>
+                  </Button>
                   <Button fx:id="addTrackBtn" mnemonicParsing="false" onAction="#handleAddTrack" styleClass="btn-primary" text="Aggiungi Traccia">
                      <graphic>
                         <FontIcon iconLiteral="fas-plus" iconSize="13" />
