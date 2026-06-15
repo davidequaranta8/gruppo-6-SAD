@@ -13,6 +13,7 @@ import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Playlist;
 import group6.java.group6.models.PlaylistManager;
 import group6.java.group6.models.Track;
+import javafx.application.Platform;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
@@ -27,7 +28,9 @@ private final TrackDao  trackDao = new TrackDao();
         //Copia il file fisico con path pari a quello della track passata
         if (audioFile != null) {
             copyFileToMusicFolder(audioFile, track.getFilePath());
-            setDuration(audioFile, track);
+            setDuration(audioFile, track, () -> {
+                ConcreteLibrary.getInstance().updateTrack(track);
+            });
         }
     }
 
@@ -38,7 +41,9 @@ private final TrackDao  trackDao = new TrackDao();
         //Se c'è un nuovo file, lo sostituiamo
         if (audioFile != null) {
             copyFileToMusicFolder(audioFile, track.getFilePath());
-            setDuration(audioFile, track);
+            setDuration(audioFile, track, () -> {
+                ConcreteLibrary.getInstance().updateTrack(track);
+            });
         }
     }
 
@@ -65,7 +70,7 @@ private final TrackDao  trackDao = new TrackDao();
     }
 
     //calcola in maniera formattata la durata di una traccia
-    private void setDuration(File audioFile, Track track) {
+    private void setDuration(File audioFile, Track track, Runnable onDisposed) {
         String uriString = audioFile.toURI().toString();
         Media media = new Media(uriString);
         MediaPlayer mediaPlayer = new MediaPlayer(media);
@@ -80,6 +85,11 @@ private final TrackDao  trackDao = new TrackDao();
                 );
                 track.setLength(formattedDuration);
                 ConcreteLibrary.getInstance().updateTrack(track);
+                mediaPlayer.statusProperty().addListener((obsS, oldS, newS) -> {
+                    if (newS == MediaPlayer.Status.DISPOSED) {
+                        Platform.runLater(onDisposed);
+                    }
+                });
                 mediaPlayer.dispose();
             }
         });
