@@ -536,7 +536,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         
         // Preleviamo la primissima traccia (indice 0)
         Track firstTrack = playbackQueue.get(0);
-        cambiaTraccia(firstTrack); //seleziona la prima
+        changeTrack(firstTrack); //seleziona la prima
 
         // Sfruttiamo il metodo che abbiamo creato prima per avviarla
         playerService.changeTrack(firstTrack);
@@ -585,9 +585,9 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         if (current == null || playbackQueue.isEmpty()) return;
         Track next = strategy.nextTrack(playbackQueue, current);
         if (next != null)
-            cambiaTraccia(next);
+            changeTrack(next);
         else
-            fermaRiproduzione();
+            stopPlayback();
     }
 
     @FXML
@@ -596,10 +596,10 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         if (current == null || playbackQueue.isEmpty()) return;
         Track prev = strategy.prevTrack(playbackQueue, current);
         if (prev != null)
-            cambiaTraccia(prev);
+            changeTrack(prev);
         }
     
-    private void cambiaTraccia(Track nuovaTraccia) {    
+    private void changeTrack(Track nuovaTraccia) {
         if (tracksTableView.getItems().contains(nuovaTraccia)) {
             tracksTableView.getSelectionModel().select(nuovaTraccia);
         }
@@ -607,17 +607,14 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         playerService.changeTrack(nuovaTraccia);    
     }
 
-    private void fermaRiproduzione() {
+    private void stopPlayback() {
         playerService.stopAndClearIfPlaying(playerService.getCurrentPlayingTrack());
         tracksTableView.getSelectionModel().clearSelection();
         currentTitle.setText("");
         currentAuthor.setText("");
     }
 
-    private void stopPlayback() {
-        // Usiamo il metodo stopAndClearIfPlaying del service, passandogli la traccia corrente
-        playerService.stopAndClearIfPlaying(playerService.getCurrentPlayingTrack());
-    }
+
 
 
 
@@ -1018,7 +1015,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
         // ferma solo se la traccia è stata eliminata fisicamente dalla libreria
         if (current != null && !ConcreteLibrary.getInstance().getTracks().contains(current)) {
-            fermaRiproduzione();
+            stopPlayback();
         }
     }
 }
