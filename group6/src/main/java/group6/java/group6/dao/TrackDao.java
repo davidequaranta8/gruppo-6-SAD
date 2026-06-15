@@ -211,4 +211,22 @@ public class TrackDao implements Dao<Track , Integer>{
 
         return topTracks;
     }
+
+
+
+    public Set<Integer> getAllYears(){
+        Set<Integer> years = new HashSet<>();
+        String sql = "SELECT DISTINCT year_of_publication FROM track ";
+        try{
+            PreparedStatement stmt = sqlConnection.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                years.add(rs.getInt("year_of_publication"));
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return years;
+    }
 }
