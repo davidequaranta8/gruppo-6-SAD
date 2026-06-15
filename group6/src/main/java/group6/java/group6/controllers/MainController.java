@@ -234,6 +234,16 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         PlaylistManager.getInstance().addObserver(this);
         // effettuo uno primo aggiornamento della sidebar per caricare eventuali playlist già presenti
         updatePlaylistSidebar();
+
+        // search field — filtra ad ogni rilascio di tasto
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> handleSearch());
+
+        // popola anno filter da 1900 a 2099 + editable per anni personalizzati
+        List<String> years = new ArrayList<>();
+        for (int y = 1900; y <= 2099; y++) {
+            years.add(String.valueOf(y));
+        }
+        yearFilter.getItems().setAll(years);
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -485,37 +495,47 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
 
     @FXML
-    protected void handleSearch(){
-        String query = searchField.getText();
-        if (query == null) query = "";
-        String q = query.trim().toLowerCase();
-
-        Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
-        Set<Track> sourceTracks = selectedPlaylist != null ? selectedPlaylist.getTracks() : ConcreteLibrary.getInstance().getTracks();
-
-        if (q.isEmpty()) {
-            tracksTableView.getItems().setAll(sourceTracks);
-            return;
-        }
-
-         List<Track> filteredTracks = new ArrayList<>();
-        for (Track t : sourceTracks) {
-            if (t.getTitle().toLowerCase().contains(q) || t.getAuthor().toLowerCase().contains(q)) {
-                filteredTracks.add(t);
-            }
-        }
-        
-        tracksTableView.getItems().setAll(filteredTracks);
-        syncQueue();
+    protected void handleSearch() {
+        applyFilters();
     }
-
 
     @FXML
     protected void handleFilter() {
+        applyFilters();
     }
 
     @FXML
     protected void handleResetFilter() {
+        genreFilter.getSelectionModel().clearSelection();
+        yearFilter.getSelectionModel().clearSelection();
+        searchField.clear();
+        Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
+        if (selectedPlaylist != null) {
+            tracksTableView.getItems().setAll(selectedPlaylist.getTracks());
+        } else {
+            updateTracksTable();
+        }
+        syncQueue();
+    }
+
+    private void applyFilters() {
+        Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
+        Set<Track> sourceTracks = selectedPlaylist != null ? selectedPlaylist.getTracks() : ConcreteLibrary.getInstance().getTracks();
+
+        String query = searchField.getText();
+        String q = query == null ? "" : query.trim().toLowerCase();
+
+        GenreEnum selectedGenre = genreFilter.getValue();
+        String selectedYear = yearFilter.getValue();
+
+        List<Track> filtered = sourceTracks.stream()
+                .filter(t -> q.isEmpty() || t.getTitle().toLowerCase().contains(q) || t.getAuthor().toLowerCase().contains(q))
+                .filter(t -> selectedGenre == null || t.getGenre() == selectedGenre)
+                .filter(t -> selectedYear == null || String.valueOf(t.getYear()).equals(selectedYear))
+                .collect(Collectors.toList());
+
+        tracksTableView.getItems().setAll(filtered);
+        syncQueue();
     }
 
     // collegato al tasto Riproduci, permette di riprodurre la collezione di tracce visualizzata nella TableView
@@ -782,6 +802,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             if (selezionata != null) {
                 PlaylistManager.getInstance().setSelectedPlaylist(selezionata);
                 showPlaylistContent(selezionata);
+                applyFilters();
             }
         }
     }
@@ -792,6 +813,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         PlaylistManager.getInstance().setSelectedPlaylist(null);
         playlistListView.getSelectionModel().clearSelection();
         updateTracksTable();
+        applyFilters();
         viewContext.setState(MainViewContext.LIBRARY_STATE);
         mostPlayedTracksButton.setVisible(true);
     }
@@ -891,6 +913,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         } else {
             updateTracksTable();
         }
+        applyFilters();
         syncQueue();
     }
 
