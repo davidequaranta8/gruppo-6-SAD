@@ -553,6 +553,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @FXML
     protected void handleSearch(){
+        handleResetFilter();
         String query = searchField.getText();
         if (query == null) query = "";
         String q = query.trim().toLowerCase();

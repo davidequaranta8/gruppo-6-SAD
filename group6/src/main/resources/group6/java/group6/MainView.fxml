@@ -184,7 +184,7 @@
                               </HBox>
                               <HBox prefHeight="100.0" prefWidth="200.0">
                                  <children>
-                                    <Label styleClass="now-author" text="Playlist: " />
+
                                     <Label fx:id="currentPlaylist" styleClass="now-author" />
                                  </children>
                               </HBox>                        
