@@ -59,7 +59,7 @@ public class PlayerService {
 
 
         audioPlayer.setOnTimeChanged((current, total) -> {
-            if (total > 0) {
+            if (total > 0 && !progressSlider.isValueChanging()) {
                 progressSlider.setValue((current / total) * 100);
             }
             currentTimeLabel.setText(TimeUtils.formatTime(current));
