@@ -214,7 +214,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     // ═════════════════════════════════════════════════════════════════════════
     @FXML
     public void initialize() {
-        viewContext = new MainViewContext(filterBar, addTrackBtn, addToPlaylistBtn, deleteTrackBtn, removeFromPlaylistBtn, RenamePlaylist, playlistTitleLabel);
+        viewContext = new MainViewContext(filterBar, addTrackBtn, addToPlaylistBtn, deleteTrackBtn, removeFromPlaylistBtn, RenamePlaylist, playlistTitleLabel,undoBtn);
         viewContext.setState(MainViewContext.LIBRARY_STATE);
         // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
         genreFilter.getItems().setAll(GenreEnum.values());

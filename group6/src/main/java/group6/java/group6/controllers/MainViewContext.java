@@ -20,10 +20,11 @@ public class MainViewContext {
     public final Button removeFromPlaylistBtn;
     public final Label playlistTitleLabel;
     public final Button renamePlaylistBtn;
+    public final Button undoBtn;
  
     private ViewState currentState;
  
-    public MainViewContext(HBox filterBar, Button addTrackBtn, Button addToPlaylistBtn, Button deleteTrackBtn,Button removeFromPlaylistBtn, Button renamePlaylistBtn, Label playlistTitleLabel) {
+    public MainViewContext(HBox filterBar, Button addTrackBtn, Button addToPlaylistBtn, Button deleteTrackBtn,Button removeFromPlaylistBtn, Button renamePlaylistBtn, Label playlistTitleLabel, Button undoBtn) {
         this.filterBar             = filterBar;
         this.addTrackBtn           = addTrackBtn;
         this.addToPlaylistBtn      = addToPlaylistBtn;
@@ -31,6 +32,7 @@ public class MainViewContext {
         this.removeFromPlaylistBtn = removeFromPlaylistBtn;
         this.renamePlaylistBtn     = renamePlaylistBtn;
         this.playlistTitleLabel    = playlistTitleLabel;
+        this.undoBtn = undoBtn;
     }
  
     

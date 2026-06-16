@@ -12,6 +12,7 @@ public class PlaylistState implements ViewState {
         ctx.setVisible(ctx.removeFromPlaylistBtn, true);
         ctx.setVisible(ctx.playlistTitleLabel,    true);
         ctx.setVisible(ctx.renamePlaylistBtn, true);
+        ctx.setVisible(ctx.undoBtn, true);
     }
  
     @Override

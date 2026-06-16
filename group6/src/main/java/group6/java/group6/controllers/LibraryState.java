@@ -11,6 +11,7 @@ public class LibraryState implements ViewState {
         ctx.setVisible(ctx.removeFromPlaylistBtn, false);
         ctx.setVisible(ctx.playlistTitleLabel,    false);
         ctx.setVisible(ctx.renamePlaylistBtn, false);
+        ctx.setVisible(ctx.undoBtn,false);
     }
  
     @Override
