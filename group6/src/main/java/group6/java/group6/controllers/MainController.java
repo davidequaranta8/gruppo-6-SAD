@@ -662,7 +662,9 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         playerService.handlePlayPause(selectedTrack);
         syncQueue();
         showTrackDetails(selectedTrack);
-        handleResetFilter();
+        if(activePlaylist == null) {
+            handleResetFilter();
+        }
 
     }
 
@@ -881,6 +883,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         updateTracksTable();
         viewContext.setState(MainViewContext.LIBRARY_STATE);
         mostPlayedTracksButton.setVisible(true);
+        handleResetFilter();
     }
 
 
