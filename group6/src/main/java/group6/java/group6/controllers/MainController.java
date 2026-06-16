@@ -662,7 +662,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         playerService.handlePlayPause(selectedTrack);
         syncQueue();
         showTrackDetails(selectedTrack);
-        //handleResetFilter();
+        handleResetFilter();
 
     }
 
