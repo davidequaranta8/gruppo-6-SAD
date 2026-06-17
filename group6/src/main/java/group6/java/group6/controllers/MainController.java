@@ -1,23 +1,10 @@
 package group6.java.group6.controllers;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import group6.java.group6.dao.PlaylistDao;
-import org.kordamp.ikonli.javafx.FontIcon;
-
-import group6.java.group6.HelloApplication;
 import group6.java.group6.dao.TrackDao;
 import group6.java.group6.enumerations.GenreEnum;
-import group6.java.group6.enumerations.TagEnum;
-import group6.java.group6.exceptions.DuplicatePlaylistException;
-import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Library;
 import group6.java.group6.models.LibraryObserver;
@@ -25,32 +12,15 @@ import group6.java.group6.models.Playlist;
 import group6.java.group6.models.PlaylistManager;
 import group6.java.group6.models.PlaylistObserver;
 import group6.java.group6.models.Track;
-import group6.java.group6.player.LoopStrategy;
-import group6.java.group6.player.PlaybackStrategy;
-import group6.java.group6.player.SequentialStrategy;
-import group6.java.group6.player.ShuffleStrategy;
 import group6.java.group6.services.PlayerService;
 import group6.java.group6.services.TrackService;
-import group6.java.group6.utils.AddTrackCommand;
-import group6.java.group6.utils.Command;
 import group6.java.group6.utils.CommandInvoker;
-import group6.java.group6.utils.RemoveTrackCommand;
-import group6.java.group6.utils.TimeUtils;
-import static group6.java.group6.utils.TimeUtils.formatTime;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
@@ -60,244 +30,168 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 
-
-
-// questa classe rappresenta il concreteObserver per il pattern Observer applicato con Library
+// Questa classe è il concreteObserver per il pattern Observer applicato con Library e Playlist.
+// Funge da thin coordinator: delega la logica ai vari Helper.
 public class MainController implements LibraryObserver, PlaylistObserver {
 
     // ── Utils ─────────────────────────────────────────────────────────
     private final TrackDao trackDao = new TrackDao();
     private final CommandInvoker invoker = new CommandInvoker();
     private final TrackService trackService = new TrackService();
+    private final PlaylistDao playlistDao = new PlaylistDao();
     public Button mostPlayedTracksButton;
     private PlayerService playerService;
-    private PlaylistDao playlistDao = new PlaylistDao();
 
-    // ── State pattern ─────────────────────────────────────────────────────────
+    // ── State pattern ─────────────────────────────────────────────────
     private MainViewContext viewContext;
 
-    // ── Top bar ──────────────────────────────────────────────────────────────
-    @FXML
-    private TextField searchField;
-    @FXML
-    private Button mostPlayedPlaylistButton;
-    @FXML
-    private Button undoBtn;
+    // ── Helper instances ──────────────────────────────────────────────
+    private DialogHelper dialogHelper;
+    private PlaybackHelper playbackHelper;
+    private PlaylistHelper playlistHelper;
+    private TrackHelper trackHelper;
+    private FilterHelper filterHelper;
+    private AutoPlaylistHelper autoPlaylistHelper;
 
-    // ── Sidebar sinistra ─────────────────────────────────────────────────────
-    @FXML
-    private ListView<String> playlistListView;
-    @FXML
-    private ListView<String> autoPlaylistListView;
-    @FXML
-    private Button newPlaylistBtn;
-    @FXML
-    private Button generateByGenreBtn;   // mancava
-    @FXML
-    private Button generateByYearBtn;    // mancava
+    // ── Top bar ──────────────────────────────────────────────────────
+    @FXML private TextField searchField;
+    @FXML private Button mostPlayedPlaylistButton;
+    @FXML private Button undoBtn;
 
-    // ── Barra azioni playlist ────────────────────────────────────────────────
-    // Nel FXML il bottone Rinomina ha fx:id="RenamePlaylist"
-    @FXML
-    private Button RenamePlaylist;       // nome esatto come nel FXML
-    @FXML
-    private Button deletePlaylistBtn;
-    @FXML
-    private Button addToPlaylistBtn;
+    // ── Sidebar sinistra ─────────────────────────────────────────────
+    @FXML private ListView<String> playlistListView;
+    @FXML private ListView<String> autoPlaylistListView;
+    @FXML private Button newPlaylistBtn;
+    @FXML private Button generateByGenreBtn;
+    @FXML private Button generateByYearBtn;
 
-    // ── Titolo playlist attiva (sopra la tabella) ─────────────────────────────
-    @FXML
-    private Label playlistTitleLabel;
+    // ── Barra azioni playlist ────────────────────────────────────────
+    @FXML private Button RenamePlaylist;
+    @FXML private Button deletePlaylistBtn;
+    @FXML private Button addToPlaylistBtn;
 
-    // ── Filtri ───────────────────────────────────────────────────────────────
-    @FXML
-    private HBox filterBar;
-    @FXML
-    private ComboBox<GenreEnum> genreFilter;
-    @FXML
-    private ComboBox<String> yearFilter;
-    @FXML
-    private Button addTrackBtn;
+    // ── Titolo playlist attiva ───────────────────────────────────────
+    @FXML private Label playlistTitleLabel;
 
-    // ── Tabella tracce ────────────────────────────────────────────────────────
-    @FXML
-    private TableView<Track> tracksTableView;
-    @FXML
-    private TableColumn<Track, Integer> colNow;
-    @FXML
-    private TableColumn<Track, String> colTitle;
-    @FXML
-    private TableColumn<Track, String> colAuthor;
-    @FXML
-    private TableColumn<Track, GenreEnum> colGenre;
-    @FXML
-    private TableColumn<Track, Double> colLength;
+    // ── Filtri ───────────────────────────────────────────────────────
+    @FXML private HBox filterBar;
+    @FXML private ComboBox<GenreEnum> genreFilter;
+    @FXML private ComboBox<String> yearFilter;
+    @FXML private Button addTrackBtn;
 
-    // ── Sezione home ──────────────────────────────────────────────────────────
-    @FXML
-    private VBox homeSectionBox;
-    @FXML
-    private ListView<String> topTracksListView;
+    // ── Tabella tracce ───────────────────────────────────────────────
+    @FXML private TableView<Track> tracksTableView;
+    @FXML private TableColumn<Track, Integer> colNow;
+    @FXML private TableColumn<Track, String> colTitle;
+    @FXML private TableColumn<Track, String> colAuthor;
+    @FXML private TableColumn<Track, GenreEnum> colGenre;
+    @FXML private TableColumn<Track, Double> colLength;
 
-    // ── Player bar ────────────────────────────────────────────────────────────
-    @FXML
-    private VBox playerBar;
-    @FXML
-    private Label currentTimeLabel;
-    @FXML
-    private Label currentTitle;
-    @FXML
-    private Label currentPlaylist;
-    @FXML
-    private Label currentAuthor;
-    @FXML
-    private Slider progressSlider;
-    @FXML
-    private Label totalTimeLabel;
-    @FXML
-    private ToggleButton shuffleToggleBtn;
-    @FXML
-    private ToggleButton loopBtn;
-    @FXML
-    private Button prevBtn;
-    @FXML
-    private Button playPauseBtn;
-    @FXML
-    private Button nextBtn;
-    @FXML
-    private Label nowPlayingTitle;
-    @FXML
-    private Label nowPlayingAuthor;
+    // ── Sezione home ─────────────────────────────────────────────────
+    @FXML private javafx.scene.layout.VBox homeSectionBox;
+    @FXML private ListView<String> topTracksListView;
 
-    // ── Pannello dettaglio ────────────────────────────────────────────────────
-    @FXML
-    private VBox detailPanel;
-    @FXML
-    private Label detailTitle;
-    @FXML
-    private Label detailAuthor;
-    @FXML
-    private Label detailGenre;
-    @FXML
-    private Label detailYear;
-    @FXML
-    private Label detailLength;
-    @FXML
-    private Label curretTimeLabel;
-    @FXML
-    private Label detailTag;
-    @FXML
-    private Label tagLabel;
-    @FXML
-    private CheckBox tagFavourite;
-    @FXML
-    private CheckBox tagExplicit;
-    @FXML
-    private CheckBox tagNewRelease;
-    @FXML
-    private Button editTrackBtn;
-    @FXML
-    private Button removeFromPlaylistBtn;
-    @FXML
-    private Button deleteTrackBtn;
+    // ── Player bar ───────────────────────────────────────────────────
+    @FXML private javafx.scene.layout.VBox playerBar;
+    @FXML private Label currentTimeLabel;
+    @FXML private Label currentTitle;
+    @FXML private Label currentPlaylist;
+    @FXML private Label currentAuthor;
+    @FXML private Slider progressSlider;
+    @FXML private Label totalTimeLabel;
+    @FXML private ToggleButton shuffleToggleBtn;
+    @FXML private ToggleButton loopBtn;
+    @FXML private Button prevBtn;
+    @FXML private Button playPauseBtn;
+    @FXML private Button nextBtn;
+    @FXML private Label nowPlayingTitle;
+    @FXML private Label nowPlayingAuthor;
 
-    // ── Stato runtime ─────────────────────────────────────────────────────────
-    private PlaybackStrategy strategy = new SequentialStrategy();
-    // Rappresenta la coda di riproduzione corrente in modo tale da poter salvare le tracce da dover riprodurre
-    // e poter navigare liberamente
-    private List<Track> playbackQueue = new ArrayList<>();
-    //playlist attiva, in riproduzione
-    private Playlist activePlaylist = null; // null, cioè libreria
+    // ── Pannello dettaglio ────────────────────────────────────────────
+    @FXML private javafx.scene.layout.VBox detailPanel;
+    @FXML private Label detailTitle;
+    @FXML private Label detailAuthor;
+    @FXML private Label detailGenre;
+    @FXML private Label detailYear;
+    @FXML private Label detailLength;
+    @FXML private Label curretTimeLabel;
+    @FXML private Label detailTag;
+    @FXML private Label tagLabel;
+    @FXML private javafx.scene.control.CheckBox tagFavourite;
+    @FXML private javafx.scene.control.CheckBox tagExplicit;
+    @FXML private javafx.scene.control.CheckBox tagNewRelease;
+    @FXML private Button editTrackBtn;
+    @FXML private Button removeFromPlaylistBtn;
+    @FXML private Button deleteTrackBtn;
 
 
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════
     //  INITIALIZE
-    // ═════════════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════
     @FXML
     public void initialize() {
-        viewContext = new MainViewContext(filterBar, addTrackBtn, addToPlaylistBtn, deleteTrackBtn, removeFromPlaylistBtn, RenamePlaylist, playlistTitleLabel,undoBtn);
+        // State pattern
+        viewContext = new MainViewContext(filterBar, addTrackBtn, addToPlaylistBtn,
+                deleteTrackBtn, removeFromPlaylistBtn, RenamePlaylist, playlistTitleLabel, undoBtn);
         viewContext.setState(MainViewContext.LIBRARY_STATE);
-        // tramite questa istruzione mostriamo nella tendina dei generi musicali quelli della enumerazione
-        genreFilter.getItems().setAll(GenreEnum.values());
-        //istanziamo il service per il player che nel costruttore fa il setup delle callback
-        playerService = new PlayerService(trackService , currentTimeLabel , totalTimeLabel ,progressSlider , playPauseBtn , currentTitle , currentAuthor, currentPlaylist);
 
-        // passo la funzione handleNext al service cosi quando finisce la riproduzione esegue handleNext()
+        // Generi nella combo
+        genreFilter.getItems().setAll(GenreEnum.values());
+
+        // Player service
+        playerService = new PlayerService(trackService, currentTimeLabel, totalTimeLabel,
+                progressSlider, playPauseBtn, currentTitle, currentAuthor, currentPlaylist);
         playerService.setOnTrackEnd(() -> handleNext());
 
-        //initialize the table
-       initTable();
+        // Inizializza la tabella
+        initTable();
 
-        // registrazione dell'observer
+        // ── Crea gli helper ──
+        dialogHelper = new DialogHelper();
+
+        playbackHelper = new PlaybackHelper(playerService, playlistDao,
+                tracksTableView, currentTitle, currentAuthor);
+
+        playlistHelper = new PlaylistHelper(dialogHelper, playerService, playlistDao,
+                invoker, tracksTableView, playlistListView, playlistTitleLabel,
+                currentTitle, currentAuthor, viewContext);
+
+        trackHelper = new TrackHelper(dialogHelper, trackService, trackDao, playerService,
+                tracksTableView, playPauseBtn,
+                detailTitle, detailAuthor, detailGenre, detailYear, detailLength,
+                detailTag, tagLabel, totalTimeLabel, currentTitle, currentAuthor);
+
+        filterHelper = new FilterHelper(trackDao, genreFilter, yearFilter, tracksTableView, searchField);
+
+        autoPlaylistHelper = new AutoPlaylistHelper(dialogHelper);
+
+        // ── Observer ──
         Library myLibrary = ConcreteLibrary.getInstance();
-        myLibrary.addObserver(this); // inserisco l'observer nella lista degli osservatori da aggiornare
-        updateTracksTable(); // effettuo uno primo aggiornamento della tabella
+        myLibrary.addObserver(this);
+        updateTracksTable();
 
-        //observer per playlist
         PlaylistManager.getInstance().addObserver(this);
-        // effettuo uno primo aggiornamento della sidebar per caricare eventuali playlist già presenti
-        updatePlaylistSidebar();
-        initFilters();
+        playlistHelper.updatePlaylistSidebar();
+        filterHelper.initFilters();
     }
 
-
-
-    private void initYearFilter() {
-        yearFilter.getItems().clear();
-
-        Set<Integer> years = trackDao.getAllYears();
-        List<String> yearStrings = years.stream()
-                .map(String::valueOf)
-                .sorted()
-                .toList();
-
-        yearFilter.getItems().addAll(yearStrings);
-    }
-
-    private void initGenreFilter() {
-        genreFilter.getItems().clear();
-        genreFilter.getItems().addAll(GenreEnum.values());
-    }
-
-    private void initFilters(){
-        initGenreFilter();
-        initYearFilter();
-
-        // ButtonCell custom: mostra il promptText quando non c'è selezione: per risolvere il nbug di javafx perché altrimenti se faccio setPromptTExt non mi rimette il testo di prompt ma rimane vuoto
-        genreFilter.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(GenreEnum item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(item == null || empty ? genreFilter.getPromptText() : item.toString());
-            }
-        });
-        yearFilter.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(item == null || empty ? yearFilter.getPromptText() : item);
-            }
-        });
-    }
-    private void initTable(){
+    private void initTable() {
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
         colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
         colGenre.setCellValueFactory(new PropertyValueFactory<>("genre"));
         colLength.setCellValueFactory(new PropertyValueFactory<>("length"));
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
-    //  HANDLERS
-    // ═════════════════════════════════════════════════════════════════════════
+
+    // ═════════════════════════════════════════════════════════════════
+    //  HANDLERS — ogni metodo delega all'helper appropriato
+    // ═════════════════════════════════════════════════════════════════
 
     @FXML
     protected void handleUndo() {
         boolean success = invoker.undoLastCommand();
-
-        // Se la pila è vuota
         if (!success) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Annulla operazione");
@@ -307,602 +201,144 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         }
     }
 
-    // ── Playlist ──────────────────────────────────────────────────────────────
+    // ── Playlist ─────────────────────────────────────────────────────
+
     @FXML
     protected void handleNewPlaylist() {
-        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Nuova Playlist", (PlaylistDialogController ctrl) -> {
-            if (!ctrl.validate()) {
-                ctrl.showValidationError();
-                return;
-            }
-            try {
-                PlaylistManager.getInstance().createPlaylist(ctrl.getName());
-            } catch (DuplicatePlaylistException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Errore");
-                alert.setHeaderText("Playlist duplicata");
-                alert.setContentText("Hai giá una playlist con nome: " + e.getMessage());
-                alert.showAndWait();
-            }
-        });
+        playlistHelper.handleNewPlaylist();
     }
 
     @FXML
     protected void handleShowTopPlayedPlaylist() {
-        // 1. Recupera le top 5 (o 10) playlist più ascoltate
-        List<Playlist> topPlaylists = playlistDao.getTopPlayedPlaylist(5);
-
-        // 2. Estrai solo i titoli per poterli inserire nella ListView
-        List<String> topNames = topPlaylists.stream()
-                .map(Playlist::getTitle)
-                .collect(Collectors.toList());
-
-        // 3. Aggiorna la barra laterale
-        playlistListView.getItems().setAll(topNames);
+        playlistHelper.handleShowTopPlayedPlaylist();
     }
 
     @FXML
     protected void handleRenamePlaylist() {
-        Playlist selected = PlaylistManager.getInstance().getSelectedPlaylist();
-        if (selected == null)
-            return;
-        showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Rinomina Playlist",
-                (PlaylistDialogController ctrl) -> {
-                    if (!ctrl.validate()) {
-                        ctrl.showValidationError();
-                        return;
-                    }
-                    try {
-                        PlaylistManager.getInstance().renamePlaylist(selected, ctrl.getName());
-                    } catch (DuplicatePlaylistException e) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Errore");
-                        alert.setHeaderText("Playlist duplicata");
-                        alert.setContentText("Hai giá una playlist con nome: " + e.getMessage());
-                        alert.showAndWait();
-                    }
-                    playerService.setCurrentPlaylistLabel(activePlaylist != null ? activePlaylist.getTitle() : "Libreria");
-                });
-
+        playlistHelper.handleRenamePlaylist(playbackHelper);
     }
 
     @FXML
     protected void handleDeletePlaylist() {
-        Playlist selected = PlaylistManager.getInstance().getSelectedPlaylist();
-        if (selected == null) return;
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Conferma eliminazione");
-        confirm.setHeaderText("Eliminazione playlist");
-        confirm.setContentText("Eliminare \"" + selected.getTitle() + "\"?");
-        confirm.showAndWait().ifPresent(btn -> {
-            if (btn == ButtonType.OK) {
-                if(selected.getTracks().contains(playerService.getCurrentPlayingTrack())){    
-                    playerService.stopAndClearIfPlaying(playerService.getCurrentPlayingTrack());
-                    currentAuthor.setText("");
-                    currentTitle.setText("");
-                    playerService.setCurrentPlaylistLabel("");
-                    
-                }
-                PlaylistManager.getInstance().deletePlaylist(selected);
-                handleShowAllTracks(); //torno alla libreria originale
-            }
-        });
-    }
-
-
-    @FXML
-    protected void handleAddTrack() {
-        // definiamo il metodo accept() del Consumer
-        showDialog("TrackDialog.fxml", "Aggiungi Traccia", (TrackDialogController controller) -> {
-            if (!controller.validate(false)) {
-                controller.showValidationError();
-                return;
-            }
-
-            saveTrackFromDialog(controller);
-        });
-
-        initFilters();
-    }
-
-    @FXML
-    protected void handleEditTrack() {
-        Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
-        if (selectedTrack == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Modifica Traccia");
-            alert.setHeaderText("Nessuna traccia selezionata");
-            alert.setContentText("Seleziona una traccia dalla tabella.");
-            alert.showAndWait();
-            return;
-        }
-        showEditTrackDialog("TrackDialog.fxml", "Modifica Traccia", selectedTrack, (controller) -> {
-
-            if (!controller.validate(true)) {
-                controller.showValidationError();
-                return;
-            }
-
-            //before to update the model check first if user edited title or author in order to have a duplicate record
-            if (trackDao.existsByAuthorAndTitleAndId(controller.getAuthor(), controller.getTitle(), selectedTrack.getId())) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Errore");
-                alert.setHeaderText("Errore");
-                alert.setContentText("Esiste giá una traccia con titolo " + controller.getTitle() + " e autore " + controller.getAuthor());
-                alert.showAndWait();
-                return; //avoid to continue updating
-            }
-            //update model
-            selectedTrack.updateTrack(controller.getTitle(), controller.getAuthor(), controller.getGenre(), controller.getYear(), controller.getTag());
-
-            //Se aggiorniamo un file audio di una tracci che é attualmente in riproduzione
-            if (controller.getSelectedFile() != null && selectedTrack.equals(playerService.getCurrentPlayingTrack())) {
-                playerService.stopAndClearIfPlaying(selectedTrack);
-            }
-
-            //update db and file (if needed)
-            trackService.updateTrack(selectedTrack, controller.getSelectedFile());
-            showTrackDetails(selectedTrack); // aggiorna il pannello di dettaglio con i nuovi dati della traccia
-            syncQueue();
-
-        });
-
-        if (playerService.getCurrentPlayingTrack() != null && playerService.getCurrentPlayingTrack().equals(selectedTrack)) {
-            currentTitle.setText(playerService.getCurrentPlayingTrack().getTitle());
-            currentAuthor.setText(playerService.getCurrentPlayingTrack().getAuthor());
-        }
-        initFilters();
-    }
-
-
-    @FXML
-    protected void handleDeleteTrack() {
-        Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
-
-        // alert per la richiesta di conferma dell'eliminazione della traccia
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setTitle("Conferma eliminazione");
-        confirmation.setHeaderText("Eliminazione traccia");
-        confirmation.setContentText(
-                "Sei sicuro di voler eliminare la traccia \"" +
-                        selectedTrack.getTitle() + "\"?"
-        );
-
-        Optional<ButtonType> result = confirmation.showAndWait();
-
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-
-            //playerService.stopAndClearIfPlaying(selectedTrack);
-            trackService.deleteTrack(selectedTrack);
-            FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
-            icon.setIconLiteral("fas-play");
-            }
-        showTrackDetails(null); // svuota il pannello di dettaglio dopo l'eliminazione
-        syncQueue();
+        playlistHelper.handleDeletePlaylist(playbackHelper, this::handleShowAllTracks);
     }
 
     @FXML
     protected void handleAddToPlaylist() {
-        Playlist playlist = PlaylistManager.getInstance().getSelectedPlaylist();
-        if (playlist == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Aggiungi a Playlist");
-            alert.setHeaderText("Nessuna playlist selezionata");
-            alert.setContentText("Seleziona una playlist dalla barra laterale.");
-            alert.showAndWait();
-            return;
-        }
-
-        List<Track> availableTracks = ConcreteLibrary.getInstance().getTracks().stream()
-                .filter(t -> !playlist.getTracks().contains(t))
-                .collect(Collectors.toList());
-
-        if (availableTracks.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Aggiungi a Playlist");
-            alert.setHeaderText("Nessuna traccia disponibile");
-            alert.setContentText("Tutte le tracce sono già nella playlist \"" + playlist.getTitle() + "\".");
-            alert.showAndWait();
-            return;
-        }
-
-        Map<String, Track> trackMap = new LinkedHashMap<>();
-        for (Track t : availableTracks) {
-            trackMap.put(t.getTitle() + " - " + t.getAuthor(), t);
-        }
-
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(trackMap.keySet().iterator().next(), trackMap.keySet());
-        dialog.setTitle("Aggiungi a Playlist");
-        dialog.setHeaderText("Aggiungi traccia a \"" + playlist.getTitle() + "\"");
-        dialog.setContentText("Traccia:");
-
-        dialog.showAndWait().ifPresent(key -> {
-            Track trackToAdd = trackMap.get(key);
-
-            // Crei il comando e lo passi all'Invoker
-            Command addCmd = new AddTrackCommand(trackToAdd,playlist);
-            invoker.executeCommand(addCmd);
-        syncQueue();
-        });
-        initFilters();
+        playlistHelper.handleAddToPlaylist(playbackHelper::syncQueue);
+        filterHelper.initFilters();
     }
 
     @FXML
     protected void handleRemoveFromPlaylist() {
-        Playlist playlist = PlaylistManager.getInstance().getSelectedPlaylist();
-        Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
-        if (playlist == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Rimuovi dalla Playlist");
-            alert.setHeaderText("Nessuna playlist selezionata");
-            alert.showAndWait();
-            return;
-        }
-        if (selectedTrack == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Rimuovi dalla Playlist");
-            alert.setHeaderText("Nessuna traccia selezionata");
-            alert.setContentText("Seleziona una traccia dalla tabella.");
-            alert.showAndWait();
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Rimuovi dalla Playlist");
-        confirm.setHeaderText("Rimuovere \"" + selectedTrack.getTitle() + "\" dalla playlist?");
-        confirm.setContentText("La traccia rimarrà nella libreria.");
-
-        confirm.showAndWait().ifPresent(btn -> {
-            if (btn == ButtonType.OK) {
-
-                // Creiamo il comando concreto per la rimozione
-                Command removeCmd = new RemoveTrackCommand(selectedTrack,playlist);
-
-                // Lo passiamo all'Invoker che lo esegue e lo salva nello storico
-                invoker.executeCommand(removeCmd);
-
-            }
-        syncQueue();
- 
-        });
+        playlistHelper.handleRemoveFromPlaylist(playbackHelper::syncQueue);
     }
 
     @FXML
-    protected void handleSearch(){
-        handleResetFilter();
-        String query = searchField.getText();
-        if (query == null) query = "";
-        String q = query.trim().toLowerCase();
-
-        Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
-        Set<Track> sourceTracks = selectedPlaylist != null ? selectedPlaylist.getTracks() : ConcreteLibrary.getInstance().getTracks();
-
-        if (q.isEmpty()) {
-            tracksTableView.getItems().setAll(sourceTracks);
-            return;
-        }
-
-         List<Track> filteredTracks = new ArrayList<>();
-        for (Track t : sourceTracks) {
-            if (t.getTitle().toLowerCase().contains(q) || t.getAuthor().toLowerCase().contains(q)) {
-                filteredTracks.add(t);
-            }
-        }
-        
-        tracksTableView.getItems().setAll(filteredTracks);
+    protected void handleSidebarClick(MouseEvent event) {
+        playlistHelper.handleSidebarClick(event);
     }
 
+    @FXML
+    protected void handleShowAllTracks() {
+        playlistHelper.handleShowAllTracks(mostPlayedTracksButton, mostPlayedPlaylistButton,
+                () -> filterHelper.handleResetFilter());
+    }
+
+    // ── Tracce ───────────────────────────────────────────────────────
+
+    @FXML
+    protected void handleAddTrack() {
+        trackHelper.handleAddTrack();
+        filterHelper.initFilters();
+    }
+
+    @FXML
+    protected void handleEditTrack() {
+        trackHelper.handleEditTrack(playbackHelper::syncQueue);
+        filterHelper.initFilters();
+    }
+
+    @FXML
+    protected void handleDeleteTrack() {
+        trackHelper.handleDeleteTrack(playbackHelper::syncQueue);
+    }
+
+    @FXML
+    protected void handleTrackSelected() {
+        trackHelper.showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
+    }
+
+    // ── Filtri ───────────────────────────────────────────────────────
+
+    @FXML
+    protected void handleSearch() {
+        filterHelper.handleSearch();
+    }
 
     @FXML
     protected void handleFilter() {
-        GenreEnum selectedGenre = genreFilter.getValue();
-        String selectedYear = yearFilter.getValue();
-
-        List<Track> filtered = new ArrayList<>(ConcreteLibrary.getInstance().getTracks())
-                .stream()
-                .filter(t -> selectedGenre == null || t.getGenre() == selectedGenre)
-                .filter(t -> selectedYear == null || String.valueOf(t.getYear()).equals(selectedYear))
-                .collect(Collectors.toList());
-
-        tracksTableView.getItems().setAll(filtered);
-        syncQueue();
+        filterHelper.handleFilter();
+        playbackHelper.syncQueue();
     }
 
     @FXML
     protected void handleResetFilter() {
-        genreFilter.getSelectionModel().clearSelection();
-        yearFilter.getSelectionModel().clearSelection();
-        updateTracksTable();
-        syncQueue();
+        filterHelper.handleResetFilter();
+        playbackHelper.syncQueue();
     }
-    // collegato al tasto Riproduci, permette di riprodurre la collezione di tracce visualizzata nella TableView
+
+    // ── Player ───────────────────────────────────────────────────────
+
     @FXML
     protected void handlePlayAll() {
-        // Preleviamo tutte le tracce attualmente visibili (la playlist intera)
-        List<Track> currentList = tracksTableView.getItems();
-
-        if (currentList == null || currentList.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Riproduzione");
-            alert.setHeaderText("Nessuna traccia da riprodurre");
-            alert.showAndWait();
-            return;
-        }
-
-        activePlaylist = PlaylistManager.getInstance().getSelectedPlaylist(); // null se libreria
-        if(activePlaylist != null) playlistDao.incrementCountPlayed(activePlaylist);
-        // Facciamo la fotografia dell'intera lista salvandola nella coda
-        playbackQueue = strategy.buildQueue(currentList, null);
-
-        // Preleviamo la primissima traccia (indice 0)
-        Track firstTrack = playbackQueue.get(0);
-        changeTrack(firstTrack); //seleziona la prima
-
+        playbackHelper.playAll();
     }
 
     @FXML
     protected void handleShuffle() {
-       if (shuffleToggleBtn.isSelected()) {
-            loopBtn.setSelected(false);
-            strategy = new ShuffleStrategy();
-        } else {
-            strategy = new SequentialStrategy();
-        }      
+        playbackHelper.handleShuffle(shuffleToggleBtn, loopBtn);
     }
-
-
 
     @FXML
     protected void handleLoop() {
-        if (loopBtn.isSelected()) {
-            shuffleToggleBtn.setSelected(false);
-            strategy = new LoopStrategy(); 
-        } else{
-            strategy = new SequentialStrategy();
+        playbackHelper.handleLoop(loopBtn, shuffleToggleBtn);
     }
-}
-    
-    @FXML
-    protected void handleTrackSelected() {
-        showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
-    }
-
 
     @FXML
     protected void handlePlayPause() {
         Track selectedTrack = tracksTableView.getSelectionModel().getSelectedItem();
-        
-        if(selectedTrack != null && selectedTrack != playerService.getCurrentPlayingTrack() ){
-            activePlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
-            playerService.setCurrentPlaylistLabel(activePlaylist != null ? activePlaylist.getTitle() : "Libreria");
-
-        }        
-        playerService.handlePlayPause(selectedTrack);
-        syncQueue();
-        showTrackDetails(selectedTrack);
-        if(activePlaylist == null) {
-            handleResetFilter();
+        playbackHelper.handlePlayPause(selectedTrack);
+        playbackHelper.syncQueue();
+        trackHelper.showTrackDetails(selectedTrack);
+        if (playbackHelper.getActivePlaylist() == null) {
+            filterHelper.handleResetFilter();
         }
-
     }
 
     @FXML
     protected void handleNext() {
-        Track current = playerService.getCurrentPlayingTrack();
-        if (current == null || playbackQueue.isEmpty()) return;
-        Track next = strategy.nextTrack(playbackQueue, current);
-        if (next != null)
-            changeTrack(next);
-        else
-            stopPlayback();
+        playbackHelper.next();
     }
 
     @FXML
     protected void handlePrev() {
-        Track current = playerService.getCurrentPlayingTrack();
-        if (current == null || playbackQueue.isEmpty()) return;
-        Track prev = strategy.prevTrack(playbackQueue, current);
-        if (prev != null)
-            changeTrack(prev);
-        }
-    
-    private void changeTrack(Track nuovaTraccia) {
-        if (tracksTableView.getItems().contains(nuovaTraccia)) {
-            tracksTableView.getSelectionModel().select(nuovaTraccia);
-        }
-        showTrackDetails(nuovaTraccia);
-        playerService.forcePlayTrack(nuovaTraccia);
-        playerService.setCurrentPlaylistLabel(activePlaylist != null ? activePlaylist.getTitle() : "Libreria");
+        playbackHelper.prev();
     }
 
-    private void stopPlayback() {
-        playerService.stopAndClearIfPlaying(playerService.getCurrentPlayingTrack());
-        tracksTableView.getSelectionModel().clearSelection();
-        currentTitle.setText("");
-        currentAuthor.setText("");
+    @FXML
+    public void handleSeekTrack(MouseEvent mouseEvent) {
+        playerService.seekTrack();
     }
 
-
-
-
-
-
+    // ── Generazione automatica ───────────────────────────────────────
 
     @FXML
     protected void handleGeneratePlaylist() {
-        if (ConcreteLibrary.getInstance().getTracks().isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Libreria vuota");
-            alert.setHeaderText("Nessuna traccia disponibile");
-            alert.setContentText("La libreria è vuota. Aggiungi delle tracce prima di generare una playlist.");
-            alert.showAndWait();
-            return;
-        }
-
-        showDialog("AutoPlaylistDialog.fxml", "Genera Playlist Automatica",
-                (AutoPlaylistDialogController ctrl) -> ctrl.setName("Playlist Automatica"),
-                (AutoPlaylistDialogController ctrl) -> {
-                    if (ctrl.isTagSelected()) {
-                        generateByTag(ctrl);
-                    } else if (ctrl.isYearSelected()) {
-                        generateByYear(ctrl);
-                    } else if (ctrl.isGenreSelected()) {
-                        generateByGenre(ctrl);
-                    }
-                });
+        autoPlaylistHelper.handleGeneratePlaylist();
     }
 
-    private void generateByTag(AutoPlaylistDialogController ctrl) {
-        List<TagEnum> selectedTags = ctrl.getSelectedTags();
-        if (selectedTags.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Nessun tag selezionato");
-            alert.setHeaderText("Seleziona almeno un tag");
-            alert.setContentText("Devi selezionare almeno un tag per generare la playlist.");
-            alert.showAndWait();
-            return;
-        }
-
-        String name = ctrl.getPlaylistName();
-        if (name.isEmpty()) {
-            name = selectedTags.stream()
-                    .map(TagEnum::name)
-                    .collect(Collectors.joining(", "));
-        }
-
-        List<Track> matchingTracks = ConcreteLibrary.getInstance().getTracks().stream()
-                .filter(t -> t.getTag() != null && selectedTags.contains(t.getTag()))
-                .collect(Collectors.toList());
-
-        if (matchingTracks.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Generazione Playlist");
-            alert.setHeaderText("Nessuna traccia trovata");
-            alert.setContentText("Nessuna traccia nella libreria possiede i tag selezionati.");
-            alert.showAndWait();
-            return;
-        }
-
-        createPlaylistWithTracks(name, matchingTracks);
-    }
-
-    private void generateByYear(AutoPlaylistDialogController ctrl) {
-        int yearFrom = Math.min(ctrl.getYearFrom(), ctrl.getYearTo());
-        int yearTo = Math.max(ctrl.getYearFrom(), ctrl.getYearTo());
-
-        String name = ctrl.getPlaylistName();
-        if (name.isEmpty()) {
-            if (yearFrom == yearTo) {
-                name = String.valueOf(yearFrom);
-            } else {
-                name = yearFrom + " - " + yearTo;
-            }
-        }
-
-        List<Track> matchingTracks = ConcreteLibrary.getInstance().getTracks().stream()
-                .filter(t -> t.getYear() >= yearFrom && t.getYear() <= yearTo)
-                .collect(Collectors.toList());
-
-        if (matchingTracks.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Generazione Playlist");
-            alert.setHeaderText("Nessuna traccia trovata");
-            alert.setContentText("Nessuna traccia nella libreria è stata pubblicata tra il " + yearFrom + " e il " + yearTo + ".");
-            alert.showAndWait();
-            return;
-        }
-
-        createPlaylistWithTracks(name, matchingTracks);
-    }
-
-    private void generateByGenre(AutoPlaylistDialogController ctrl) {
-        GenreEnum selectedGenre = ctrl.getSelectedGenre();
-        if (selectedGenre == null) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Nessun genere selezionato");
-            alert.setHeaderText("Seleziona un genere");
-            alert.setContentText("Devi selezionare un genere per generare la playlist.");
-            alert.showAndWait();
-            return;
-        }
-
-        String name = ctrl.getPlaylistName();
-        if (name.isEmpty()) {
-            name = selectedGenre.name();
-        }
-
-        List<Track> matchingTracks = ConcreteLibrary.getInstance().getTracks().stream()
-                .filter(t -> t.getGenre() == selectedGenre)
-                .collect(Collectors.toList());
-
-        if (matchingTracks.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Generazione Playlist");
-            alert.setHeaderText("Nessuna traccia trovata");
-            alert.setContentText("Nessuna traccia nella libreria appartiene al genere " + selectedGenre.name() + ".");
-            alert.showAndWait();
-            return;
-        }
-
-        createPlaylistWithTracks(name, matchingTracks);
-    }
-
-    private void createPlaylistWithTracks(String name, List<Track> matchingTracks) {
-        try {
-            String finalName = name;
-            Set<String> existingNames = PlaylistManager.getInstance().getPlaylists().stream()
-                    .map(Playlist::getTitle)
-                    .map(String::toLowerCase)
-                    .collect(Collectors.toSet());
-            int suffix = 1;
-            while (existingNames.contains(finalName.toLowerCase())) {
-                finalName = name + " (" + suffix + ")";
-                suffix++;
-            }
-            Playlist playlist = PlaylistManager.getInstance().createPlaylist(finalName);
-            for (Track t : matchingTracks) {
-                PlaylistManager.getInstance().addTrackToPlaylist(playlist, t);
-            }
-        } catch (DuplicatePlaylistException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Errore");
-            alert.setHeaderText("Playlist duplicata");
-            alert.setContentText(e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    // Seleziona una playlist dalla sidebar e ne mostra il contenuto.
-    @FXML
-    protected void handleSidebarClick(MouseEvent event) {
-        String clickedName = playlistListView.getSelectionModel().getSelectedItem();
-
-        if (clickedName != null) {
-            Set<Playlist> tutteLePlaylist = PlaylistManager.getInstance().getPlaylists();
-            Playlist selezionata = tutteLePlaylist.stream()
-                    .filter(p -> p.getTitle().trim().equalsIgnoreCase(clickedName.trim()))
-                    .findFirst()
-                    .orElse(null);
-
-            if (selezionata != null) {
-                PlaylistManager.getInstance().setSelectedPlaylist(selezionata);
-                showPlaylistContent(selezionata);
-            }
-        }
-    }
-
-    //Torna a mostrare tutte le tracce nella tabella
-    @FXML
-    protected void handleShowAllTracks() {
-        PlaylistManager.getInstance().setSelectedPlaylist(null);
-        playlistListView.getSelectionModel().clearSelection();
-        updateTracksTable();
-        viewContext.setState(MainViewContext.LIBRARY_STATE);
-        mostPlayedTracksButton.setVisible(true);
-        mostPlayedPlaylistButton.setVisible(true);
-        handleResetFilter();
-    }
-
+    // ── Top played tracks ────────────────────────────────────────────
 
     @FXML
     protected void handleShowTopPlayedTracks(ActionEvent event) {
@@ -914,231 +350,39 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
 
 
-    private <T> void showDialog(String fxmlFile, String title, Consumer<T> onOkAction) {
-        showDialog(fxmlFile, title, null, onOkAction);
-    }
-
-    private <T> void showDialog(String fxmlFile, String title, Consumer<T> preShowAction, Consumer<T> onOkAction) {
-        try {
-            var url = HelloApplication.class.getResource(fxmlFile);
-            FXMLLoader fxmlLoader = new FXMLLoader(url);
-            DialogPane dialogPane = fxmlLoader.load();
-            T controller = fxmlLoader.getController();
-
-            if (preShowAction != null) {
-                preShowAction.accept(controller);
-            }
-
-            Dialog<ButtonType> dialog = new Dialog<>();
-            dialog.setDialogPane(dialogPane);
-            dialog.setTitle(title);
-
-            dialog.showAndWait().ifPresent(buttonType -> {
-                if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                    if (onOkAction != null) {
-                        onOkAction.accept(controller);
-                    }
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    private void showEditTrackDialog(String fxmlFile, String title, Track track, Consumer<TrackDialogController> onOkAction) {
-        try {
-            // carico la scena del TrackDialog
-            var url = HelloApplication.class.getResource(fxmlFile);
-            FXMLLoader fxmlLoader = new FXMLLoader(url);
-            DialogPane dialogPane = fxmlLoader.load();
-
-            // Recupera il controller TrackDialogController
-            TrackDialogController controller = fxmlLoader.getController();
-
-            // setto la scena del TrackDialog nel PopUp del DialogPane
-            Dialog<ButtonType> dialog = new Dialog<>();
-            dialog.setDialogPane(dialogPane);
-            dialog.setTitle(title);
-
-            controller.setAuthorField(track.getAuthor());
-            controller.setGenreCombo(track.getGenre());
-            controller.setTitleField(track.getTitle());
-            controller.setFileNameLabel(track.getFilePath());
-            controller.setToggleGroup(track.getTag());
-            controller.setYearSpinner(track.getYear());
-
-            // Mostriamo il dialog e aspettiamo che venga chiuso in qualche modo
-            dialog.showAndWait().ifPresent(buttonType -> {
-
-                // se premi il bottone SALVA sul popUp allora esegue accept del consumer
-                if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                    // Eseguiamo la Lambda Expression passandole il controller
-                    if (onOkAction != null) {
-                        onOkAction.accept(controller);
-                    }
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    public void handleSeekTrack(MouseEvent mouseEvent) {
-        playerService.seekTrack();
-    }
-
+    // ═════════════════════════════════════════════════════════════════
+    //  OBSERVER CALLBACKS
+    // ═════════════════════════════════════════════════════════════════
 
     @Override
     public void onLibraryChanged() {
         Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
         if (selectedPlaylist != null) {
-            showPlaylistContent(selectedPlaylist);
+            playlistHelper.showPlaylistContent(selectedPlaylist);
         } else {
             updateTracksTable();
         }
-        syncQueue();
+        playbackHelper.syncQueue();
     }
-
 
     @Override
     public void onPlaylistChanged() {
-        updatePlaylistSidebar();
+        playlistHelper.updatePlaylistSidebar();
         Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
         if (selectedPlaylist != null) {
-            showPlaylistContent(selectedPlaylist);
+            playlistHelper.showPlaylistContent(selectedPlaylist);
         } else {
             viewContext.setState(MainViewContext.LIBRARY_STATE);
         }
-        syncQueue();
+        playbackHelper.syncQueue();
     }
 
-    private void saveTrackFromDialog(TrackDialogController controller) {
-        Track track;
 
-        // Preleviamo i dati usando i getter del TrackDialogController
-        if (controller.getOptionSelected() != null) {
-            track = new Track(
-                    controller.getTitle(),
-                    controller.getAuthor(),
-                    controller.getGenre(),
-                    controller.getYear(),
-                    TagEnum.valueOf(controller.getOptionSelected())
-            );
-        } else {
-            track = new Track(
-                    controller.getTitle(),
-                    controller.getAuthor(),
-                    controller.getGenre(),
-                    controller.getYear()
-            );
-        }
-
-        try {
-            trackService.saveTrack(track ,controller.getSelectedFile());
-        } catch (DuplicateTitleTrackException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Errore");
-            alert.setHeaderText("Traccia duplicata");
-            alert.setContentText(e.getMessage());
-            alert.showAndWait();
-            return;
-        }
-
-
-
-    }
-
+    // ═════════════════════════════════════════════════════════════════
+    //  METODI PRIVATI DI SUPPORTO
+    // ═════════════════════════════════════════════════════════════════
 
     private void updateTracksTable() {
         tracksTableView.getItems().setAll(ConcreteLibrary.getInstance().getTracks());
     }
-
-
-    // Riempie il pannello di dettaglio con i dati della traccia selezionata
-    private void showTrackDetails(Track track) {
-        if (track == null) {            // nessuna traccia selezionata: svuota tutto
-            clearDetails();
-            return;
-        }
-
-        detailTitle.setText(track.getTitle());
-        detailAuthor.setText(track.getAuthor());
-        detailGenre.setText(track.getGenre() != null ? track.getGenre().toString() : "");
-        detailYear.setText(String.valueOf(track.getYear()));
-        detailLength.setText(formatTime(TimeUtils.parseFormattedDuration(track.getLength())));
-        detailTag.setText(track.getTag() != null ? track.getTag().toString() : "");
-        tagLabel.setText(track.getTag() != null ? "Tag" : "");
-
-        totalTimeLabel.setText(formatTime(TimeUtils.parseFormattedDuration(track.getLength())));
-
-
-    }
-
-
-    private void updatePlaylistSidebar() {
-        if (playlistListView == null) return;
-        Playlist p = PlaylistManager.getInstance().getSelectedPlaylist();
-        String currentTitle = p != null ? p.getTitle() : null;
-        List<String> names = PlaylistManager.getInstance().getPlaylists()
-                .stream()
-                .map(Playlist::getTitle)
-                .collect(Collectors.toList());
-
-        playlistListView.getItems().setAll(names);
-
-        if (currentTitle != null && names.contains(currentTitle)) {
-            playlistListView.getSelectionModel().select(currentTitle);
-        }
-
-
-    }
-
-    private void showPlaylistContent(Playlist playlist) {
-        tracksTableView.getSelectionModel().clearSelection();
-        showTrackDetails(null);
-        PlaylistManager.getInstance().loadTracksForPlaylist(playlist);
-        tracksTableView.getItems().setAll(playlist.getTracks());
-        playlistTitleLabel.setText(playlist.getTitle());
-        viewContext.setState(MainViewContext.PLAYLIST_STATE);
-        mostPlayedTracksButton.setVisible(false);
-        mostPlayedPlaylistButton.setVisible(false);
-
-    }
-
-
-    private void clearDetails() {
-        detailTitle.setText("");
-        detailAuthor.setText("");
-        detailGenre.setText("");
-        detailLength.setText("");
-        detailYear.setText("");
-        detailTag.setText("");
-        tagLabel.setText("");
-        totalTimeLabel.setText("");
-
-    }
-
-    private void syncQueue() {
-        Track current = playerService.getCurrentPlayingTrack();
-
-        // Determina la sorgente corretta: activePlaylist o libreria completa
-        List<Track> sourceTracks;
-        if (activePlaylist != null) {
-            sourceTracks = new ArrayList<>(activePlaylist.getTracks());
-        } else {
-            sourceTracks = new ArrayList<>(ConcreteLibrary.getInstance().getTracks());
-        }
-
-        playbackQueue = strategy.buildQueue(sourceTracks, current);
-
-        // Se la traccia in play è stata eliminata, ferma tutto
-        if (current != null && !sourceTracks.contains(current)) {
-            stopPlayback();
-            playbackQueue.clear();
-        activePlaylist = null;
-        }
-    }
-
 }
