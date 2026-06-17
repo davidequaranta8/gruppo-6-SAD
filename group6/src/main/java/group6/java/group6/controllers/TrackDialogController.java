@@ -3,6 +3,10 @@ package group6.java.group6.controllers;
 import java.io.File;
 import java.time.Year;
 
+import com.mpatric.mp3agic.Mp3File;
+import com.mpatric.mp3agic.ID3v1;
+import com.mpatric.mp3agic.ID3v2;
+
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import javafx.event.ActionEvent;
@@ -110,6 +114,38 @@ public class TrackDialogController {
 
         if (selectedFile != null) {
             fileNameLabel.setText(selectedFile.getName()); // mostra il nome del file scelto
+            
+            // Prova a estrarre i metadati se è un mp3
+            if (selectedFile.getName().toLowerCase().endsWith(".mp3")) {
+                try {
+                    Mp3File mp3file = new Mp3File(selectedFile.getAbsolutePath());
+                    if (mp3file.hasId3v2Tag()) {
+                        ID3v2 id3v2Tag = mp3file.getId3v2Tag();
+                        if (id3v2Tag.getTitle() != null && !id3v2Tag.getTitle().isBlank()) titleField.setText(id3v2Tag.getTitle());
+                        if (id3v2Tag.getArtist() != null && !id3v2Tag.getArtist().isBlank()) authorField.setText(id3v2Tag.getArtist());
+                        if (id3v2Tag.getYear() != null && !id3v2Tag.getYear().isBlank()) {
+                            try {
+                                yearSpinner.getValueFactory().setValue(Integer.parseInt(id3v2Tag.getYear().trim().substring(0, 4)));
+                            } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                                // ignora anno malformato
+                            }
+                        }
+                    } else if (mp3file.hasId3v1Tag()) {
+                        ID3v1 id3v1Tag = mp3file.getId3v1Tag();
+                        if (id3v1Tag.getTitle() != null && !id3v1Tag.getTitle().isBlank()) titleField.setText(id3v1Tag.getTitle());
+                        if (id3v1Tag.getArtist() != null && !id3v1Tag.getArtist().isBlank()) authorField.setText(id3v1Tag.getArtist());
+                        if (id3v1Tag.getYear() != null && !id3v1Tag.getYear().isBlank()) {
+                            try {
+                                yearSpinner.getValueFactory().setValue(Integer.parseInt(id3v1Tag.getYear().trim().substring(0, 4)));
+                            } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                                // ignora anno malformato
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Impossibile estrarre i metadati: " + e.getMessage());
+                }
+            }
         }
     }
 

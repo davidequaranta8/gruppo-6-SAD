@@ -8,6 +8,7 @@ module group6.java.group6 {
     requires jdk.compiler;
     requires java.desktop;
     requires javafx.media;
+    requires mp3agic;
     opens group6.java.group6 to javafx.fxml;
     exports group6.java.group6;
     exports group6.java.group6.controllers;
