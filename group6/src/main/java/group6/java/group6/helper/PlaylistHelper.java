@@ -85,6 +85,10 @@ public class PlaylistHelper {
         if (selected == null) return;
         dialogHelper.showDialog("PlaylistDialogView/PlaylistDialog.fxml", "Rinomina Playlist",
                 (PlaylistDialogController ctrl) -> {
+                    ctrl.setDialogTitle("Rinomina Playlist");
+                    ctrl.setName(selected.getTitle());
+                },
+                (PlaylistDialogController ctrl) -> {
                     if (!ctrl.validate()) {
                         ctrl.showValidationError();
                         return;
@@ -141,6 +145,15 @@ public class PlaylistHelper {
             return;
         }
 
+        if (ConcreteLibrary.getInstance().getTracks().isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Aggiungi a Playlist");
+            alert.setHeaderText("Libreria vuota");
+            alert.setContentText("Non ci sono tracce nella libreria da aggiungere alla playlist.");
+            alert.showAndWait();
+            return;
+        }
+
         List<Track> availableTracks = ConcreteLibrary.getInstance().getTracks().stream()
                 .filter(t -> !playlist.getTracks().contains(t))
                 .collect(Collectors.toList());
@@ -149,7 +162,7 @@ public class PlaylistHelper {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Aggiungi a Playlist");
             alert.setHeaderText("Nessuna traccia disponibile");
-            alert.setContentText("Tutte le tracce sono già nella playlist \"" + playlist.getTitle() + "\".");
+            alert.setContentText("Tutte le tracce della libreria sono già nella playlist \"" + playlist.getTitle() + "\".");
             alert.showAndWait();
             return;
         }

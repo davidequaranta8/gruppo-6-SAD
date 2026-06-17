@@ -3,7 +3,7 @@ package group6.java.group6.helper;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import group6.java.group6.HelloApplication;
+import group6.java.group6.Application;
 import group6.java.group6.controllers.TrackDialogController;
 import group6.java.group6.models.Track;
 import javafx.fxml.FXMLLoader;
@@ -30,7 +30,7 @@ public class DialogHelper {
      */
     public <T> void showDialog(String fxmlFile, String title, Consumer<T> preShowAction, Consumer<T> onOkAction) {
         try {
-            var url = HelloApplication.class.getResource(fxmlFile);
+            var url = Application.class.getResource(fxmlFile);
             FXMLLoader fxmlLoader = new FXMLLoader(url);
             DialogPane dialogPane = fxmlLoader.load();
             T controller = fxmlLoader.getController();
@@ -61,7 +61,7 @@ public class DialogHelper {
     public void showEditTrackDialog(String fxmlFile, String title, Track track,
                                      Consumer<TrackDialogController> onOkAction) {
         try {
-            var url = HelloApplication.class.getResource(fxmlFile);
+            var url = Application.class.getResource(fxmlFile);
             FXMLLoader fxmlLoader = new FXMLLoader(url);
             DialogPane dialogPane = fxmlLoader.load();
 

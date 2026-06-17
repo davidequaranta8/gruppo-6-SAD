@@ -184,6 +184,10 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
         colGenre.setCellValueFactory(new PropertyValueFactory<>("genre"));
         colLength.setCellValueFactory(new PropertyValueFactory<>("length"));
+        //set the placeholder in order to have a fallback whenever there are no available tracks to play
+        Label placeholder = new Label("Nessuna traccia presente");
+        placeholder.setStyle("-fx-text-fill: #999999; -fx-font-size: 14px; -fx-font-style: italic;");
+        tracksTableView.setPlaceholder(placeholder);
     }
 
 
@@ -239,12 +243,23 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     @FXML
     protected void handleSidebarClick(MouseEvent event) {
         playlistHelper.handleSidebarClick(event);
+        //if a playlist is selected , make invisible buttons for top played tracks and playlists
+        if (PlaylistManager.getInstance().getSelectedPlaylist() != null) {
+            mostPlayedTracksButton.setVisible(false);
+            mostPlayedTracksButton.setManaged(false);
+            mostPlayedPlaylistButton.setVisible(false);
+            mostPlayedPlaylistButton.setManaged(false);
+        }
     }
 
     @FXML
     protected void handleShowAllTracks() {
+        //handleShowAllTracks passes also the runnable to run at the end of method in order to reset the filter of comboboxes
         playlistHelper.handleShowAllTracks(mostPlayedTracksButton, mostPlayedPlaylistButton,
                 () -> filterHelper.handleResetFilter());
+        //after having pressed the button to show all tracks make again visible the buttons for top played tracks and playlists
+        mostPlayedTracksButton.setManaged(true);
+        mostPlayedPlaylistButton.setManaged(true);
     }
 
     // ── Tracce ───────────────────────────────────────────────────────
