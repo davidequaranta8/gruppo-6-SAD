@@ -20,19 +20,13 @@ import group6.java.group6.utils.CommandInvoker;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+
 
 // Questa classe è il concreteObserver per il pattern Observer applicato con Library e Playlist.
 // Funge da thin coordinator: delega la logica ai vari Helper.
@@ -58,131 +52,79 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     private AutoPlaylistHelper autoPlaylistHelper;
 
     // ── Top bar ──────────────────────────────────────────────────────
-    @FXML
-    private TextField searchField;
-    @FXML
-    private Button mostPlayedPlaylistButton;
-    @FXML
-    private Button undoBtn;
+    @FXML private TextField searchField;
+    @FXML private Button mostPlayedPlaylistButton;
+    @FXML private Button undoBtn;
 
     // ── Sidebar sinistra ─────────────────────────────────────────────
-    @FXML
-    private ListView<String> playlistListView;
-    @FXML
-    private ListView<String> autoPlaylistListView;
-    @FXML
-    private Button newPlaylistBtn;
-    @FXML
-    private Button generateByGenreBtn;
-    @FXML
-    private Button generateByYearBtn;
+    @FXML private ListView<String> playlistListView;
+    @FXML private ListView<String> autoPlaylistListView;
+    @FXML private Button newPlaylistBtn;
+    @FXML private Button generateByGenreBtn;
+    @FXML private Button generateByYearBtn;
 
     // ── Barra azioni playlist ────────────────────────────────────────
-    @FXML
-    private Button RenamePlaylist;
-    @FXML
-    private Button deletePlaylistBtn;
-    @FXML
-    private Button addToPlaylistBtn;
+    @FXML private Button RenamePlaylist;
+    @FXML private Button deletePlaylistBtn;
+    @FXML private Button addToPlaylistBtn;
 
     // ── Titolo playlist attiva ───────────────────────────────────────
-    @FXML
-    private Label playlistTitleLabel;
+    @FXML private Label playlistTitleLabel;
 
     // ── Filtri ───────────────────────────────────────────────────────
-    @FXML
-    private HBox filterBar;
-    @FXML
-    private ComboBox<GenreEnum> genreFilter;
-    @FXML
-    private ComboBox<String> yearFilter;
-    @FXML
-    private Button addTrackBtn;
+    @FXML private HBox filterBar;
+    @FXML private ComboBox<GenreEnum> genreFilter;
+    @FXML private ComboBox<String> yearFilter;
+    @FXML private Button addTrackBtn;
 
     // ── Tabella tracce ───────────────────────────────────────────────
-    @FXML
-    private TableView<Track> tracksTableView;
-    @FXML
-    private TableColumn<Track, Integer> colNow;
-    @FXML
-    private TableColumn<Track, String> colTitle;
-    @FXML
-    private TableColumn<Track, String> colAuthor;
-    @FXML
-    private TableColumn<Track, GenreEnum> colGenre;
-    @FXML
-    private TableColumn<Track, Double> colLength;
+    @FXML private TableView<Track> tracksTableView;
+    @FXML private TableColumn<Track, Integer> colNow;
+    @FXML private TableColumn<Track, String> colTitle;
+    @FXML private TableColumn<Track, String> colAuthor;
+    @FXML private TableColumn<Track, GenreEnum> colGenre;
+    @FXML private TableColumn<Track, Double> colLength;
 
     // ── Sezione home ─────────────────────────────────────────────────
-    @FXML
-    private javafx.scene.layout.VBox homeSectionBox;
-    @FXML
-    private ListView<String> topTracksListView;
+    @FXML private javafx.scene.layout.VBox homeSectionBox;
+    @FXML private ListView<String> topTracksListView;
 
     // ── Player bar ───────────────────────────────────────────────────
-    @FXML
-    private javafx.scene.layout.VBox playerBar;
-    @FXML
-    private Label currentTimeLabel;
-    @FXML
-    private Label currentTitle;
-    @FXML
-    private Label currentPlaylist;
-    @FXML
-    private Label currentAuthor;
-    @FXML
-    private Slider progressSlider;
-    @FXML
-    private Label totalTimeLabel;
-    @FXML
-    private ToggleButton shuffleToggleBtn;
-    @FXML
-    private ToggleButton loopBtn;
-    @FXML
-    private Button prevBtn;
-    @FXML
-    private Button playPauseBtn;
-    @FXML
-    private Button nextBtn;
-    @FXML
-    private Label nowPlayingTitle;
-    @FXML
-    private Label nowPlayingAuthor;
+    @FXML private javafx.scene.layout.VBox playerBar;
+    @FXML private Label currentTimeLabel;
+    @FXML private Label currentTitle;
+    @FXML private Label currentPlaylist;
+    @FXML private Label currentAuthor;
+    @FXML private Slider progressSlider;
+    @FXML private Label totalTimeLabel;
+    @FXML private ToggleButton shuffleToggleBtn;
+    @FXML private ToggleButton loopBtn;
+    @FXML private Button prevBtn;
+    @FXML private Button playPauseBtn;
+    @FXML private Button nextBtn;
+    @FXML private Label nowPlayingTitle;
+    @FXML private Label nowPlayingAuthor;
 
     // ── Pannello dettaglio ────────────────────────────────────────────
-    @FXML
-    private javafx.scene.layout.VBox detailPanel;
-    @FXML
-    private Label detailTitle;
-    @FXML
-    private Label detailAuthor;
-    @FXML
-    private Label detailGenre;
-    @FXML
-    private Label detailYear;
-    @FXML
-    private Label detailLength;
-    @FXML
-    private Label curretTimeLabel;
-    @FXML
-    private Label detailTag;
-    @FXML
-    private Label tagLabel;
-    @FXML
-    private javafx.scene.control.CheckBox tagFavourite;
-    @FXML
-    private javafx.scene.control.CheckBox tagExplicit;
-    @FXML
-    private javafx.scene.control.CheckBox tagNewRelease;
-    @FXML
-    private Button editTrackBtn;
-    @FXML
-    private Button removeFromPlaylistBtn;
-    @FXML
-    private Button deleteTrackBtn;
+    @FXML private javafx.scene.layout.VBox detailPanel;
+    @FXML private Label detailTitle;
+    @FXML private Label detailAuthor;
+    @FXML private Label detailGenre;
+    @FXML private Label detailYear;
+    @FXML private Label detailLength;
+    @FXML private Label curretTimeLabel;
+    @FXML private Label detailTag;
+    @FXML private Label tagLabel;
+    @FXML private javafx.scene.control.CheckBox tagFavourite;
+    @FXML private javafx.scene.control.CheckBox tagExplicit;
+    @FXML private javafx.scene.control.CheckBox tagNewRelease;
+    @FXML private Button editTrackBtn;
+    @FXML private Button removeFromPlaylistBtn;
+    @FXML private Button deleteTrackBtn;
+
 
     // ═════════════════════════════════════════════════════════════════
-    // INITIALIZE
+    //  INITIALIZE
     // ═════════════════════════════════════════════════════════════════
     @FXML
     public void initialize() {
@@ -229,11 +171,42 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         PlaylistManager.getInstance().addObserver(this);
         playlistHelper.updatePlaylistSidebar();
         filterHelper.initFilters();
-
-        // Rimuove il focus iniziale dalla barra di ricerca
+        
+        // Rimuove il focus iniziale dalla barra di ricerca e aggiunge le scorciatoie da tastiera
         Platform.runLater(() -> {
-            if (tracksTableView != null)
+            if (tracksTableView != null) {
                 tracksTableView.requestFocus();
+                
+            Scene scene = tracksTableView.getScene();
+                if (scene != null) {
+                    scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+                        // Ignora le scorciatoie se l'utente sta scrivendo in un campo di testo
+                        if (scene.getFocusOwner() instanceof TextInputControl) {
+                            return;
+                        }
+
+                        switch (event.getCode()) {
+                            case SPACE:
+                                handlePlayPause();
+                                event.consume();
+                                break;
+                            case RIGHT:
+                                handleNext();
+                                event.consume();
+                                break;
+                            case LEFT:
+                                handlePrev();
+                                event.consume();
+                                break;
+                            case DELETE:
+                            case BACK_SPACE:
+                                handleDeleteTrack();
+                                event.consume();
+                                break;
+                        }
+                    });
+                }
+            }
         });
     }
 
@@ -242,15 +215,15 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         colAuthor.setCellValueFactory(new PropertyValueFactory<>("author"));
         colGenre.setCellValueFactory(new PropertyValueFactory<>("genre"));
         colLength.setCellValueFactory(new PropertyValueFactory<>("length"));
-        // set the placeholder in order to have a fallback whenever there are no
-        // available tracks to play
+        //set the placeholder in order to have a fallback whenever there are no available tracks to play
         Label placeholder = new Label("Nessuna traccia presente");
         placeholder.setStyle("-fx-text-fill: #999999; -fx-font-size: 14px; -fx-font-style: italic;");
         tracksTableView.setPlaceholder(placeholder);
     }
 
+
     // ═════════════════════════════════════════════════════════════════
-    // HANDLERS — ogni metodo delega all'helper appropriato
+    //  HANDLERS — ogni metodo delega all'helper appropriato
     // ═════════════════════════════════════════════════════════════════
 
     @FXML
@@ -301,8 +274,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     @FXML
     protected void handleSidebarClick(MouseEvent event) {
         playlistHelper.handleSidebarClick(event);
-        // if a playlist is selected , make invisible buttons for top played tracks and
-        // playlists
+        //if a playlist is selected , make invisible buttons for top played tracks and playlists
         if (PlaylistManager.getInstance().getSelectedPlaylist() != null) {
             mostPlayedTracksButton.setVisible(false);
             mostPlayedTracksButton.setManaged(false);
@@ -313,12 +285,10 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @FXML
     protected void handleShowAllTracks() {
-        // handleShowAllTracks passes also the runnable to run at the end of method in
-        // order to reset the filter of comboboxes
+        //handleShowAllTracks passes also the runnable to run at the end of method in order to reset the filter of comboboxes
         playlistHelper.handleShowAllTracks(mostPlayedTracksButton, mostPlayedPlaylistButton,
                 () -> filterHelper.handleResetFilter());
-        // after having pressed the button to show all tracks make again visible the
-        // buttons for top played tracks and playlists
+        //after having pressed the button to show all tracks make again visible the buttons for top played tracks and playlists
         mostPlayedTracksButton.setManaged(true);
         mostPlayedPlaylistButton.setManaged(true);
     }
@@ -427,14 +397,13 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         playlistTitleLabel.setManaged(true);
     }
 
+
     // ═════════════════════════════════════════════════════════════════
-    // OBSERVER CALLBACKS
+    //  OBSERVER CALLBACKS
     // ═════════════════════════════════════════════════════════════════
 
     @Override
     public void onLibraryChanged() {
-        if (isEditing)
-            return;
         Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
         if (selectedPlaylist != null) {
             playlistHelper.showPlaylistContent(selectedPlaylist);
@@ -456,8 +425,9 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         playbackHelper.syncQueue();
     }
 
+
     // ═════════════════════════════════════════════════════════════════
-    // METODI PRIVATI DI SUPPORTO
+    //  METODI PRIVATI DI SUPPORTO
     // ═════════════════════════════════════════════════════════════════
 
     private void updateTracksTable() {
