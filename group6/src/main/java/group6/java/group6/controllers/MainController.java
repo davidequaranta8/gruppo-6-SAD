@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import group6.java.group6.dao.PlaylistDao;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import group6.java.group6.HelloApplication;
@@ -73,6 +74,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     private final TrackService trackService = new TrackService();
     public Button mostPlayedTracksButton;
     private PlayerService playerService;
+    private PlaylistDao playlistDao = new PlaylistDao();
 
     // ── State pattern ─────────────────────────────────────────────────────────
     private MainViewContext viewContext;
@@ -326,8 +328,17 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     }
 
     @FXML
-    protected void handleShowTopPlayedPlaylist(){
+    protected void handleShowTopPlayedPlaylist() {
+        // 1. Recupera le top 5 (o 10) playlist più ascoltate
+        List<Playlist> topPlaylists = playlistDao.getTopPlayedPlaylist(5);
 
+        // 2. Estrai solo i titoli per poterli inserire nella ListView
+        List<String> topNames = topPlaylists.stream()
+                .map(Playlist::getTitle)
+                .collect(Collectors.toList());
+
+        // 3. Aggiorna la barra laterale
+        playlistListView.getItems().setAll(topNames);
     }
 
     @FXML
@@ -619,8 +630,9 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         }
 
         activePlaylist = PlaylistManager.getInstance().getSelectedPlaylist(); // null se libreria
+        if(activePlaylist != null) playlistDao.incrementCountPlayed(activePlaylist);
         // Facciamo la fotografia dell'intera lista salvandola nella coda
-        playbackQueue = strategy.buildQueue(currentList, null); // ← usa direttamente la tabella
+        playbackQueue = strategy.buildQueue(currentList, null);
 
         // Preleviamo la primissima traccia (indice 0)
         Track firstTrack = playbackQueue.get(0);
@@ -699,7 +711,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             tracksTableView.getSelectionModel().select(nuovaTraccia);
         }
         showTrackDetails(nuovaTraccia);
-        playerService.changeTrack(nuovaTraccia);  
+        playerService.forcePlayTrack(nuovaTraccia);
         playerService.setCurrentPlaylistLabel(activePlaylist != null ? activePlaylist.getTitle() : "Libreria");
     }
 
@@ -714,9 +726,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
 
 
-    @FXML
-    protected void handleTagChange() {
-    }
+
 
     @FXML
     protected void handleGeneratePlaylist() {
@@ -864,7 +874,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     // Seleziona una playlist dalla sidebar e ne mostra il contenuto.
     @FXML
-    protected void handleSidebarClick(javafx.scene.input.MouseEvent event) {
+    protected void handleSidebarClick(MouseEvent event) {
         String clickedName = playlistListView.getSelectionModel().getSelectedItem();
 
         if (clickedName != null) {
@@ -889,6 +899,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         updateTracksTable();
         viewContext.setState(MainViewContext.LIBRARY_STATE);
         mostPlayedTracksButton.setVisible(true);
+        mostPlayedPlaylistButton.setVisible(true);
         handleResetFilter();
     }
 
@@ -1092,6 +1103,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         playlistTitleLabel.setText(playlist.getTitle());
         viewContext.setState(MainViewContext.PLAYLIST_STATE);
         mostPlayedTracksButton.setVisible(false);
+        mostPlayedPlaylistButton.setVisible(false);
 
     }
 

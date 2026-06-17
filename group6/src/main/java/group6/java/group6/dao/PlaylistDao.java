@@ -11,9 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /*Responsible to interact with db for everything concerns playlist*/
 public class PlaylistDao implements Dao<Playlist , Integer>{
@@ -204,6 +202,27 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
         }catch (SQLException exception){
             exception.printStackTrace();
         }
+    }
+
+
+    public List<Playlist> getTopPlayedPlaylist(int k){
+        List<Playlist> topPlaylists = new ArrayList<>();
+        String sql = "SELECT * FROM playlist  WHERE count_played <> 0 ORDER BY count_played DESC LIMIT ?";
+
+        try{
+            PreparedStatement stmt = sqlConnection.prepareStatement(sql);
+            stmt.setInt(1, k);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                topPlaylists.add(new Playlist(rs.getString("title")));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return topPlaylists;
     }
 
     }

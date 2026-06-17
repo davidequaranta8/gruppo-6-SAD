@@ -150,4 +150,23 @@ public class PlayerService {
     currentPlaylist.setText(playlistName != null ? playlistName : "");
 }
 
+
+    public void forcePlayTrack(Track newTrack) {
+        currentPlayingTrack = newTrack;
+        currentTitle.setText(newTrack.getTitle());
+        currentAuthor.setText(newTrack.getAuthor());
+
+        // Forza sempre il play
+        audioPlayer.play(newTrack);
+
+        // Imposta l'icona su pausa (perché sta suonando)
+        FontIcon icon = (FontIcon) playPauseBtn.getGraphic();
+        icon.setIconLiteral("fas-pause");
+
+        // Aggiorna i contatori della traccia
+        newTrack.incrementCountPlayed();
+        trackService.incrementPlayCount(newTrack);
+    }
+
+
 }
