@@ -40,15 +40,15 @@
 
                 <!-- Titolo -->
                 <Label styleClass="form-label" text="Titolo *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                <TextField fx:id="titleField" maxWidth="Infinity" promptText="Es. Bohemian Rhapsody" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="0" />
+                <TextField fx:id="titleField" prefWidth="220" maxWidth="250" promptText="Es. Bohemian Rhapsody" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                 <!-- Autore -->
                 <Label styleClass="form-label" text="Autore *" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                <TextField fx:id="authorField" maxWidth="Infinity" promptText="Es. Queen" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <TextField fx:id="authorField" prefWidth="220" maxWidth="250" promptText="Es. Queen" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                 <!-- Genere -->
                 <Label styleClass="form-label" text="Genere *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <ComboBox fx:id="genreCombo" maxWidth="Infinity" promptText="Seleziona un genere" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <ComboBox fx:id="genreCombo" prefWidth="220" maxWidth="250" promptText="Seleziona un genere" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
                 <!-- Anno -->
                 <Label styleClass="form-label" text="Anno *" GridPane.columnIndex="0" GridPane.rowIndex="3" />
@@ -61,15 +61,17 @@
                   <Insets />
                </GridPane.margin>
             </Label>
-            <Button fx:id="chooseFileBtn" mnemonicParsing="false" onAction="#handleChooseFile" text="Clicca qui" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                <Label fx:id="fileNameLabel" text="Nessun file selezionato" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+            
+            <Button fx:id="chooseFileBtn" mnemonicParsing="false" onAction="#handleChooseFile" text="Scegli File" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            
+            <Label fx:id="fileNameLabel" text="Nessun file selezionato" wrapText="true" maxWidth="250" style="-fx-text-fill: #666666; -fx-font-size: 11px;" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                 <!-- colonne responsive -->
                 <columnConstraints>
                     <ColumnConstraints hgrow="NEVER" minWidth="120.0" prefWidth="120.0" />
-                    <ColumnConstraints hgrow="ALWAYS" />
-               <ColumnConstraints />
+                    <ColumnConstraints hgrow="NEVER" minWidth="220.0" prefWidth="250.0" />
                 </columnConstraints>
             <rowConstraints>
+               <RowConstraints />
                <RowConstraints />
                <RowConstraints />
                <RowConstraints />

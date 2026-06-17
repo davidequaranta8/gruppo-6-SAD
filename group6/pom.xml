@@ -74,12 +74,18 @@
 
 
 
-        <!-- JUnit dependency for testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.10.0</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- mp3agic dependency for metadata extraction -->
+        <dependency>
+            <groupId>com.mpatric</groupId>
+            <artifactId>mp3agic</artifactId>
+            <version>0.9.1</version>
         </dependency>
 
 
@@ -114,7 +120,7 @@
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>group6.java.group6/group6.java.group6.HelloApplication</mainClass>
+                            <mainClass>group6.java.group6/group6.java.group6.Application</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>
