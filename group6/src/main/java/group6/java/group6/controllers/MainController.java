@@ -17,6 +17,7 @@ import group6.java.group6.services.PlayerService;
 import group6.java.group6.services.TrackService;
 import group6.java.group6.states.MainViewContext;
 import group6.java.group6.utils.CommandInvoker;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -177,6 +178,11 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         PlaylistManager.getInstance().addObserver(this);
         playlistHelper.updatePlaylistSidebar();
         filterHelper.initFilters();
+        
+        // Rimuove il focus iniziale dalla barra di ricerca
+       Platform.runLater(() -> {
+            if (tracksTableView != null) tracksTableView.requestFocus();
+        });
     }
 
     private void initTable() {
