@@ -1,4 +1,4 @@
-package group6.java.group6.controllers;
+package group6.java.group6.helper;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import group6.java.group6.states.MainViewContext;
+import group6.java.group6.controllers.PlaylistDialogController;
 import group6.java.group6.dao.PlaylistDao;
 import group6.java.group6.exceptions.DuplicatePlaylistException;
 import group6.java.group6.models.ConcreteLibrary;

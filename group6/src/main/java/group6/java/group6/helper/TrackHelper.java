@@ -1,5 +1,6 @@
-package group6.java.group6.controllers;
+package group6.java.group6.helper;
 
+import group6.java.group6.controllers.TrackDialogController;
 import group6.java.group6.dao.TrackDao;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.exceptions.DuplicateTitleTrackException;

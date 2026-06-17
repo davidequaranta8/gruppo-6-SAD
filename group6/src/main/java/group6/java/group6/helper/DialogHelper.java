@@ -1,9 +1,10 @@
-package group6.java.group6.controllers;
+package group6.java.group6.helper;
 
 import java.io.IOException;
 import java.util.function.Consumer;
 
 import group6.java.group6.HelloApplication;
+import group6.java.group6.controllers.TrackDialogController;
 import group6.java.group6.models.Track;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ButtonBar;

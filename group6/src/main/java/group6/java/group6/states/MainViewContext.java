@@ -1,4 +1,4 @@
-package group6.java.group6.controllers;
+package group6.java.group6.states;
 
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -9,7 +9,7 @@ import javafx.scene.layout.HBox;
 public class MainViewContext {
     
     // Singleton degli stati
-    public static final LibraryState  LIBRARY_STATE  = new LibraryState();
+    public static final LibraryState LIBRARY_STATE  = new LibraryState();
     public static final PlaylistState PLAYLIST_STATE = new PlaylistState();
 
     

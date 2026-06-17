@@ -1,4 +1,4 @@
-package group6.java.group6.controllers;
+package group6.java.group6.states;
 
 public class LibraryState implements ViewState {
 

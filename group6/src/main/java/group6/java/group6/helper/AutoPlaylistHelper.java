@@ -1,9 +1,10 @@
-package group6.java.group6.controllers;
+package group6.java.group6.helper;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import group6.java.group6.controllers.AutoPlaylistDialogController;
 import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.exceptions.DuplicatePlaylistException;
