@@ -20,17 +20,10 @@ import group6.java.group6.utils.CommandInvoker;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
@@ -179,9 +172,41 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         playlistHelper.updatePlaylistSidebar();
         filterHelper.initFilters();
         
-        // Rimuove il focus iniziale dalla barra di ricerca
-       Platform.runLater(() -> {
-            if (tracksTableView != null) tracksTableView.requestFocus();
+        // Rimuove il focus iniziale dalla barra di ricerca e aggiunge le scorciatoie da tastiera
+        Platform.runLater(() -> {
+            if (tracksTableView != null) {
+                tracksTableView.requestFocus();
+                
+            Scene scene = tracksTableView.getScene();
+                if (scene != null) {
+                    scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+                        // Ignora le scorciatoie se l'utente sta scrivendo in un campo di testo
+                        if (scene.getFocusOwner() instanceof TextInputControl) {
+                            return;
+                        }
+
+                        switch (event.getCode()) {
+                            case SPACE:
+                                handlePlayPause();
+                                event.consume();
+                                break;
+                            case RIGHT:
+                                handleNext();
+                                event.consume();
+                                break;
+                            case LEFT:
+                                handlePrev();
+                                event.consume();
+                                break;
+                            case DELETE:
+                            case BACK_SPACE:
+                                handleDeleteTrack();
+                                event.consume();
+                                break;
+                        }
+                    });
+                }
+            }
         });
     }
 
