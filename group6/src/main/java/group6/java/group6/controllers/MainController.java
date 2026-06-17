@@ -411,6 +411,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
             updateTracksTable();
         }
         playbackHelper.syncQueue();
+        filterHelper.refreshFilters();
     }
 
     @Override

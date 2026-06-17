@@ -59,6 +59,14 @@ public class FilterHelper {
         });
     }
 
+    //refresh possible values of year filters and if librayr has no tracks reset the filters
+    public void refreshFilters() {
+        initYearFilter();
+        if (ConcreteLibrary.getInstance().getTracks().isEmpty()) {
+            handleResetFilter();
+        }
+    }
+
     private void initYearFilter() {
         yearFilter.getItems().clear();
         Set<Integer> years = trackDao.getAllYears();
