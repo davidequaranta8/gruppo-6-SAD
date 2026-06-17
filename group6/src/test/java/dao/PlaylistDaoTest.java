@@ -7,15 +7,23 @@ import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.Playlist;
 import group6.java.group6.models.Track;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.*;
 
-public class PlaylistDaoTest {
-    PlaylistDao playlistDao = new PlaylistDao();
-    TrackDao trackDao = new TrackDao();
+import static org.junit.jupiter.api.Assertions.*;
 
+public class PlaylistDaoTest {
+
+    private PlaylistDao playlistDao = new PlaylistDao();
+    private TrackDao trackDao = new TrackDao();
+    
+    @AfterEach
+    public void tearDown() {
+        playlistDao.deleteAll();
+        trackDao.deleteAll();
+    }
 
     @Test
     public void insertPlaylistTest() {
@@ -28,8 +36,6 @@ public class PlaylistDaoTest {
         assertTrue(playlistSaved.isPresent());
         //be sure the playlist got is same of one we just saved
         assertEquals(playlistSaved.get(), playlist);
-        //finally delete the record to keep clean db after each test
-        playlistDao.delete(playlist);
     }
 
     @Test
@@ -51,8 +57,6 @@ public class PlaylistDaoTest {
         for (int i = 0 ; i < playlistSetGot.size() ;i++ ){
             assertEquals(playlistSetArray.get(i), playlistSetGot.get(i));
         }
-        //finally delete all
-        playlistDao.deleteAll();
     }
 
     @Test
@@ -66,8 +70,6 @@ public class PlaylistDaoTest {
         Optional<Playlist> playlistSaved = playlistDao.get(playlist.getId());
         //be sure we don't find the playlist
         assertFalse(playlistSaved.isPresent());
-
-
     }
 
     @Test
@@ -79,8 +81,6 @@ public class PlaylistDaoTest {
         Optional<Playlist> playlistSaved = playlistDao.get(playlist.getId());
         assertTrue(playlistSaved.isPresent());
         assertEquals(playlist.getTitle(), playlistSaved.get().getTitle());
-
-        playlistDao.deleteAll();
     }
 
     @Test
@@ -100,41 +100,32 @@ public class PlaylistDaoTest {
         assertEquals(playlistSaved.get().getCountPlayed() , playlist.getCountPlayed());
         //check update is correctly done
         assertEquals(1,playlist.getCountPlayed());
-        //delete all finally
-        playlistDao.deleteAll();
     }
 
 
     @Test
     public void removeTrackTest(){
-    Playlist playlist = new Playlist("Sample playlist");
-    Track track = new Track("track 1 " , "mj"   , GenreEnum.METAL , 2008 , TagEnum.Preferiti);
-    track.setLength(3.29);
-    //save the playlist
-    playlistDao.save(playlist);
-    //save the track
-        try
-        {
-    trackDao.save(track);
+        Playlist playlist = new Playlist("Sample playlist");
+        Track track = new Track("track 1 " , "mj"   , GenreEnum.METAL , 2008 , TagEnum.Preferiti);
+        track.setLength(3.29);
+        //save the playlist
+        playlistDao.save(playlist);
+        //save the track
+        try {
+            trackDao.save(track);
         } catch (DuplicateTitleTrackException e) {
             throw new RuntimeException(e);
         }
 
-    //add track to playlist
-    playlistDao.addTrack(playlist, track);
+        //add track to playlist
+        playlistDao.addTrack(playlist, track);
 
-    //remove the track added above
-    playlistDao.removeTrack(playlist, track);
+        //remove the track added above
+        playlistDao.removeTrack(playlist, track);
 
-    //assert the playlist no more contains the track
-    playlistDao.loadAllTracks(playlist);
-    assertTrue(playlist.getTracks().isEmpty());
-
-
-    //clear db
-    playlistDao.deleteAll();
-    trackDao.deleteAll();
-
+        //assert the playlist no more contains the track
+        playlistDao.loadAllTracks(playlist);
+        assertTrue(playlist.getTracks().isEmpty());
     }
 
 
@@ -160,16 +151,7 @@ public class PlaylistDaoTest {
         playlistDao.loadAllTracks(playlist);
 
         assertTrue(playlist.getTracks().contains(track));
-
-        //clean db
-        trackDao.deleteAll();
-        playlistDao.deleteAll();
     }
-
-
-
-
-
-    }
+}
 
 

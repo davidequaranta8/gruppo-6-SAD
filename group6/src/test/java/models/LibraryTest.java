@@ -5,11 +5,12 @@ import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Track;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LibraryTest {
 

@@ -6,6 +6,7 @@ import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Track;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -13,7 +14,13 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TrackDaoTest {
+    
     private TrackDao trackDao = new TrackDao();
+
+    @AfterEach
+    public void tearDown() {
+        trackDao.deleteAll();
+    }
 
     @Test
     public void saveTrackTest(){
@@ -27,8 +34,6 @@ public class TrackDaoTest {
         Optional<Track> trackRead = trackDao.get(track.getId());
         assertTrue(trackRead.isPresent());
         assertEquals(track, trackRead.get());
-
-        trackDao.deleteAll();
     }
 
     @Test
@@ -44,8 +49,6 @@ public class TrackDaoTest {
         //try to read the deleted track so we expect an empy optional
         Optional<Track> trackRead = trackDao.get(track.getId());
         assertFalse(trackRead.isPresent());
-
-        trackDao.deleteAll();
     }
 
     @Test
@@ -63,7 +66,6 @@ public class TrackDaoTest {
         assertTrue(trackRead.isPresent());
         //The author must be changed: author 1
         assertEquals(trackRead.get().getAuthor(),track.getAuthor());
-        trackDao.deleteAll();
     }
 
     @Test
@@ -81,6 +83,5 @@ public class TrackDaoTest {
             ConcreteLibrary.getInstance().addTrack(track2);
         });
     }
-
 
 }
