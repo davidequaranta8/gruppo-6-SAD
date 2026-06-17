@@ -81,6 +81,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     @FXML
     private TextField searchField;
     @FXML
+    private Button mostPlayedPlaylistButton;
+    @FXML
     private Button undoBtn;
 
     // ── Sidebar sinistra ─────────────────────────────────────────────────────
@@ -323,7 +325,10 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         });
     }
 
+    @FXML
+    protected void handleShowTopPlayedPlaylist(){
 
+    }
 
     @FXML
     protected void handleRenamePlaylist() {
