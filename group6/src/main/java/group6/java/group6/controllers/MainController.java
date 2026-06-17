@@ -211,6 +211,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     private List<Track> playbackQueue = new ArrayList<>();
     //playlist attiva, in riproduzione
     private Playlist activePlaylist = null; // null, cioè libreria
+    // flag per evitare la cascata di notifiche observer durante l'edit di una traccia
+    private boolean isEditing = false;
 
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -432,24 +434,34 @@ public class MainController implements LibraryObserver, PlaylistObserver {
                 alert.showAndWait();
                 return; //avoid to continue updating
             }
-            //update model
-            selectedTrack.updateTrack(controller.getTitle(), controller.getAuthor(), controller.getGenre(), controller.getYear(), controller.getTag());
 
-            //Se aggiorniamo un file audio di una tracci che é attualmente in riproduzione
-            if (controller.getSelectedFile() != null && selectedTrack.equals(playerService.getCurrentPlayingTrack())) {
+            // Ferma la riproduzione PRIMA di modificare il modello, se nuovo file audio
+            boolean wasPlaying = controller.getSelectedFile() != null && selectedTrack.equals(playerService.getCurrentPlayingTrack());
+            if (wasPlaying) {
                 playerService.stopAndClearIfPlaying(selectedTrack);
+                currentTitle.setText("");
+                currentAuthor.setText("");
             }
 
-            //update db and file (if needed)
+            // Modifica il modello in memoria
+            selectedTrack.updateTrack(controller.getTitle(), controller.getAuthor(), controller.getGenre(), controller.getYear(), controller.getTag());
+
+            // update db e file — sopprime notifiche observer ridondanti durante l'operazione
+            isEditing = true;
             trackService.updateTrack(selectedTrack, controller.getSelectedFile());
-            showTrackDetails(selectedTrack); // aggiorna il pannello di dettaglio con i nuovi dati della traccia
+            isEditing = false;
+
+            showTrackDetails(selectedTrack);
             syncQueue();
+            tracksTableView.refresh();
 
         });
 
-        if (playerService.getCurrentPlayingTrack() != null && playerService.getCurrentPlayingTrack().equals(selectedTrack)) {
-            currentTitle.setText(playerService.getCurrentPlayingTrack().getTitle());
-            currentAuthor.setText(playerService.getCurrentPlayingTrack().getAuthor());
+        // Dopo l'edit, aggiorna le label della player bar se il brano sta ancora suonando
+        Track stillPlaying = playerService.getCurrentPlayingTrack();
+        if (stillPlaying != null && stillPlaying.equals(selectedTrack)) {
+            currentTitle.setText(stillPlaying.getTitle());
+            currentAuthor.setText(stillPlaying.getAuthor());
         }
         initFilters();
     }
@@ -992,6 +1004,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @Override
     public void onLibraryChanged() {
+        if (isEditing) return;
         Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
         if (selectedPlaylist != null) {
             showPlaylistContent(selectedPlaylist);
@@ -1004,6 +1017,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @Override
     public void onPlaylistChanged() {
+        if (isEditing) return;
         updatePlaylistSidebar();
         Playlist selectedPlaylist = PlaylistManager.getInstance().getSelectedPlaylist();
         if (selectedPlaylist != null) {

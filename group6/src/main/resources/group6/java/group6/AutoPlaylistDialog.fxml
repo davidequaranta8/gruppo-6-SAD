@@ -19,7 +19,7 @@
     una playlist in base a Genere o Anno di pubblicazione.
 -->
 
-<DialogPane prefWidth="400" stylesheets="@app.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.AutoPlaylistDialogController">
+<DialogPane prefWidth="400" stylesheets="@app.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.AutoPlaylistDialogController">
 
     <fx:define>
         <ToggleGroup fx:id="criterionGroup" />

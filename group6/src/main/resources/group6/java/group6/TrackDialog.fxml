@@ -23,7 +23,7 @@
     Il titolo della finestra viene impostato dal controller.
 -->
 
-<DialogPane fx:id="" prefWidth="489.0" styleClass="dialog-pane" stylesheets="@app.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.TrackDialogController">
+<DialogPane fx:id="" prefWidth="489.0" styleClass="dialog-pane" stylesheets="@app.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="group6.java.group6.controllers.TrackDialogController">
 
     <header>
         <Label fx:id="dialogTitle" styleClass="dialog-title" text="Nuova Traccia">
