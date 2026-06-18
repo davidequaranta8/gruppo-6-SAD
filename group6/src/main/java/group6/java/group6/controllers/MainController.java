@@ -360,6 +360,8 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     @FXML
     protected void handlePlayAll() {
         playbackHelper.playAll();
+        trackHelper.showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
+
     }
 
     @FXML
@@ -381,16 +383,21 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         if (playbackHelper.getActivePlaylist() == null) {
             filterHelper.handleResetFilter();
         }
+        trackHelper.showTrackDetails(selectedTrack);
+
     }
 
     @FXML
     protected void handleNext() {
         playbackHelper.next();
+        trackHelper.showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
     }
 
     @FXML
     protected void handlePrev() {
         playbackHelper.prev();
+        trackHelper.showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
+
     }
 
     @FXML
