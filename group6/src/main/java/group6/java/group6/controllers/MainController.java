@@ -5,7 +5,12 @@ import java.util.List;
 import group6.java.group6.dao.PlaylistDao;
 import group6.java.group6.dao.TrackDao;
 import group6.java.group6.enumerations.GenreEnum;
-import group6.java.group6.helper.*;
+import group6.java.group6.helper.AutoPlaylistHelper;
+import group6.java.group6.helper.DialogHelper;
+import group6.java.group6.helper.FilterHelper;
+import group6.java.group6.helper.PlaybackHelper;
+import group6.java.group6.helper.PlaylistHelper;
+import group6.java.group6.helper.TrackHelper;
 import group6.java.group6.models.ConcreteLibrary;
 import group6.java.group6.models.Library;
 import group6.java.group6.models.LibraryObserver;
@@ -21,7 +26,17 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -341,6 +356,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     @FXML
     protected void handlePlayAll() {
         playbackHelper.playAll();
+        trackHelper.showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
     }
 
     @FXML
@@ -362,16 +378,21 @@ public class MainController implements LibraryObserver, PlaylistObserver {
         if (playbackHelper.getActivePlaylist() == null) {
             filterHelper.handleResetFilter();
         }
+        trackHelper.showTrackDetails(selectedTrack);
     }
 
     @FXML
     protected void handleNext() {
         playbackHelper.next();
+        trackHelper.showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
+
     }
 
     @FXML
     protected void handlePrev() {
         playbackHelper.prev();
+        trackHelper.showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
+
     }
 
     @FXML
