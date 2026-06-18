@@ -173,6 +173,11 @@ public class PlaybackHelper {
     }
 
     public void setActivePlaylist(Playlist activePlaylist) {
-        this.activePlaylist = activePlaylist;
+        this.activePlaylist = 
+        activePlaylist;
+    }
+
+    public Track getCurrentTrack() {
+    return playerService.getCurrentTrack(); // oppure il campo interno che già esiste
     }
 }

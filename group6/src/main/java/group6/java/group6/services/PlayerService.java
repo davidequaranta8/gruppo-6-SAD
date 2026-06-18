@@ -168,5 +168,8 @@ public class PlayerService {
         trackService.incrementPlayCount(newTrack);
     }
 
+    public Track getCurrentTrack() {
+        return currentPlayingTrack;
+    }
 
 }

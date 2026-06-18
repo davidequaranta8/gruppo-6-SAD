@@ -1,15 +1,20 @@
 package group6.java.group6.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import group6.java.group6.db.DatabaseResource;
-import group6.java.group6.enumerations.GenreEnum;
-import group6.java.group6.enumerations.TagEnum;
 import group6.java.group6.exceptions.DuplicateTitleTrackException;
 import group6.java.group6.models.Track;
 import group6.java.group6.utils.TrackMapper;
-
-import java.io.File;
-import java.sql.*;
-import java.util.*;
 
 public class TrackDao implements Dao<Track , Integer>{
     private final Connection sqlConnection;
@@ -39,7 +44,7 @@ public class TrackDao implements Dao<Track , Integer>{
 
     @Override
     public Set<Track> getAll() {
-        String sql = "SELECT * FROM track";
+        String sql = "SELECT * FROM track ORDER BY position ASC";
         try{
             PreparedStatement stmt = sqlConnection.prepareStatement(sql);
             Set<Track> tracks = new HashSet<>();
@@ -61,9 +66,10 @@ public class TrackDao implements Dao<Track , Integer>{
         //check first whether exists a track with same author and title or not
         if(existsByAuthorAndTitle(track.getAuthor(), track.getTitle())) throw new DuplicateTitleTrackException("Esiste già una traccia con titolo "+track.getTitle()+ " e autore "+ track.getAuthor());
 
+        int nextPosition = getMaxPosition() + 1;
         //if we got till here it means we can proceed with insertion hence has not been found any duplicate record
         try{
-            String sql = "INSERT INTO track (title, tag, author, genre, year_of_publication, length, count_played, file_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO track (title, tag, author, genre, year_of_publication, length, count_played, file_path, position) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = sqlConnection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, track.getTitle());
             if(track.getTag() !=  null) {
@@ -78,6 +84,7 @@ public class TrackDao implements Dao<Track , Integer>{
             stmt.setDouble(6, track.getLength());
             stmt.setInt(7, track.getCountPlayed());
             stmt.setString(8, "placeholder");
+            stmt.setInt(9, nextPosition);
             stmt.executeUpdate();
 
             ResultSet generatedKeys = stmt.getGeneratedKeys();
@@ -129,6 +136,7 @@ public class TrackDao implements Dao<Track , Integer>{
             ps.setString(1, track.getTitle());
             if(track.getTag() !=  null) {
                 ps.setString(2, track.getTag().name());
+                ps.addBatch();
             }
             else {
                 ps.setString(2, "");
@@ -216,7 +224,7 @@ public class TrackDao implements Dao<Track , Integer>{
 
     public Set<Integer> getAllYears(){
         Set<Integer> years = new HashSet<>();
-        String sql = "SELECT DISTINCT year_of_publication FROM track ";
+        String sql = "SELECT DISTINCT year_of_publication FROM track";
         try{
             PreparedStatement stmt = sqlConnection.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
@@ -228,5 +236,48 @@ public class TrackDao implements Dao<Track , Integer>{
         }
 
         return years;
+    }
+
+    public void updateTrackPositionsInLibrary(List<Integer> orderedTrackIds) {
+        String sql = "UPDATE track SET position = ? WHERE id = ?";
+        try {
+            sqlConnection.setAutoCommit(false);
+            try (PreparedStatement ps = sqlConnection.prepareStatement(sql)) {
+                for (int i = 0; i < orderedTrackIds.size(); i++) {
+                    ps.setInt(1, i + 1);
+                    ps.setInt(2, orderedTrackIds.get(i));
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+            sqlConnection.commit();
+            sqlConnection.setAutoCommit(true);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try { sqlConnection.rollback(); sqlConnection.setAutoCommit(true); } catch (SQLException ignored) {}
+        }
+    }
+
+     private void compactLibraryPositions() {
+        String select = "SELECT id FROM track ORDER BY position ASC";
+        try (PreparedStatement sel = sqlConnection.prepareStatement(select)) {
+            ResultSet rs = sel.executeQuery();
+            List<Integer> ids = new ArrayList<>();
+            while (rs.next()) ids.add(rs.getInt("id"));
+            updateTrackPositionsInLibrary(ids);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int getMaxPosition() {
+        String sql = "SELECT COALESCE(MAX(position), 0) FROM track";
+        try (PreparedStatement ps = sqlConnection.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

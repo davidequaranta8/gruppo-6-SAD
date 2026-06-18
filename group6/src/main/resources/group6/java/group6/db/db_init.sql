@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS Track (
     file_path TEXT NOT NULL, -- path of the track file on the disk (relative path under music/)
     --Constraint to avoid having in track table a duplicate record with same title and author , meaning we have the same
     --track added twice
+    position INTEGER Default 0,
+
     CONSTRAINT uq_track_title_artist UNIQUE (title, author)
 );
 
@@ -29,6 +31,7 @@ CREATE TABLE IF NOT EXISTS Track (
 CREATE TABLE IF NOT EXISTS Playlist_Track (
     playlist_id INTEGER,
     track_id INTEGER,
+    position INTEGER Default 0,
     PRIMARY KEY (playlist_id, track_id),
     FOREIGN KEY (playlist_id) REFERENCES Playlist(id) ON DELETE CASCADE,
     FOREIGN KEY (track_id) REFERENCES Track(id) ON DELETE CASCADE
