@@ -256,7 +256,7 @@ public class PlaylistHelper {
      * Torna alla vista libreria (tutte le tracce).
      */
     public void handleShowAllTracks(Button mostPlayedTracksButton,
-                                     Button mostPlayedPlaylistButton,
+                                     ToggleButton mostPlayedPlaylistButton,
                                      Runnable onResetFilter) {
         PlaylistManager.getInstance().setSelectedPlaylist(null);
         playlistListView.getSelectionModel().clearSelection();

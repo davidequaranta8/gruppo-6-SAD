@@ -94,7 +94,7 @@
                      </graphic>
                   </Button>
                   <Button fx:id="mostPlayedTracksButton" mnemonicParsing="false" onAction="#handleShowTopPlayedTracks" styleClass="btn-secondary" text="Brani piu ascoltati" />
-                  <Button fx:id="mostPlayedPlaylistButton" mnemonicParsing="false" onAction="#handleShowTopPlayedPlaylist" styleClass="btn-secondary" text="Playlist piu ascoltate" />
+                  <ToggleButton fx:id="mostPlayedPlaylistButton" mnemonicParsing="false" onAction="#handleShowTopPlayedPlaylist" styleClass="btn-secondary2" text="Playlist piu ascoltate" />
                   <Button fx:id="deleteTrackBtn" mnemonicParsing="false" onAction="#handleDeleteTrack" styleClass="btn-danger" text="Elimina">
                      <graphic>
                         <FontIcon iconLiteral="fas-times" iconSize="13" />

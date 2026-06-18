@@ -237,6 +237,23 @@
     -fx-background-color: #53c0f0;
     -fx-text-fill: #1a1a2e;
 }
+.btn-secondary2 {
+    -fx-background-color: #2a2a4a;
+    -fx-text-fill: #e0e0e0;
+    -fx-border-color: #53c0f0;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 6 14 6 14;
+    -fx-cursor: hand;
+}
+.btn-secondary2:hover {
+    -fx-background-color: #53c0f0;
+    -fx-text-fill: #1a1a2e;
+}
+.btn-secondary2:selected {
+    -fx-background-color: #e94560;
+    -fx-border-color: #e94560;
+}
 .btn-play {
     -fx-background-color: #53c0f0;
     -fx-text-fill: #1a1a2e;
