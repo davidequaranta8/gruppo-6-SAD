@@ -8,6 +8,7 @@ import group6.java.group6.enumerations.GenreEnum;
 import group6.java.group6.helper.AutoPlaylistHelper;
 import group6.java.group6.helper.DialogHelper;
 import group6.java.group6.helper.DragDropHelper;
+
 import group6.java.group6.helper.FilterHelper;
 import group6.java.group6.helper.PlaybackHelper;
 import group6.java.group6.helper.PlaylistHelper;
@@ -395,6 +396,7 @@ public class MainController implements LibraryObserver, PlaylistObserver {
     protected void handleNext() {
         playbackHelper.next();
         trackHelper.showTrackDetails(tracksTableView.getSelectionModel().getSelectedItem());
+
     }
 
     @FXML

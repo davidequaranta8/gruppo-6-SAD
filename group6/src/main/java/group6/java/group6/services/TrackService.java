@@ -85,6 +85,7 @@ private final Set<MediaPlayer> loadingPlayers = ConcurrentHashMap.newKeySet();
         loadingPlayers.add(mediaPlayer); 
         
         mediaPlayer.setOnReady(() -> {
+
             Duration dur = media.getDuration();
             if (dur != null && !dur.isUnknown() && dur.toSeconds() > 0) {
                 salvaDurata(track, dur);
@@ -105,6 +106,7 @@ private final Set<MediaPlayer> loadingPlayers = ConcurrentHashMap.newKeySet();
             }
         });
              mediaPlayer.setOnError(() -> {
+
             System.err.println("Errore durata " + track + ": " + mediaPlayer.getError());
             mediaPlayer.dispose();   
         });
@@ -139,6 +141,7 @@ private final Set<MediaPlayer> loadingPlayers = ConcurrentHashMap.newKeySet();
         }
 
       private void salvaDurata(Track track, Duration dur) {
+
             double totalSeconds = dur.toSeconds();
             int minutes = (int) (totalSeconds / 60);
             int seconds = (int) (totalSeconds % 60);
@@ -149,3 +152,4 @@ private final Set<MediaPlayer> loadingPlayers = ConcurrentHashMap.newKeySet();
         }
 
     }
+
