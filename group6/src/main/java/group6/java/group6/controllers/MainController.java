@@ -262,7 +262,11 @@ public class MainController implements LibraryObserver, PlaylistObserver {
 
     @FXML
     protected void handleShowTopPlayedPlaylist() {
-        playlistHelper.handleShowTopPlayedPlaylist();
+        if (mostPlayedPlaylistButton.isSelected()) {
+            playlistHelper.handleShowTopPlayedPlaylist();
+        } else {
+            playlistHelper.updatePlaylistSidebar();
+        }
     }
 
     @FXML
