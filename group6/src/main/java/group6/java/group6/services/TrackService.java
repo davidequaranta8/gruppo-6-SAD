@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import group6.java.group6.dao.TrackDao;
 import group6.java.group6.exceptions.DuplicateTitleTrackException;
@@ -16,9 +18,12 @@ import group6.java.group6.models.Track;
 import javafx.application.Platform;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.util.Duration;
+
 
 public class TrackService {
 private final TrackDao  trackDao = new TrackDao();
+private final Set<MediaPlayer> loadingPlayers = ConcurrentHashMap.newKeySet();
 
 
     public void saveTrack(Track track, File audioFile) throws DuplicateTitleTrackException {
@@ -69,29 +74,39 @@ private final TrackDao  trackDao = new TrackDao();
         }
     }
 
+    
+
     //calcola in maniera formattata la durata di una traccia
     private void setDuration(File audioFile, Track track, Runnable onDisposed) {
         String uriString = audioFile.toURI().toString();
         Media media = new Media(uriString);
         MediaPlayer mediaPlayer = new MediaPlayer(media);
 
-        media.durationProperty().addListener((obs, oldDur, newDur) -> {
-            if (newDur != null && !newDur.isUnknown() && newDur.toSeconds() > 0) {
-                double totalSeconds = media.getDuration().toSeconds();
-                int minutes = (int) (totalSeconds / 60);
-                int seconds = (int) (totalSeconds % 60);
-                double formattedDuration = Double.parseDouble(
-                        String.format("%d.%02d", minutes, seconds)
-                );
-                track.setLength(formattedDuration);
-                ConcreteLibrary.getInstance().updateTrack(track);
-                mediaPlayer.statusProperty().addListener((obsS, oldS, newS) -> {
-                    if (newS == MediaPlayer.Status.DISPOSED) {
-                        Platform.runLater(onDisposed);
+        loadingPlayers.add(mediaPlayer); 
+        
+        mediaPlayer.setOnReady(() -> {
+            Duration dur = media.getDuration();
+            if (dur != null && !dur.isUnknown() && dur.toSeconds() > 0) {
+                salvaDurata(track, dur);
+                loadingPlayers.remove(mediaPlayer);
+                mediaPlayer.dispose();
+                if (onDisposed != null) Platform.runLater(onDisposed);
+            } else {
+                // raro: durata non pronta a READY → aspetto l'aggiornamento,
+                // ma il dispose lo faccio comunque a player già READY
+                media.durationProperty().addListener((o, ov, nv) -> {
+                    if (nv != null && !nv.isUnknown() && nv.toSeconds() > 0) {
+                        salvaDurata(track, nv);
+                        loadingPlayers.remove(mediaPlayer);
+                        mediaPlayer.dispose();
+                        if (onDisposed != null) Platform.runLater(onDisposed);
                     }
                 });
-                mediaPlayer.dispose();
             }
+        });
+             mediaPlayer.setOnError(() -> {
+            System.err.println("Errore durata " + track + ": " + mediaPlayer.getError());
+            mediaPlayer.dispose();   
         });
     }
 
@@ -122,4 +137,15 @@ private final TrackDao  trackDao = new TrackDao();
                 }
             }
         }
+
+      private void salvaDurata(Track track, Duration dur) {
+            double totalSeconds = dur.toSeconds();
+            int minutes = (int) (totalSeconds / 60);
+            int seconds = (int) (totalSeconds % 60);
+            double formattedDuration = Double.parseDouble(
+                    String.format("%d.%02d", minutes, seconds));
+            track.setLength(formattedDuration);
+            ConcreteLibrary.getInstance().updateTrack(track);
+        }
+
     }

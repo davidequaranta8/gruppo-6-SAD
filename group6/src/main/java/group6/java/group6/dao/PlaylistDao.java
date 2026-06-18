@@ -1,17 +1,19 @@
 package group6.java.group6.dao;
 
-import group6.java.group6.db.DatabaseResource;
-import group6.java.group6.enumerations.GenreEnum;
-import group6.java.group6.enumerations.TagEnum;
-import group6.java.group6.models.Playlist;
-import group6.java.group6.models.Track;
-import group6.java.group6.utils.TrackMapper;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import group6.java.group6.db.DatabaseResource;
+import group6.java.group6.models.Playlist;
+import group6.java.group6.models.Track;
+import group6.java.group6.utils.TrackMapper;
 
 /*Responsible to interact with db for everything concerns playlist*/
 public class PlaylistDao implements Dao<Playlist , Integer>{
@@ -159,10 +161,11 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
 
     /*Method for adding a track in a playlist*/
     public void addTrack(Playlist playlist ,  Track track) {
-        String sql = "INSERT INTO playlist_track  VALUES (?, ?)";
+        String sql = "INSERT INTO playlist_track (playlist_id, track_id, position) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = sqlConnection.prepareStatement(sql)) {
             stmt.setInt(1, playlist.getId());
             stmt.setInt(2, track.getId());
+            stmt.setInt(3, getNextPosition(playlist.getId()));   
             stmt.executeUpdate();
         } catch (SQLException e) {
 
@@ -188,8 +191,8 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
 
     /*Loads all the tracks of a playlist and updates the playlist model */
     public void loadAllTracks(Playlist playlist) {
-        String sql = "SELECT t.* FROM playlist_track pt join track t on pt.track_id = t.id WHERE pt.playlist_id = ?";
-
+        String sql = "SELECT t.* FROM playlist_track pt JOIN track t ON pt.track_id = t.id "
+           + "WHERE pt.playlist_id = ? ORDER BY pt.position ASC";
         try(PreparedStatement stmt = sqlConnection.prepareStatement(sql)){
             stmt.setInt(1, playlist.getId());
             ResultSet rs = stmt.executeQuery();
@@ -225,5 +228,34 @@ public class PlaylistDao implements Dao<Playlist , Integer>{
         return topPlaylists;
     }
 
+
+    public void updateTrackOrder(Playlist playlist) {
+        String sql = "UPDATE playlist_track SET position = ? WHERE playlist_id = ? AND track_id = ?";
+        try (PreparedStatement stmt = sqlConnection.prepareStatement(sql)) {
+            int position = 0;
+            for (Track track : playlist.getTracks()) {
+                stmt.setInt(1, position++);
+                stmt.setInt(2, playlist.getId());
+                stmt.setInt(3, track.getId());
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
+
+
+    private int getNextPosition(int playlistId) {
+        String sql = "SELECT COALESCE(MAX(position), -1) + 1 AS next FROM playlist_track WHERE playlist_id = ?";
+        try (PreparedStatement stmt = sqlConnection.prepareStatement(sql)) {
+            stmt.setInt(1, playlistId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt("next");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+}
 
